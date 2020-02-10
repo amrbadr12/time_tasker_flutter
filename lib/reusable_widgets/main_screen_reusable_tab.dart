@@ -58,24 +58,8 @@ class MainScreenReusableTab extends StatelessWidget {
             decoration:
                 BoxDecoration(gradient: LinearGradient(colors: blueGradient)),
           ),
-          SizedBox(height: kTitleDefaultPaddingVertical),
-          Container(
-            padding: EdgeInsets.symmetric(vertical: 10.0),
-            child: Center(
-              child: CircularPercentIndicator(
-                  radius: 200.0,
-                  lineWidth: 5.0,
-                  percent: circlePercent,
-                  animation: true,
-                  animationDuration: 1200,
-                  center: Text(
-                    circularCenterText,
-                    style: kTitleTextStyle.copyWith(color: kDefaultGrey),
-                  ),
-                  progressColor: blueGradient[0],
-                  backgroundColor: blueGradient[1]),
-            ),
-          ),
+        
+          
           SizedBox(
             height: kMainDefaultHeightPadding,
           ),
@@ -115,15 +99,6 @@ class MainScreenReusableTab extends StatelessWidget {
                     shrinkWrap: true,
                     physics: NeverScrollableScrollPhysics(),
                     itemBuilder: (BuildContext context, int index) {
-                      if (recentTasksList == null) {
-                        return ListTile(
-                          title: Text('General Training'),
-                          subtitle: Text('Yesterday'),
-                          leading: Icon(FontAwesomeIcons.dotCircle,
-                              color: kMainBlueColor),
-                          trailing: Text('2h 45m'),
-                        );
-                      } else{
                         return Dismissible(
                           onDismissed: (direction){
                             print(recentTasksList[index].id);
@@ -137,7 +112,6 @@ class MainScreenReusableTab extends StatelessWidget {
                             trailing: Text(recentTasksList[index].duration),
                           ), key: UniqueKey(),
                         );
-                      }
                     })
               ],
             ),

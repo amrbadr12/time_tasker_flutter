@@ -2,6 +2,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:introduction_screen/introduction_screen.dart';
 
 enum TaskTypes{DurationTasks,StartEndTasks}
 enum TaskAction{TotalTime,TotalBalance}
@@ -25,3 +26,14 @@ final kTodayText='TODAY';
 final kYourTotalTimeText='Your Total Time';
 final kYourTotalBalanceText='Your Total Balance';
 final Color kMainBlueColor=Colors.blue[500];
+final String firstTitleText='Never be late again!';
+final String secondBodyText='Have you ever underestimated how long your daily chores take for you to do and then end up late to a dinner or event?';
+final String secondTitleText='TimeTasker is here to help!';
+final String thirdBodyText='you can manage and understand how you use your time, by two methods. You can leave the 24 hour default timer or set a certain period, like at work and then record a start or end date or how long an individual task takes.';
+final String thirdTitleText=secondTitleText;
+final String firstBodyText='Have you ever had a whole day flash past and you only achieved half of what you wanted to do?';
+final String fourthTitleText='TimeTasker';
+final String fourthBodyText='TimeTasker is a revolutionary way to put more time in your day!';
+final PageDecoration introPageDecoration=
+PageDecoration(titleTextStyle:kTitleTextStyle,bodyTextStyle:kSubTitleTextStyle);
+final introScreenImagesSize=700.0;
