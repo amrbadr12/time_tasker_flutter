@@ -1,10 +1,11 @@
+import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:time_tasker/constants.dart';
 import 'package:time_tasker/reusable_widgets/add_task_reusable_cards.dart';
 
 class AddNewTaskInputWidget extends StatelessWidget {
-  final Function onTaskNameChanged;
+  final TextEditingController nameController;
   final bool includeStartEndDate;
   final Function onStartDateChanged;
   final String startDateText;
@@ -13,12 +14,18 @@ class AddNewTaskInputWidget extends StatelessWidget {
   final String errorText;
   final Function onDurationDateChanged;
   final String durationText;
+  final List<String> previousTasks;
+  final Function onTaskNameSubmitted;
+  final Function onFilterItems;
   final Function resetTime;
 
   AddNewTaskInputWidget(
-      {this.onTaskNameChanged,
+      {this.nameController,
+      this.onTaskNameSubmitted,
       this.includeStartEndDate,
       this.errorText,
+      this.previousTasks,
+      this.onFilterItems,
       this.onStartDateChanged,
       this.startDateText,
       this.onEndDateChanged,
@@ -36,14 +43,31 @@ class AddNewTaskInputWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          TextField(
-            onChanged: onTaskNameChanged,
+          AutoCompleteTextField<String>(
+            suggestions: previousTasks,
             style: kInputAddTaskLabelTextStyle,
-            maxLength: 50,
+            itemFilter: (item, query) {
+              return item
+                  .toLowerCase()
+                  .startsWith(query.toLowerCase());
+            },
+            controller:nameController,
             decoration: InputDecoration(
               labelStyle: kInputAddTaskLabelTextStyle,
               hintText: 'Task Name',
             ),
+            clearOnSubmit: false,
+            itemBuilder: (BuildContext context, String suggestion) {
+              return Padding(padding:EdgeInsets.all(kMainDefaultPadding),
+                child: Text(suggestion,style:kInputAddTaskLabelTextStyle.copyWith(fontSize:12.0,color:Colors.black),));
+            },
+            itemSorter: (String a, String b) {
+              return a.compareTo(b);
+            },
+            itemSubmitted: (String data) {
+             onTaskNameSubmitted(data);
+            },
+            key: GlobalKey<AutoCompleteTextFieldState<String>>(),
           ),
           SizedBox(
             height: kMainDefaultHeightPadding,
@@ -92,19 +116,23 @@ class AddNewTaskInputWidget extends StatelessWidget {
                 ],
               )),
           Visibility(
-            visible:!includeStartEndDate??false,
+            visible: !includeStartEndDate ?? false,
             child: TextField(
-            onChanged: onDurationDateChanged,
-            style: kInputAddTaskLabelTextStyle,
-            maxLength: 5,
-            keyboardType: TextInputType.datetime,
-            decoration: InputDecoration(
-              errorText: errorText,
-              prefixIcon: Icon(FontAwesomeIcons.stopwatch,color:kTasksDateIconColor2,),
-              labelStyle: kInputAddTaskLabelTextStyle,
-              hintText: 'Duration in HH:MM',
+              onChanged: onDurationDateChanged,
+              style: kInputAddTaskLabelTextStyle,
+              maxLength: 5,
+              keyboardType: TextInputType.datetime,
+              decoration: InputDecoration(
+                errorText: errorText,
+                prefixIcon: Icon(
+                  FontAwesomeIcons.stopwatch,
+                  color: kTasksDateIconColor2,
+                ),
+                suffixText:'HH:MM',
+                labelStyle: kInputAddTaskLabelTextStyle,
+                hintText: 'Duration in HH:MM',
+              ),
             ),
-          ),
           ),
           Visibility(
             visible: includeStartEndDate ?? true,

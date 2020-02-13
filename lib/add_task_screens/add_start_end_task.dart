@@ -24,7 +24,8 @@ class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
         body: SingleChildScrollView(
             child: Container(
                 child: ChangeNotifierProvider<AddNewTaskProvider>(
-                    create: (context) => AddNewTaskProvider(DBHelper(),TaskTypes.StartEndTasks),
+                    create: (context) => AddNewTaskProvider(DBHelper(),
+                        TaskTypes.StartEndTasks, TextEditingController()),
                     child: Consumer<AddNewTaskProvider>(
                         builder: (context, snapshot, _) {
                       return Column(
@@ -34,16 +35,18 @@ class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
                               padding: EdgeInsets.symmetric(
                                   horizontal: kMainDefaultPadding),
                               child: Text(
-                                'Create\nNew Start-End\nTask',
+                                'Create\nNew Start-End\nTask Today',
                                 softWrap: true,
                                 style: kTitleTextStyle.copyWith(
                                     fontSize: 30.0,
                                     fontWeight: FontWeight.bold),
                               )),
                           AddNewTaskInputWidget(
-                            includeStartEndDate:true,
-                            onTaskNameChanged: (name) {
-                              snapshot.taskName = name;
+                            includeStartEndDate: true,
+                            nameController: snapshot.nameController,
+                            previousTasks: snapshot.previousTasks,
+                            onTaskNameSubmitted: (String data) {
+                              snapshot.onTaskNameSubmitted(data);
                             },
                             onStartDateChanged: () async {
                               snapshot.setPickedStartTime(
@@ -56,7 +59,9 @@ class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
                             },
                             endDateText: snapshot.getEndTime(),
                             durationText: snapshot.getCalculatedDuration(),
-                            resetTime: (){snapshot.resetTime();},
+                            resetTime: () {
+                              snapshot.resetTime();
+                            },
                           ),
                           Align(
                             alignment: Alignment.bottomCenter,
@@ -73,9 +78,17 @@ class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
                                     style: kAppBarTextStyle.copyWith(
                                         color: Colors.white)),
                                 onPressed: () {
-                                  snapshot.addNewTaskToDB((){
-                                    Navigator.of(context).pop();
-                                    AppUtils.showFlushBar('Success', 'Your Task was added successfully!', context);
+                                  snapshot.addNewTaskToDB(() {
+                                     Navigator.of(context).popUntil((route)=>route.isFirst);
+                                    AppUtils.showFlushBar(
+                                        'Success',
+                                        'Your Task was added successfully!',
+                                        context);
+                                  },(){
+                                     AppUtils.showFlushBar(
+                                        'Task Already Exists',
+                                        'Your already have a task set between this period.',
+                                        context);
                                   });
                                 },
                               ),
@@ -83,10 +96,6 @@ class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
                           )
                         ],
                       );
-                    })
-                    )
-                    )
-                    )
-                    );
+                    })))));
   }
 }

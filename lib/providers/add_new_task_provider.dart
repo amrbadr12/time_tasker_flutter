@@ -6,17 +6,28 @@ import 'package:time_tasker/models/task.dart';
 import 'package:time_tasker/utils/app_utils.dart';
 
 class AddNewTaskProvider with ChangeNotifier {
-  String taskName;
   TimeOfDay _pickedStartTime;
   TimeOfDay _pickedEndTime;
   TimeOfDay _pickedDurationTime;
   final TaskTypes _currentTaskType;
   String _errorText;
   DBHelper _db;
+  TextEditingController _nameController;
+  List<String> _previousTasks;
+  List<StartEndTask> _previousStartEndTasks;
 
-  AddNewTaskProvider(this._db, this._currentTaskType);
+  AddNewTaskProvider(this._db, this._currentTaskType, this._nameController) {
+    readMainScreenElementsFromDB(_currentTaskType);
+  }
 
-  String get errorText =>_errorText;
+  String get errorText => _errorText;
+  List<String> get previousTasks => _previousTasks;
+  TextEditingController get nameController => _nameController;
+  List<StartEndTask> get previousStartEndaTasks => _previousStartEndTasks;
+
+  void onTaskNameSubmitted(String task) {
+    nameController.text = task;
+  }
 
   void setPickedStartTime(TimeOfDay startTime) {
     if (_pickedEndTime != null) {
@@ -24,57 +35,68 @@ class AddNewTaskProvider with ChangeNotifier {
           _pickedEndTime.minute >= startTime.minute) {
         this._pickedStartTime = startTime;
         notifyListeners();
+        return;
       }
-    } else {
-      this._pickedStartTime = startTime;
-      this._pickedDurationTime = null;
     }
+    this._pickedStartTime = startTime;
+    this._pickedDurationTime = null;
     notifyListeners();
   }
 
   void setPickedEndTime(TimeOfDay endTime) {
-    if (endTime != null) {
-      if (_pickedStartTime != null) {
-        if (endTime.hour > _pickedStartTime.hour &&
-            endTime.minute >= _pickedStartTime.minute) {
-          this._pickedEndTime = endTime;
-          notifyListeners();
-        }
-      } else {
+    if (_pickedStartTime != null) {
+      if (endTime.hour >= _pickedStartTime.hour &&
+          endTime.minute >= _pickedStartTime.minute) {
+        print('picked end time is more than starttime');
         this._pickedEndTime = endTime;
         notifyListeners();
       }
+    } else {
+      this._pickedEndTime = endTime;
+      notifyListeners();
     }
   }
 
-   void setPickedDuration(String duration) {
-     _errorText=null;
-     if(validateDuration(duration)){
-     this._pickedDurationTime = AppUtils.formatHHMMTimeToTimeOfDay(duration);
-     print('picked duration time ${_pickedDurationTime.hour} and min ${_pickedDurationTime.minute}');
-     }
-     else{
-       _errorText='Duration has to be in HH:MM format.';
-     }
+  bool checkIfOverlappingTask() {
+    if (_previousStartEndTasks != null) {
+      if (_previousStartEndTasks.isNotEmpty) {
+        int userStartTimeTask =
+            AppUtils.formatTimeOfDayToTimeInSeconds(_pickedStartTime);
+        for (StartEndTask task in _previousStartEndTasks) {
+          if (userStartTimeTask >= task.startTime &&
+              userStartTimeTask <= task.endTime) {
+            print('overlapping task...');
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  void setPickedDuration(String duration) {
+    _errorText = null;
+    if (validateDuration(duration)) {
+      this._pickedDurationTime = AppUtils.formatHHMMTimeToTimeOfDay(duration);
+      print(
+          'picked duration time ${_pickedDurationTime.hour} and min ${_pickedDurationTime.minute}');
+    } else {
+      _errorText = 'Duration has to be in HH:MM format.';
+    }
     notifyListeners();
   }
 
-  void setPickedDuration2(duration) {
-    this._pickedDurationTime = duration;
-    print(taskName);
-    notifyListeners();
-  }
-
-  Future<int> addNewTaskToDB(Function onSuccess) async {
+  Future<int> addNewTaskToDB(
+      Function onSuccess, Function onOverlappingTask) async {
     int taskID = -1;
     if (_db != null) {
       if (validateTaskInputs()) {
         switch (_currentTaskType) {
           case TaskTypes.DurationTasks:
-            print(taskName);
+            print(_nameController.text);
             DurationTask task = DurationTask(
                 null,
-                taskName.trim(),
+                _nameController.text.trim(),
                 AppUtils.formatTimeOfDayToTimeInSeconds(_pickedDurationTime),
                 AppUtils.currentTimeInSeconds());
             DurationTask insertedTask = await _db.insertNewDurationTask(task);
@@ -82,15 +104,19 @@ class AddNewTaskProvider with ChangeNotifier {
             onSuccess();
             break;
           case TaskTypes.StartEndTasks:
-            StartEndTask task = StartEndTask(
-                null,
-                taskName.trim(),
-                AppUtils.formatTimeOfDayToTimeInSeconds(_pickedStartTime),
-                AppUtils.formatTimeOfDayToTimeInSeconds(_pickedEndTime),
-                AppUtils.currentTimeInSeconds());
-            StartEndTask insertedTask = await _db.insertNewStartEndTask(task);
-            taskID = insertedTask.id;
-            onSuccess();
+            if (!checkIfOverlappingTask()) {
+              StartEndTask task = StartEndTask(
+                  null,
+                  nameController.text.trim(),
+                  AppUtils.formatTimeOfDayToTimeInSeconds(_pickedStartTime),
+                  AppUtils.formatTimeOfDayToTimeInSeconds(_pickedEndTime),
+                  AppUtils.currentTimeInSeconds());
+              StartEndTask insertedTask = await _db.insertNewStartEndTask(task);
+              taskID = insertedTask.id;
+              onSuccess();
+            } else {
+              onOverlappingTask();
+            }
             break;
         }
       }
@@ -98,18 +124,59 @@ class AddNewTaskProvider with ChangeNotifier {
     return taskID;
   }
 
-  bool validateDuration(String inputDuration){
-    final hhmmFormatReg= RegExp(r'^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$');
+  Future<void> readMainScreenElementsFromDB(TaskTypes taskTypes) async {
+    List tasks;
+    if (_db != null) {
+      switch (taskTypes) {
+        case TaskTypes.DurationTasks:
+          tasks = await _db.getDurationTasks();
+          List<DurationTask> task = tasks;
+          for (int i = 0; i < tasks.length; i++) {
+            print(
+                'duration tasks $i name: ${task[i].taskName},id: ${task[i].id},duration: ${task[i].durationTime}, date: ${task[i].date}');
+          }
+          break;
+        case TaskTypes.StartEndTasks:
+          tasks = await _db.getStartEndTasks();
+          List<StartEndTask> task = tasks;
+          _previousStartEndTasks = task;
+          if (task.length > 0) {
+            for (int i = 0; i < tasks.length; i++) {
+              print(
+                  'start/end tasks $i name: ${task[i].taskName},id: ${task[i].id},start: ${task[i].startTime},end: ${task[i].endTime}, date: ${task[i].date}');
+            }
+          }
+          break;
+      }
+    }
+    _previousTasks = List();
+    _previousTasks = filterDataDuplicates(tasks);
+    notifyListeners();
+    return _previousTasks;
+  }
+
+  bool validateDuration(String inputDuration) {
+    final hhmmFormatReg = RegExp(r'^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$');
     return hhmmFormatReg.hasMatch(inputDuration);
+  }
+
+  List<String> filterDataDuplicates(List<Task> tasks) {
+    List<String> textTasks = List();
+    for (Task task in tasks) {
+      textTasks.add(task.taskName);
+    }
+    textTasks = textTasks.toSet().toList();
+    return textTasks;
   }
 
   bool validateTaskInputs() {
     switch (_currentTaskType) {
       case TaskTypes.DurationTasks:
-        if (taskName != null && _pickedDurationTime != null) return true;
+        if (nameController.text != null && _pickedDurationTime != null)
+          return true;
         return false;
       case TaskTypes.StartEndTasks:
-        if (taskName != null &&
+        if (nameController.text != null &&
             _pickedStartTime != null &&
             _pickedEndTime != null) return true;
         return false;
@@ -165,5 +232,4 @@ class AddNewTaskProvider with ChangeNotifier {
     _pickedDurationTime = null;
     notifyListeners();
   }
-
 }

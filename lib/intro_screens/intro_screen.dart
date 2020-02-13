@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:introduction_screen/introduction_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:time_tasker/constants.dart';
+import 'package:time_tasker/home_screens/main_home_screen.dart';
 import 'package:time_tasker/home_screens/name_entering_intro_screen.dart';
+import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
 class IntroScreen extends StatefulWidget {
   @override
@@ -15,7 +18,8 @@ class _IntroScreenState extends State<IntroScreen> {
       body: firstBodyText,
       decoration: introPageDecoration,
       image: Center(
-        child: Image.asset("images/first_intro.png",height: introScreenImagesSize,width:introScreenImagesSize),
+        child: Image.asset("images/first_intro.png",
+            height: introScreenImagesSize, width: introScreenImagesSize),
       ),
     ),
     PageViewModel(
@@ -23,7 +27,8 @@ class _IntroScreenState extends State<IntroScreen> {
       body: secondBodyText,
       decoration: introPageDecoration,
       image: Center(
-        child: Image.asset("images/second_intro.png",height: introScreenImagesSize,width:introScreenImagesSize),
+        child: Image.asset("images/second_intro.png",
+            height: introScreenImagesSize, width: introScreenImagesSize),
       ),
     ),
     PageViewModel(
@@ -31,7 +36,8 @@ class _IntroScreenState extends State<IntroScreen> {
       body: thirdBodyText,
       decoration: introPageDecoration,
       image: Center(
-        child: Image.asset("images/third_intro.png", height: introScreenImagesSize,width:introScreenImagesSize),
+        child: Image.asset("images/third_intro.png",
+            height: introScreenImagesSize, width: introScreenImagesSize),
       ),
     ),
     PageViewModel(
@@ -39,7 +45,8 @@ class _IntroScreenState extends State<IntroScreen> {
       body: fourthBodyText,
       decoration: introPageDecoration,
       image: Center(
-        child: Image.asset("images/fourth_intro.png", height: introScreenImagesSize,width:introScreenImagesSize),
+        child: Image.asset("images/fourth_intro.png",
+            height: introScreenImagesSize, width: introScreenImagesSize),
       ),
     ),
   ];
@@ -47,8 +54,12 @@ class _IntroScreenState extends State<IntroScreen> {
   Widget build(BuildContext context) {
     return IntroductionScreen(
       pages: pages,
-      onDone: () {
-        Navigator.push(context, MaterialPageRoute(builder:(context)=>NameEnteringIntroScreen()));
+      onDone: () async {
+        SharedPerferencesUtils utils =
+            SharedPerferencesUtils(await SharedPreferences.getInstance());
+        utils.saveBoolToSharedPreferences(kShowIntroScreenKey, true);
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => HomeScreen()));
         print('done button pressed');
       },
       showSkipButton: true,

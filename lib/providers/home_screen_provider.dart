@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:time_tasker/constants.dart';
 import 'package:time_tasker/db_helper.dart';
 import 'package:time_tasker/models/tab_model.dart';
 import 'package:time_tasker/models/task.dart';
 import 'package:time_tasker/utils/app_utils.dart';
+import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
 class HomeScreenProvider with ChangeNotifier {
   int currentBottomNavBarIndex = 0;
@@ -12,6 +14,7 @@ class HomeScreenProvider with ChangeNotifier {
   String _totalTime;
   String _totalBalance;
   List<UITask> _recentTasks;
+  UITask _upcomingTask;
   TaskTypes _selectedTask = TaskTypes.DurationTasks;
   bool _noTodayTasks;
   String _selectedTaskType = "Duration";
@@ -19,7 +22,7 @@ class HomeScreenProvider with ChangeNotifier {
 
   HomeScreenProvider(this._db) {
     _setTasksData(TaskAction.TotalTime);
-    _recentTasks=[];
+    _recentTasks = [];
   }
 
   TabModel get currentTabModel => _currentTabModel;
@@ -27,6 +30,7 @@ class HomeScreenProvider with ChangeNotifier {
   String get totalTime => _totalTime;
   bool get noTodayTasks => _noTodayTasks;
   String get totalBalance => _totalBalance;
+  UITask get upcomingTask => _upcomingTask;
   String get selectedTaskType => _selectedTaskType;
   List<UITask> get recentTasks => _recentTasks;
 
@@ -56,7 +60,11 @@ class HomeScreenProvider with ChangeNotifier {
   }
 
   void refreshMainScreen() {
-    onBottomNavBarTap(currentBottomNavBarIndex);
+    int index = 0;
+    currentBottomNavBarIndex == 0
+        ? index = 1
+        : index = currentBottomNavBarIndex;
+    onBottomNavBarTap(index);
   }
 
   void _setTasksData(TaskAction action) async {
@@ -74,33 +82,40 @@ class HomeScreenProvider with ChangeNotifier {
       _noTodayTasks = true;
     } else {
       _noTodayTasks = false;
-      _getRecentTasksFromDB(tasks,_selectedTask);
+      if (_selectedTask == TaskTypes.StartEndTasks) {
+        List<StartEndTask> todayStartEndTasks = AppUtils.getTheTodayUpcomingTasks(todayDurationTasks.cast());
+        //_upcomingTask =null;
+          _upcomingTask=AppUtils.getUpcomingTask(todayStartEndTasks);
+        notifyListeners();
+      }
+      _getRecentTasksFromDB(tasks, _selectedTask);
       _totalTime = calculateTotalTimeinHHMMFormat(todayDurationTasks);
-
       switch (action) {
         case TaskAction.TotalTime:
           _setTotalTimeForTaskType(_totalTime,
               AppUtils.calculateTimePercentFromFormattedTime(_totalTime, 24));
           break;
         case TaskAction.TotalBalance:
+        SharedPerferencesUtils sharedPerferencesUtils=SharedPerferencesUtils(await SharedPreferences.getInstance());
+        int userTotalBalance=sharedPerferencesUtils.getIntFromSharedPreferences(kTotalBalanceKey);
           int totalBalance =
-              AppUtils.calculateTimeBalanceFromFormattedTime(_totalTime, 24);
+              AppUtils.calculateTimeBalanceFromFormattedTime(_totalTime, userTotalBalance);
+              print('total balance is $totalBalance');
           _setTotalBalanceForTaskType(
               AppUtils.formatTimeToHHMM(
-                  AppUtils.calculateTimeBalanceFromFormattedTime(
-                      _totalTime, 24),
+                  totalBalance,
                   0),
-              AppUtils.calculateTimePercentFromTotalBalance(totalBalance, 24));
+              AppUtils.calculateTimePercentFromTotalBalance(totalBalance, userTotalBalance));
           break;
       }
     }
     notifyListeners();
   }
 
-  void onTaskDelete(int id) async{
-    switch(_selectedTask){
+  void onTaskDelete(int id) async {
+    switch (_selectedTask) {
       case TaskTypes.DurationTasks:
-         await _db.deleteDurationTask(id);
+        await _db.deleteDurationTask(id);
         break;
       case TaskTypes.StartEndTasks:
         await _db.deleteStartEndTask(id);
@@ -110,34 +125,38 @@ class HomeScreenProvider with ChangeNotifier {
   }
 
   void _getRecentTasksFromDB(List<Task> tasks, TaskTypes taskTypes) {
-    if(tasks.isNotEmpty){
-    _recentTasks=List();
-    switch (taskTypes) {
-      case TaskTypes.DurationTasks:
-        List<DurationTask> durationTasks = tasks;
-        if (tasks.length >= 3) {
-          for (int i = 0; i < 3; i++) {
-            _recentTasks.add(AppUtils.formatDurationTaskToUIListComponenet(durationTasks[i]));
+    if (tasks.isNotEmpty) {
+      _recentTasks = List();
+      switch (taskTypes) {
+        case TaskTypes.DurationTasks:
+          List<DurationTask> durationTasks = tasks;
+          if (tasks.length >= 3) {
+            for (int i = 0; i < 3; i++) {
+              _recentTasks.add(AppUtils.formatDurationTaskToUIListComponenet(
+                  durationTasks[i]));
+            }
+          } else {
+            for (DurationTask task in tasks) {
+              _recentTasks
+                  .add(AppUtils.formatDurationTaskToUIListComponenet(task));
+            }
           }
-        } else {
-          for (DurationTask task in tasks) {
-            _recentTasks.add(AppUtils.formatDurationTaskToUIListComponenet(task));
+          break;
+        case TaskTypes.StartEndTasks:
+          List<StartEndTask> startEndTasks = tasks;
+          if (tasks.length >= 3) {
+            for (int i = 0; i < 3; i++) {
+              _recentTasks.add(AppUtils.formatStartEndTaskToUIListComponenet(
+                  startEndTasks[i]));
+            }
+          } else {
+            for (StartEndTask task in startEndTasks) {
+              _recentTasks
+                  .add(AppUtils.formatStartEndTaskToUIListComponenet(task));
+            }
           }
-        }
-        break;
-      case TaskTypes.StartEndTasks:
-        List<StartEndTask> startEndTasks = tasks;
-        if (tasks.length >= 3) {
-          for (int i = 0; i < 3; i++) {
-            _recentTasks.add(AppUtils.formatStartEndTaskToUIListComponenet(startEndTasks[i]));
-          }
-        } else {
-          for (StartEndTask task in startEndTasks) {
-            _recentTasks.add(AppUtils.formatStartEndTaskToUIListComponenet(task));
-          }
-        }
-        break;
-    }
+          break;
+      }
     }
   }
 
@@ -165,8 +184,10 @@ class HomeScreenProvider with ChangeNotifier {
             DateTime taskDuration =
                 AppUtils.convertMillisecondsSinceEpochToDateTime(
                     task.durationTime);
-            hour += taskDuration.hour;
-            minute += taskDuration.minute;
+            List<int> time = AppUtils.addTime(
+                taskDuration.hour, hour, taskDuration.minute, minute);
+            hour = time[0];
+            minute = time[1];
           }
           return AppUtils.formatTimeToHHMM(hour, minute);
           break;
@@ -180,8 +201,10 @@ class HomeScreenProvider with ChangeNotifier {
             List<int> duration = AppUtils
                 .calculateDurationFromStartAndEndDurationsinHoursAndMinutes(
                     taskStartTime, taskEndTime);
-            hour += duration[0];
-            minute += duration[1];
+            List<int> time =
+                AppUtils.addTime(duration[0], hour, duration[1], minute);
+            hour = time[0];
+            minute = time[1];
           }
           return AppUtils.formatTimeToHHMM(hour, minute);
           break;
@@ -196,21 +219,9 @@ class HomeScreenProvider with ChangeNotifier {
       switch (taskTypes) {
         case TaskTypes.DurationTasks:
           tasks = await _db.getDurationTasks();
-          List<DurationTask> task = tasks;
-          for (int i = 0; i < tasks.length; i++) {
-            print(
-                'duration tasks $i name: ${task[i].taskName},id: ${task[i].id},duration: ${task[i].durationTime}, date: ${task[i].date}');
-          }
           break;
         case TaskTypes.StartEndTasks:
           tasks = await _db.getStartEndTasks();
-          List<StartEndTask> task = tasks;
-          if (task.length > 0) {
-            for (int i = 0; i < tasks.length; i++) {
-              print(
-                  'start/end tasks $i name: ${task[i].taskName},id: ${task[i].id},start: ${task[i].startTime},end: ${task[i].endTime}, date: ${task[i].date}');
-            }
-          }
           break;
       }
     }

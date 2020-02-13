@@ -6,6 +6,7 @@ import 'package:time_tasker/constants.dart';
 import 'package:time_tasker/providers/home_screen_provider.dart';
 import 'package:time_tasker/reusable_widgets/main_screen_reusable_tab.dart';
 import 'package:time_tasker/reusable_widgets/no_tasks_today.dart';
+import 'package:time_tasker/settings_screen.dart';
 
 import '../db_helper.dart';
 
@@ -24,25 +25,25 @@ class _HomeScreenState extends State<HomeScreen> {
             appBar: AppBar(
               leading: IconButton(
                 icon: Icon(
-                  Icons.settings,
-                  color: Colors.grey[700],
-                  size: 20.0,
+                  FontAwesomeIcons.userCog,
+                  color: Colors.blueGrey[700],
+                  size: 15.0,
                 ),
-                onPressed: () async {
-               
+                onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => SettingsScreen()));
                 },
               ),
               actions: <Widget>[
                 IconButton(
                   icon: Icon(
-                    FontAwesomeIcons.plus,
+                    FontAwesomeIcons.solidCalendarPlus,
                     color: Colors.blue[700],
-                    size: 20.0,
+                    size: 15.0,
                   ),
                   onPressed: () async {
                     await Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => AddTaskScreen())).then((onValue){
-                          print('refreshing UI');
                           snapshot.refreshMainScreen();
                         });
                   },
@@ -53,17 +54,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   textAlign: TextAlign.center, style: kAppBarTextStyle),
             ),
             bottomNavigationBar: BottomNavigationBar(
+              selectedItemColor:kMainBlueColor,
+              unselectedItemColor: kTasksDateIconColor2,
               items: <BottomNavigationBarItem>[
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.home),
+                  icon: Icon(FontAwesomeIcons.tasks),
                   title: Text(snapshot.firstNavBarItemName),
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.business),
+                  icon: Icon(FontAwesomeIcons.solidClock),
                   title: Text('Total Time'),
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.school),
+                  icon: Icon(FontAwesomeIcons.stopwatch),
                   title: Text('Total Balance'),
                 ),
               ],
@@ -84,6 +87,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         : MainScreenReusableTab(
                             date: snapshot.currentTabModel.currentDate,
                             mainTitle: snapshot.currentTabModel.mainTitle,
+                            upcomingTask: snapshot.upcomingTask,
+                            taskType: snapshot.selectedTaskType,
                             circularCenterText:
                                 snapshot.currentTabModel.circularCenterText,
                             circlePercent:

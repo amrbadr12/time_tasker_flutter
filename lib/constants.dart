@@ -7,10 +7,12 @@ import 'package:introduction_screen/introduction_screen.dart';
 enum TaskTypes{DurationTasks,StartEndTasks}
 enum TaskAction{TotalTime,TotalBalance}
 
-final String kAppName='TIME TASKER';
+final String kAppName='TimeTasker';
+final String kShowIntroScreenKey='show_intro_screen_key';
+final String kTotalBalanceKey='total_balance_key';
 final kTitleDefaultPaddingHorizontal=20.0;
 final kTitleDefaultPaddingVertical=30.0;
-final TextStyle kAppBarTextStyle= GoogleFonts.lato(fontWeight:FontWeight.bold,fontSize:20.0,color:kDefaultGrey);
+final TextStyle kAppBarTextStyle= GoogleFonts.lato(fontWeight:FontWeight.bold,fontSize:18.0,color:kDefaultGrey);
 final TextStyle kTitleTextStyle= GoogleFonts.quicksand(fontWeight:FontWeight.w500,fontSize:25.0,color:Colors.black);
 final TextStyle kSubTitleTextStyle= kTitleTextStyle.copyWith(color:Colors.grey[700],fontSize:16.0);
 final TextStyle kInputAddTaskLabelTextStyle=kAppBarTextStyle.copyWith(color:Colors.grey[600],fontSize:16.0);

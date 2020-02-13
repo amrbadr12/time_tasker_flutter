@@ -25,7 +25,7 @@ class _AddDurationTaskState extends State<AddDurationTask> {
             child: Container(
                 child: ChangeNotifierProvider<AddNewTaskProvider>(
                     create: (context) =>
-                        AddNewTaskProvider(DBHelper(), TaskTypes.DurationTasks),
+                        AddNewTaskProvider(DBHelper(), TaskTypes.DurationTasks,TextEditingController()),
                     child: Consumer<AddNewTaskProvider>(
                         builder: (context, snapshot, _) {
                       return Column(
@@ -35,7 +35,7 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                               padding: EdgeInsets.symmetric(
                                   horizontal: kMainDefaultPadding),
                               child: Text(
-                                'Create\nNew Duration\nTask',
+                                'Create\nNew Duration\nTask Today',
                                 softWrap: true,
                                 style: kTitleTextStyle.copyWith(
                                     fontSize: 30.0,
@@ -43,8 +43,10 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                               )),
                           AddNewTaskInputWidget(
                             includeStartEndDate: false,
-                            onTaskNameChanged: (name) {
-                              snapshot.taskName = name;
+                            nameController:snapshot.nameController,
+                            previousTasks:snapshot.previousTasks,
+                            onTaskNameSubmitted: (String data){
+                              snapshot.onTaskNameSubmitted(data);
                             },
                             onDurationDateChanged: (value) {
                               snapshot.setPickedDuration(value);
@@ -68,12 +70,12 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                                         color: Colors.white)),
                                 onPressed: () {
                                   snapshot.addNewTaskToDB(() {
-                                    Navigator.of(context).pop();
+                                    Navigator.of(context).popUntil((route)=>route.isFirst);
                                     AppUtils.showFlushBar(
                                         'Success',
                                         'Your Task was added successfully!',
                                         context);
-                                  });
+                                  },(){});
                                 },
                               ),
                             ),
