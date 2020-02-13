@@ -3,7 +3,6 @@ import 'package:introduction_screen/introduction_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:time_tasker/constants.dart';
 import 'package:time_tasker/home_screens/main_home_screen.dart';
-import 'package:time_tasker/home_screens/name_entering_intro_screen.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
 class IntroScreen extends StatefulWidget {
@@ -58,9 +57,9 @@ class _IntroScreenState extends State<IntroScreen> {
         SharedPerferencesUtils utils =
             SharedPerferencesUtils(await SharedPreferences.getInstance());
         utils.saveBoolToSharedPreferences(kShowIntroScreenKey, true);
+        utils.saveIntToSharedPreferences(kTotalBalanceKey, 24);
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => HomeScreen()));
-        print('done button pressed');
       },
       showSkipButton: true,
       skip: const Text("Skip"),

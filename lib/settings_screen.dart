@@ -28,75 +28,62 @@ class _SettingsScreenState extends State<SettingsScreen> {
           elevation: 0.0,
         ),
         body: SingleChildScrollView(
-            child:
-                Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: kMainDefaultPadding),
-                            child: Text(
-                              'Change Your Work Balance',
-                              softWrap: true,
-                              style: kTitleTextStyle.copyWith(
-                                  fontSize: 30.0,
-                                  fontWeight: FontWeight.bold),
-                            )),
-                        SizedBox(
-                          height: 50.0,
-                        ),
-                        Slider(
-                            value: _sliderValue??1.0,
-                            divisions: 24,
-                            label: currentSliderText,
-                            min: 0.0,
-                            max: 24.0,
-                            onChanged: (value) {
-                              setState(() {
-                              _sliderValue=value;
-                              });
-                            }),
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: kMainDefaultPadding),
-                          child: Text(
-                              '$currentSliderText selected',
-                              softWrap: true,
-                              style: kInputAddTaskLabelTextStyle),
-                        ),
-                        SizedBox(
-                          height: kTitleDefaultPaddingVertical,
-                        ),
-                        Align(
-                          alignment: Alignment.bottomCenter,
-                          child: Container(
-                            margin: EdgeInsets.symmetric(
-                                horizontal: kMainDefaultPadding),
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(5.0),
-                                gradient:
-                                    LinearGradient(colors: blueGradient)),
-                            width: double.infinity,
-                            child: FlatButton(
-                              child: Text('Save Changes',
-                                  style: kAppBarTextStyle.copyWith(
-                                      color: Colors.white)),
-                              onPressed: () {
-                                saveSliderItemToLocal(
-                                    _sliderValue.toInt(),
-                                    () {
-                                  AppUtils.showFlushBar(
-                                      'Successful',
-                                      'Changes successfully changed',
-                                      context);
-                                  readSliderItemFromLocal();
-                                });
-                              },
-                            ),
-                          ),
-                        )
-                      ])
-                ));
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+              Padding(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
+                  child: Text(
+                    'Change Your Work Balance',
+                    softWrap: true,
+                    style: kTitleTextStyle.copyWith(
+                        fontSize: 30.0, fontWeight: FontWeight.bold),
+                  )),
+              SizedBox(
+                height: 50.0,
+              ),
+              Slider(
+                  value: _sliderValue ?? 1.0,
+                  divisions: 24,
+                  label: currentSliderText,
+                  min: 0.0,
+                  max: 24.0,
+                  onChanged: (value) {
+                    setState(() {
+                      _sliderValue = value;
+                    });
+                  }),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
+                child: Text('$currentSliderText selected',
+                    softWrap: true, style: kInputAddTaskLabelTextStyle),
+              ),
+              SizedBox(
+                height: kTitleDefaultPaddingVertical,
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  margin: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5.0),
+                      gradient: LinearGradient(colors: blueGradient)),
+                  width: double.infinity,
+                  child: FlatButton(
+                    child: Text('Save Changes',
+                        style: kAppBarTextStyle.copyWith(color: Colors.white)),
+                    onPressed: () {
+                      saveSliderItemToLocal(_sliderValue.toInt(), () {
+                        AppUtils.showFlushBar('Successful',
+                            'Changes successfully changed', context);
+                        readSliderItemFromLocal();
+                      });
+                    },
+                  ),
+                ),
+              )
+            ])));
   }
 
   void getSharedPrefs() async {
@@ -113,15 +100,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-   String get currentSliderText {
-     if(_sliderValue!=null){
-    String sliderValue = '${_sliderValue.toStringAsFixed(0)}';
-    if (_sliderValue == 1.0) {
-      return '$sliderValue hour';
+  String get currentSliderText {
+    if (_sliderValue != null) {
+      String sliderValue = '${_sliderValue.toStringAsFixed(0)}';
+      if (_sliderValue == 1.0) {
+        return '$sliderValue hour';
+      }
+      return '$sliderValue hours';
     }
-    return '$sliderValue hours';
-   }
-   return '';
+    return '';
   }
 
   int readSliderItemFromLocal() {
@@ -129,9 +116,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       int sliderValue;
       setState(() {
         sliderValue =
-          _sharedPreferences.getIntFromSharedPreferences(kTotalBalanceKey);
+            _sharedPreferences.getIntFromSharedPreferences(kTotalBalanceKey);
       });
-      print('slider value is $sliderValue');
       return _sharedPreferences.getIntFromSharedPreferences(kTotalBalanceKey);
     }
     return 0;

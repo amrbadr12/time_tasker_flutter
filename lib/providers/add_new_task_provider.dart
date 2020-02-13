@@ -37,6 +37,8 @@ class AddNewTaskProvider with ChangeNotifier {
         notifyListeners();
         return;
       }
+      else
+      return;
     }
     this._pickedStartTime = startTime;
     this._pickedDurationTime = null;
@@ -44,16 +46,19 @@ class AddNewTaskProvider with ChangeNotifier {
   }
 
   void setPickedEndTime(TimeOfDay endTime) {
+    if(endTime!=null){
     if (_pickedStartTime != null) {
-      if (endTime.hour >= _pickedStartTime.hour &&
-          endTime.minute >= _pickedStartTime.minute) {
-        print('picked end time is more than starttime');
+      if (endTime.hour >= _pickedStartTime.hour) {
+        if (endTime.hour == _pickedStartTime.hour) {
+          if (endTime.minute <= _pickedStartTime.minute) return;
+        }
         this._pickedEndTime = endTime;
         notifyListeners();
       }
     } else {
       this._pickedEndTime = endTime;
       notifyListeners();
+    }
     }
   }
 
@@ -65,7 +70,6 @@ class AddNewTaskProvider with ChangeNotifier {
         for (StartEndTask task in _previousStartEndTasks) {
           if (userStartTimeTask >= task.startTime &&
               userStartTimeTask <= task.endTime) {
-            print('overlapping task...');
             return true;
           }
         }
@@ -78,8 +82,6 @@ class AddNewTaskProvider with ChangeNotifier {
     _errorText = null;
     if (validateDuration(duration)) {
       this._pickedDurationTime = AppUtils.formatHHMMTimeToTimeOfDay(duration);
-      print(
-          'picked duration time ${_pickedDurationTime.hour} and min ${_pickedDurationTime.minute}');
     } else {
       _errorText = 'Duration has to be in HH:MM format.';
     }
@@ -93,7 +95,6 @@ class AddNewTaskProvider with ChangeNotifier {
       if (validateTaskInputs()) {
         switch (_currentTaskType) {
           case TaskTypes.DurationTasks:
-            print(_nameController.text);
             DurationTask task = DurationTask(
                 null,
                 _nameController.text.trim(),
@@ -130,22 +131,9 @@ class AddNewTaskProvider with ChangeNotifier {
       switch (taskTypes) {
         case TaskTypes.DurationTasks:
           tasks = await _db.getDurationTasks();
-          List<DurationTask> task = tasks;
-          for (int i = 0; i < tasks.length; i++) {
-            print(
-                'duration tasks $i name: ${task[i].taskName},id: ${task[i].id},duration: ${task[i].durationTime}, date: ${task[i].date}');
-          }
           break;
         case TaskTypes.StartEndTasks:
           tasks = await _db.getStartEndTasks();
-          List<StartEndTask> task = tasks;
-          _previousStartEndTasks = task;
-          if (task.length > 0) {
-            for (int i = 0; i < tasks.length; i++) {
-              print(
-                  'start/end tasks $i name: ${task[i].taskName},id: ${task[i].id},start: ${task[i].startTime},end: ${task[i].endTime}, date: ${task[i].date}');
-            }
-          }
           break;
       }
     }
@@ -216,10 +204,10 @@ class AddNewTaskProvider with ChangeNotifier {
     if (_pickedStartTime != null && _pickedEndTime != null) {
       if (_pickedStartTime.hour.toString().isNotEmpty &&
           _pickedEndTime.hour.toString().isNotEmpty) {
-        String durationHours = AppUtils.formatTimeToTwoDecimals(
-            _pickedEndTime.hour - _pickedStartTime.hour);
-        String durationMinutes = AppUtils.formatTimeToTwoDecimals(
-            _pickedEndTime.minute - _pickedStartTime.minute);
+            List<int>duration=AppUtils.calculateDuration(_pickedStartTime.hour, _pickedEndTime.hour,_pickedStartTime.minute,
+            _pickedEndTime.minute);
+        String durationHours = AppUtils.formatTimeToTwoDecimals(duration[0]);
+        String durationMinutes = AppUtils.formatTimeToTwoDecimals(duration[1]);
         return 'Total Duration: $durationHours h: $durationMinutes m';
       }
     }

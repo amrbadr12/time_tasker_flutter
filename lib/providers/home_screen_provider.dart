@@ -85,7 +85,7 @@ class HomeScreenProvider with ChangeNotifier {
       if (_selectedTask == TaskTypes.StartEndTasks) {
         List<StartEndTask> todayStartEndTasks = AppUtils.getTheTodayUpcomingTasks(todayDurationTasks.cast());
         //_upcomingTask =null;
-          _upcomingTask=AppUtils.getUpcomingTask(todayStartEndTasks);
+        _upcomingTask=AppUtils.getUpcomingTask(todayStartEndTasks);
         notifyListeners();
       }
       _getRecentTasksFromDB(tasks, _selectedTask);
@@ -100,7 +100,6 @@ class HomeScreenProvider with ChangeNotifier {
         int userTotalBalance=sharedPerferencesUtils.getIntFromSharedPreferences(kTotalBalanceKey);
           int totalBalance =
               AppUtils.calculateTimeBalanceFromFormattedTime(_totalTime, userTotalBalance);
-              print('total balance is $totalBalance');
           _setTotalBalanceForTaskType(
               AppUtils.formatTimeToHHMM(
                   totalBalance,
@@ -198,9 +197,8 @@ class HomeScreenProvider with ChangeNotifier {
                     task.startTime);
             DateTime taskEndTime =
                 AppUtils.convertMillisecondsSinceEpochToDateTime(task.endTime);
-            List<int> duration = AppUtils
-                .calculateDurationFromStartAndEndDurationsinHoursAndMinutes(
-                    taskStartTime, taskEndTime);
+            List<int> duration = AppUtils.calculateDuration(
+              taskStartTime.hour, taskEndTime.hour, taskStartTime.minute, taskEndTime.minute);
             List<int> time =
                 AppUtils.addTime(duration[0], hour, duration[1], minute);
             hour = time[0];
