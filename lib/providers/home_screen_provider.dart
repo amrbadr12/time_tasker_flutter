@@ -88,7 +88,8 @@ class HomeScreenProvider with ChangeNotifier {
         _upcomingTask=AppUtils.getUpcomingTask(todayStartEndTasks);
         notifyListeners();
       }
-      _getRecentTasksFromDB(tasks, _selectedTask);
+      //_getRecentTasksFromDB(tasks, _selectedTask);
+      _getRecentTasksFromDB(todayDurationTasks, _selectedTask);
       _totalTime = calculateTotalTimeinHHMMFormat(todayDurationTasks);
       switch (action) {
         case TaskAction.TotalTime:
@@ -128,31 +129,17 @@ class HomeScreenProvider with ChangeNotifier {
       _recentTasks = List();
       switch (taskTypes) {
         case TaskTypes.DurationTasks:
-          List<DurationTask> durationTasks = tasks;
-          if (tasks.length >= 3) {
-            for (int i = 0; i < 3; i++) {
-              _recentTasks.add(AppUtils.formatDurationTaskToUIListComponenet(
-                  durationTasks[i]));
-            }
-          } else {
-            for (DurationTask task in tasks) {
+          List<DurationTask> durationTasks = tasks.cast();
+            for (DurationTask task in durationTasks) {
               _recentTasks
                   .add(AppUtils.formatDurationTaskToUIListComponenet(task));
-            }
           }
           break;
         case TaskTypes.StartEndTasks:
-          List<StartEndTask> startEndTasks = tasks;
-          if (tasks.length >= 3) {
-            for (int i = 0; i < 3; i++) {
-              _recentTasks.add(AppUtils.formatStartEndTaskToUIListComponenet(
-                  startEndTasks[i]));
-            }
-          } else {
+          List<StartEndTask> startEndTasks = tasks.cast();
             for (StartEndTask task in startEndTasks) {
               _recentTasks
                   .add(AppUtils.formatStartEndTaskToUIListComponenet(task));
-            }
           }
           break;
       }

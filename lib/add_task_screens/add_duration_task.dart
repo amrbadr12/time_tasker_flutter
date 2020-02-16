@@ -35,7 +35,7 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                               padding: EdgeInsets.symmetric(
                                   horizontal: kMainDefaultPadding),
                               child: Text(
-                                'Create\nNew Duration\nTask Today',
+                                'Create\nnew task\nby adding the duration of completing each task',
                                 softWrap: true,
                                 style: kTitleTextStyle.copyWith(
                                     fontSize: 30.0,

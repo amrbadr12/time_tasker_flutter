@@ -44,7 +44,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: () async {
                     await Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => AddTaskScreen())).then((onValue){
-                          snapshot.refreshMainScreen();
+                          try {
+                            if(snapshot!=null)
+                            snapshot.refreshMainScreen();
+                          }catch(e){}
                         });
                   },
                 ),

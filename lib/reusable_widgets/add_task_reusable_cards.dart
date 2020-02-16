@@ -15,7 +15,7 @@ class AddTaskReusableCard extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Card(
-          elevation: 5.0,
+          elevation: 2.0,
           child: Container(
             height: 300.0,
             decoration: BoxDecoration(

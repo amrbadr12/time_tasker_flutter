@@ -35,7 +35,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   padding:
                       EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
                   child: Text(
-                    'Change Your Work Balance',
+                    'Change time frame to calculate your tasks',
                     softWrap: true,
                     style: kTitleTextStyle.copyWith(
                         fontSize: 30.0, fontWeight: FontWeight.bold),
