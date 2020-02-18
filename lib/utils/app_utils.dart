@@ -113,6 +113,7 @@ class AppUtils {
     List<StartEndTask> upcomingTasks = List();
     for (StartEndTask task in tasks) {
       if (currentTimeInSeconds() < task.startTime) {
+        print('task added ${task.taskName}');
         upcomingTasks.add(task);
       }
     }

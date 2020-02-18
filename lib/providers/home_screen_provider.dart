@@ -153,6 +153,7 @@ class HomeScreenProvider with ChangeNotifier {
         bool isToday = AppUtils.checkIfDateIsToday(
             AppUtils.convertMillisecondsSinceEpochToDateTime(task.date));
         if (isToday) {
+          print('today task ${task.taskName}');
           result.add(task);
         }
       }
