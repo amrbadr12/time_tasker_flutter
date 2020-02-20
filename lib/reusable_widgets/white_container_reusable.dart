@@ -8,7 +8,7 @@ class WhiteReusableContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(left:horizontalMargin??0.0,top:verticalMargin??0.0,right:horizontalMargin??0.0),
+      margin: EdgeInsets.only(left:horizontalMargin??0.0,right:horizontalMargin??0.0),
             decoration: BoxDecoration(
               color: Colors.white,
               border: Border.all(color: Colors.grey[300]),

@@ -19,7 +19,10 @@ class AddTaskReusableCard extends StatelessWidget {
           child: Container(
             height: 300.0,
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: blueGradient),
               borderRadius: BorderRadius.circular(5.0),
             ),
             child: Column(
@@ -36,7 +39,7 @@ class AddTaskReusableCard extends StatelessWidget {
                 ),
                 Text(
                   cardText,
-                  style: kSubTitleTextStyle,
+                  style: kAppBarTextStyle.copyWith(color: Colors.white),
                   textAlign: TextAlign.center,
                   softWrap: true,
                 )
@@ -54,23 +57,27 @@ class DateInputField extends StatelessWidget {
   final String text;
   final Color containerColor;
   final Function onDateChanged;
-  DateInputField({this.icon,this.text,this.onDateChanged,this.containerColor});
+  DateInputField(
+      {this.icon, this.text, this.onDateChanged, this.containerColor});
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.all(0.0),
-      title:Text(text,style:kSubTitleTextStyle,),
-      leading:Container(
-        decoration:BoxDecoration(
-          color:containerColor,
+      title: Text(
+        text,
+        style: kSubTitleTextStyle,
+      ),
+      leading: Container(
+        decoration: BoxDecoration(
+          color: containerColor,
           borderRadius: BorderRadius.circular(5.0),
         ),
-        width:30.0,
-        height:30.0,
-        child:Center(child: icon),
+        width: 30.0,
+        height: 30.0,
+        child: Center(child: icon),
       ),
-      onTap:onDateChanged,
+      onTap: onDateChanged,
     );
   }
 }

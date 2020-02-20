@@ -1,11 +1,13 @@
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:time_tasker/constants.dart';
 import 'package:time_tasker/reusable_widgets/add_task_reusable_cards.dart';
 
 class AddNewTaskInputWidget extends StatelessWidget {
   final TextEditingController nameController;
+  final TextEditingController durationController;
   final bool includeStartEndDate;
   final Function onStartDateChanged;
   final String startDateText;
@@ -18,9 +20,11 @@ class AddNewTaskInputWidget extends StatelessWidget {
   final Function onTaskNameSubmitted;
   final Function onFilterItems;
   final Function resetTime;
+  final MaskTextInputFormatter maskTextInputFormatter;
 
   AddNewTaskInputWidget(
       {this.nameController,
+      this.durationController,
       this.onTaskNameSubmitted,
       this.includeStartEndDate,
       this.errorText,
@@ -32,7 +36,8 @@ class AddNewTaskInputWidget extends StatelessWidget {
       this.endDateText,
       this.onDurationDateChanged,
       this.resetTime,
-      this.durationText});
+      this.durationText,
+      this.maskTextInputFormatter});
 
   @override
   Widget build(BuildContext context) {
@@ -119,8 +124,10 @@ class AddNewTaskInputWidget extends StatelessWidget {
             visible: !includeStartEndDate ?? false,
             child: TextField(
               onChanged: onDurationDateChanged,
+              //controller:durationController,
               style: kInputAddTaskLabelTextStyle,
               maxLength: 5,
+              inputFormatters:[maskTextInputFormatter],
               keyboardType: TextInputType.datetime,
               decoration: InputDecoration(
                 errorText: errorText,

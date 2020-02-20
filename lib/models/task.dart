@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:time_tasker/constants.dart';
 
 abstract class Task {
   int id;
@@ -12,14 +13,16 @@ class UITask{
   String taskName;
   String duration;
   Color color;
+  TaskTypes tasktype;
   String date;
 
-  UITask(id,name,duration,color,date){
+  UITask(id,name,duration,color,date,type){
     this.id=id;
     this.taskName=name;
     this.duration=duration;
     this.color=color;
     this.date=date;
+    this.tasktype=type;
   }
 
   @override

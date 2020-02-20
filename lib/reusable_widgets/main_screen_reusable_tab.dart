@@ -15,6 +15,8 @@ class MainScreenReusableTab extends StatelessWidget {
   final UITask upcomingTask;
   final List<UITask> recentTasksList;
   final String taskType;
+  final Function onAddButtonTap;
+  final Function onReset;
 
   MainScreenReusableTab(
       {this.date,
@@ -24,7 +26,9 @@ class MainScreenReusableTab extends StatelessWidget {
       this.upcomingTask,
       this.taskType,
       this.onTaskDelete,
-      this.recentTasksList});
+      this.recentTasksList,
+      this.onAddButtonTap,
+      this.onReset});
 
   @override
   Widget build(BuildContext context) {
@@ -117,11 +121,14 @@ class MainScreenReusableTab extends StatelessWidget {
                   color: Colors.blue.shade600,
                   elevation: 5.0,
                   child: ListTile(
-                    title: Text(upcomingTask!=null?
-                      upcomingTask.taskName.toUpperCase():'',
+                    title: Text(
+                      upcomingTask != null
+                          ? upcomingTask.taskName.toUpperCase()
+                          : '',
                       style: TextStyle(color: Colors.white, fontSize: 20.0),
                     ),
-                    subtitle: Text(upcomingTask!=null?upcomingTask.date:'',
+                    subtitle: Text(
+                        upcomingTask != null ? upcomingTask.date : '',
                         style: TextStyle(color: Colors.grey[100])),
                     leading: Icon(FontAwesomeIcons.dotCircle,
                         color: Colors.blue.shade200),
@@ -136,18 +143,52 @@ class MainScreenReusableTab extends StatelessWidget {
           Divider(
             thickness: 2.0,
           ),
+          SizedBox(
+            height: kMainDefaultHeightPadding,
+          ),
           WhiteReusableContainer(
-            verticalMargin: kMainDefaultHeightPadding,
             horizontalMargin: kMainDefaultHeightPadding,
             containerChild: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Flexible(
-                  child: Padding(
-                    padding: EdgeInsets.all(15.0),
-                    child: Text('Recorded Tasks', style: kSubTitleTextStyle),
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Flexible(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 15.0),
+                        child:
+                            Text('Recorded Tasks', style: kSubTitleTextStyle),
+                      ),
+                    ),
+                    Expanded(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: <Widget>[
+                          IconButton(
+                            padding: EdgeInsets.all(0.0),
+                            icon: Icon(
+                              Icons.restore,
+                              size: 20.0,
+                              color: Colors.blue[700],
+                            ),
+                            onPressed: onReset,
+                          ),
+                          IconButton(
+                            padding: EdgeInsets.all(0.0),
+                            icon: Icon(
+                              FontAwesomeIcons.plus,
+                              color: Colors.blue[700],
+                              size: 15.0,
+                            ),
+                            onPressed: onAddButtonTap,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
                 ListView.builder(
                     itemCount:
@@ -157,12 +198,10 @@ class MainScreenReusableTab extends StatelessWidget {
                     itemBuilder: (BuildContext context, int index) {
                       return Dismissible(
                         onDismissed: (direction) {
-                          print(recentTasksList[index].id);
                           onTaskDelete(recentTasksList[index].id);
                         },
                         child: ListTile(
                           title: Text(recentTasksList[index].taskName),
-                          subtitle: Text(recentTasksList[index].date),
                           leading: Icon(FontAwesomeIcons.dotCircle,
                               color: kTasksDateIconColor2),
                           trailing: Text(recentTasksList[index].duration),

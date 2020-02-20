@@ -7,6 +7,8 @@ import 'package:time_tasker/home_screens/main_home_screen.dart';
 import 'package:time_tasker/intro_screens/intro_screen.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
+import 'add_task_screens/add_task_screen.dart';
+
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -27,7 +29,7 @@ class MyApp extends StatelessWidget {
             ),
             primarySwatch: Colors.blue),
         home: FutureBuilder<Widget>(
-          future: showIntroOrHomeScreen(), // async work
+          future: showIntroOrHomeScreen(),
           builder: (BuildContext context, AsyncSnapshot<Widget> snapshot) {
             switch (snapshot.connectionState) {
               case ConnectionState.waiting:
@@ -52,8 +54,8 @@ class MyApp extends StatelessWidget {
     SharedPerferencesUtils utils =
         SharedPerferencesUtils(await SharedPreferences.getInstance());
     bool showHome = utils.getBoolFromSharedPreferences(kShowIntroScreenKey);
-    int currentslider = utils.getIntFromSharedPreferences(kTotalBalanceKey);
-    print('current slider is $currentslider');
-    return showHome ? HomeScreen() : IntroScreen();
+    //int currentSlider = utils.getIntFromSharedPreferences(kTotalBalanceKey);
+    //print('current slider is $currentslider');
+    return showHome ? AddTaskScreen(true) : IntroScreen();
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:provider/provider.dart';
 import 'package:time_tasker/db_helper.dart';
 import 'package:time_tasker/providers/add_new_task_provider.dart';
@@ -13,6 +14,12 @@ class AddDurationTask extends StatefulWidget {
 }
 
 class _AddDurationTaskState extends State<AddDurationTask> {
+  MaskTextInputFormatter mask;
+  @override
+  void initState() {
+    mask= MaskTextInputFormatter(mask: '##:##');
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,7 +42,7 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                               padding: EdgeInsets.symmetric(
                                   horizontal: kMainDefaultPadding),
                               child: Text(
-                                'Create\nnew task\nby adding the duration of completing each task',
+                                'Add the duration\nof your task',
                                 softWrap: true,
                                 style: kTitleTextStyle.copyWith(
                                     fontSize: 30.0,
@@ -43,6 +50,7 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                               )),
                           AddNewTaskInputWidget(
                             includeStartEndDate: false,
+                            maskTextInputFormatter:mask,
                             nameController:snapshot.nameController,
                             previousTasks:snapshot.previousTasks,
                             onTaskNameSubmitted: (String data){

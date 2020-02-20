@@ -9,7 +9,8 @@ enum TaskAction{TotalTime,TotalBalance}
 
 final String kAppName='TimeTasker';
 final String kShowIntroScreenKey='show_intro_screen_key';
-final String kTotalBalanceKey='total_balance_key';
+final String kTotalBalanceHoursKey='total_balance_hours_key';
+final String kTotalBalancMinutesKey='total_balance_minutes_key';
 final kTitleDefaultPaddingHorizontal=20.0;
 final kTitleDefaultPaddingVertical=30.0;
 final TextStyle kAppBarTextStyle= GoogleFonts.lato(fontWeight:FontWeight.bold,fontSize:18.0,color:kDefaultGrey);

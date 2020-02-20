@@ -9,24 +9,26 @@ import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
 class HomeScreenProvider with ChangeNotifier {
   int currentBottomNavBarIndex = 0;
-  String _firstNavBarItemName = 'Duration Tasks';
+  String _firstNavBarItemName;
   TabModel _currentTabModel;
   String _totalTime;
   String _totalBalance;
   List<UITask> _recentTasks;
   UITask _upcomingTask;
-  TaskTypes _selectedTask = TaskTypes.DurationTasks;
+  TaskTypes _selectedTask;
   bool _noTodayTasks;
-  String _selectedTaskType = "Duration";
+  String _selectedTaskType;
   DBHelper _db;
 
-  HomeScreenProvider(this._db) {
+  HomeScreenProvider(this._db, this._selectedTask) {
+    _setTaskType();
     _setTasksData(TaskAction.TotalTime);
     _recentTasks = [];
   }
 
   TabModel get currentTabModel => _currentTabModel;
   String get firstNavBarItemName => _firstNavBarItemName;
+  String get selectedTaskTypes => _selectedTaskType;
   String get totalTime => _totalTime;
   bool get noTodayTasks => _noTodayTasks;
   String get totalBalance => _totalBalance;
@@ -34,19 +36,16 @@ class HomeScreenProvider with ChangeNotifier {
   String get selectedTaskType => _selectedTaskType;
   List<UITask> get recentTasks => _recentTasks;
 
-  void onBottomNavBarTap(int index) {
+  void onBottomNavBarTap(int index, Function dialogCallback) async {
     currentBottomNavBarIndex = index;
     switch (index) {
       case 0:
-        if (_firstNavBarItemName == 'Duration Tasks') {
-          _firstNavBarItemName = 'Start/End Tasks';
+        displayResetDialog(dialogCallback);
+        if (_firstNavBarItemName == 'Duration Tasks')
           _selectedTask = TaskTypes.StartEndTasks;
-          _selectedTaskType = 'Start/End';
-        } else {
-          _firstNavBarItemName = 'Duration Tasks';
+        else
           _selectedTask = TaskTypes.DurationTasks;
-          _selectedTaskType = 'Duration';
-        }
+        _setTaskType();
         _setTasksData(TaskAction.TotalTime);
         break;
       case 1:
@@ -64,7 +63,21 @@ class HomeScreenProvider with ChangeNotifier {
     currentBottomNavBarIndex == 0
         ? index = 1
         : index = currentBottomNavBarIndex;
-    onBottomNavBarTap(index);
+    onBottomNavBarTap(index, () {});
+  }
+
+  onTaskAddButtonTap(Function navigateToDurationCallback,
+      Function navigateToStartEndCallback) {
+    if (_selectedTask != null) {
+      switch (_selectedTask) {
+        case TaskTypes.DurationTasks:
+          navigateToDurationCallback();
+          break;
+        case TaskTypes.StartEndTasks:
+          navigateToStartEndCallback();
+          break;
+      }
+    }
   }
 
   void _setTasksData(TaskAction action) async {
@@ -83,9 +96,10 @@ class HomeScreenProvider with ChangeNotifier {
     } else {
       _noTodayTasks = false;
       if (_selectedTask == TaskTypes.StartEndTasks) {
-        List<StartEndTask> todayStartEndTasks = AppUtils.getTheTodayUpcomingTasks(todayDurationTasks.cast());
+        List<StartEndTask> todayStartEndTasks =
+            AppUtils.getTheTodayUpcomingTasks(todayDurationTasks.cast());
         //_upcomingTask =null;
-        _upcomingTask=AppUtils.getUpcomingTask(todayStartEndTasks);
+        _upcomingTask = AppUtils.getUpcomingTask(todayStartEndTasks);
         notifyListeners();
       }
       //_getRecentTasksFromDB(tasks, _selectedTask);
@@ -97,15 +111,19 @@ class HomeScreenProvider with ChangeNotifier {
               AppUtils.calculateTimePercentFromFormattedTime(_totalTime, 24));
           break;
         case TaskAction.TotalBalance:
-        SharedPerferencesUtils sharedPerferencesUtils=SharedPerferencesUtils(await SharedPreferences.getInstance());
-        int userTotalBalance=sharedPerferencesUtils.getIntFromSharedPreferences(kTotalBalanceKey);
-          int totalBalance =
-              AppUtils.calculateTimeBalanceFromFormattedTime(_totalTime, userTotalBalance);
+          SharedPerferencesUtils sharedPerferencesUtils =
+              SharedPerferencesUtils(await SharedPreferences.getInstance());
+          int userTotalHourBalance = sharedPerferencesUtils
+              .getIntFromSharedPreferences(kTotalBalanceHoursKey);
+          int userTotalMinutesBalance = sharedPerferencesUtils
+              .getIntFromSharedPreferences(kTotalBalancMinutesKey);
+          List<int> totalBalance =
+              AppUtils.calculateTimeBalanceFromFormattedTime(
+                  _totalTime, userTotalHourBalance, userTotalMinutesBalance);
           _setTotalBalanceForTaskType(
-              AppUtils.formatTimeToHHMM(
-                  totalBalance,
-                  0),
-              AppUtils.calculateTimePercentFromTotalBalance(totalBalance, userTotalBalance));
+              AppUtils.formatTimeToHHMM(totalBalance[0], totalBalance[1]),
+              AppUtils.calculateTimePercentFromTotalBalance(
+                  totalBalance[0], userTotalHourBalance));
           break;
       }
     }
@@ -124,22 +142,41 @@ class HomeScreenProvider with ChangeNotifier {
     refreshMainScreen();
   }
 
+  void deleteAllTodaysTasksForTaskType() async {
+    if (_recentTasks != null) {
+      if (_recentTasks.isNotEmpty) {
+        for (UITask task in _recentTasks) {
+          task.tasktype == TaskTypes.DurationTasks
+              ? await _db.deleteDurationTask(task.id)
+              : await _db.deleteStartEndTask(task.id);
+        }
+      }
+      refreshMainScreen();
+    }
+  }
+
+  void displayResetDialog(Function dialogCallback) {
+      if (!noTodayTasks) {
+        dialogCallback();
+      }
+  }
+
   void _getRecentTasksFromDB(List<Task> tasks, TaskTypes taskTypes) {
     if (tasks.isNotEmpty) {
       _recentTasks = List();
       switch (taskTypes) {
         case TaskTypes.DurationTasks:
           List<DurationTask> durationTasks = tasks.cast();
-            for (DurationTask task in durationTasks) {
-              _recentTasks
-                  .add(AppUtils.formatDurationTaskToUIListComponenet(task));
+          for (DurationTask task in durationTasks) {
+            _recentTasks
+                .add(AppUtils.formatDurationTaskToUIListComponenet(task));
           }
           break;
         case TaskTypes.StartEndTasks:
           List<StartEndTask> startEndTasks = tasks.cast();
-            for (StartEndTask task in startEndTasks) {
-              _recentTasks
-                  .add(AppUtils.formatStartEndTaskToUIListComponenet(task));
+          for (StartEndTask task in startEndTasks) {
+            _recentTasks
+                .add(AppUtils.formatStartEndTaskToUIListComponenet(task));
           }
           break;
       }
@@ -153,7 +190,6 @@ class HomeScreenProvider with ChangeNotifier {
         bool isToday = AppUtils.checkIfDateIsToday(
             AppUtils.convertMillisecondsSinceEpochToDateTime(task.date));
         if (isToday) {
-          print('today task ${task.taskName}');
           result.add(task);
         }
       }
@@ -185,8 +221,8 @@ class HomeScreenProvider with ChangeNotifier {
                     task.startTime);
             DateTime taskEndTime =
                 AppUtils.convertMillisecondsSinceEpochToDateTime(task.endTime);
-            List<int> duration = AppUtils.calculateDuration(
-              taskStartTime.hour, taskEndTime.hour, taskStartTime.minute, taskEndTime.minute);
+            List<int> duration = AppUtils.calculateDuration(taskStartTime.hour,
+                taskEndTime.hour, taskStartTime.minute, taskEndTime.minute);
             List<int> time =
                 AppUtils.addTime(duration[0], hour, duration[1], minute);
             hour = time[0];
@@ -215,12 +251,27 @@ class HomeScreenProvider with ChangeNotifier {
   }
 
   void _setTotalTimeForTaskType(String totalTime, double percent) {
-    _currentTabModel = TabModel(
-        kTodayText, kYourTotalTimeText, totalTime, percent, _selectedTask);
+    _currentTabModel = TabModel(AppUtils.formatNowDateToMMDDYYYY(),
+        kYourTotalTimeText, totalTime, percent, _selectedTask);
   }
 
   void _setTotalBalanceForTaskType(String totalBalance, double percent) {
-    _currentTabModel = TabModel(kTodayText, kYourTotalBalanceText, totalBalance,
-        percent, _selectedTask);
+    _currentTabModel = TabModel(AppUtils.formatNowDateToMMDDYYYY(),
+        kYourTotalBalanceText, totalBalance, percent, _selectedTask);
+  }
+
+  void _setTaskType() {
+    if (_selectedTask != null) {
+      switch (_selectedTask) {
+        case TaskTypes.DurationTasks:
+          _firstNavBarItemName = 'Duration Tasks';
+          _selectedTaskType = "Duration";
+          break;
+        case TaskTypes.StartEndTasks:
+          _firstNavBarItemName = 'Start/End Tasks';
+          _selectedTaskType = 'Start/End';
+          break;
+      }
+    }
   }
 }

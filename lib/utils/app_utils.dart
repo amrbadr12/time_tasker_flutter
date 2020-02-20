@@ -56,6 +56,21 @@ class AppUtils {
     return [resultHour, resultMinute];
   }
 
+static List<int> minusTime(
+      int endHour, int startHour, int endMinute, int startMinute) {
+    int resultMinute;
+    int resultHour;
+    if (endMinute - startMinute >= 0) {
+      resultMinute = endMinute - startMinute;
+      resultHour = endHour - startHour;
+    } else {
+      resultHour = endHour - startHour - 1;
+      resultMinute = (endMinute - startMinute) + 60;
+    }
+    return [resultHour, resultMinute];
+  }
+  
+
   static List<int> calculateDuration(
       int startHour, int endHour, int startMinute, int endMinute) {
     int resultMinute = endMinute - startMinute;
@@ -94,9 +109,17 @@ class AppUtils {
   }
 
   static String formatTimeToHHMM(int hour, int minute) {
+    String hourMinute = hour >= 1 ? 'h' : 'm';
     String formattedHour = formatTimeToTwoDecimals(hour);
     String formattedMinute = formatTimeToTwoDecimals(minute);
-    return '$formattedHour:$formattedMinute h';
+    return '$formattedHour:$formattedMinute $hourMinute';
+  }
+
+  static String formatNowDateToMMDDYYYY() {
+    DateTime now = DateTime.now();
+    var formatter = new DateFormat('MM:dd:yyyy');
+    String formatted = formatter.format(now);
+    return formatted;
   }
 
   static double calculateTimePercentFromFormattedTime(
@@ -122,7 +145,7 @@ class AppUtils {
 
   static UITask getUpcomingTask(List<StartEndTask> tasks) {
     if (tasks == null) return null;
-    if(tasks.length==0) return null;
+    if (tasks.length == 0) return null;
     UITask result;
     StartEndTask nearestTask;
     DateTime nowDate =
@@ -153,9 +176,8 @@ class AppUtils {
     int time;
     String timeFormat;
 
-    if (calculatedDate[0] <= 0 && calculatedDate[1] <= 0) 
-      return null;
-    
+    if (calculatedDate[0] <= 0 && calculatedDate[1] <= 0) return null;
+
     if (calculatedDate[0] == 0) {
       time = calculatedDate[1];
       timeFormat = 'minutes';
@@ -164,7 +186,7 @@ class AppUtils {
       calculatedDate[0] == 1 ? timeFormat = 'hour' : timeFormat = 'hours';
     }
     String resultText = 'in $time $timeFormat';
-    result = UITask(0, nearestTask.taskName, '', Colors.white, resultText);
+    result = UITask(0, nearestTask.taskName, '', Colors.white, resultText,TaskTypes.StartEndTasks);
     return result;
   }
 
@@ -176,19 +198,22 @@ class AppUtils {
     return hour / defaultFormat;
   }
 
-  static int calculateTimeBalanceFromFormattedTime(
-      String formattedTime, int defaultFormat) {
-    int userFormat = 24;
-    if (defaultFormat != null && defaultFormat != 0) userFormat = defaultFormat;
+  static List<int> calculateTimeBalanceFromFormattedTime(
+      String formattedTime, int defaultHourFormat,int defaultMinuteFormat) {
+    int hourFormat = 24;
+    int minuteFormat=0;
+    if (defaultHourFormat != null && defaultHourFormat != 0) 
+    {hourFormat = defaultHourFormat;
+    minuteFormat=defaultMinuteFormat;
+    }
     List<String> time = formattedTime.split(':');
     if (time.length >= 1) {
       int hour = int.parse(time[0]);
-      if (userFormat - hour <= 0) 
-        return 0;
-
-      return userFormat - hour;
+      int minute=int.parse(time[1].substring(0,2));
+      if (hourFormat - hour <= 0||minuteFormat-minute<=0) return [0,0];
+      return minusTime(hourFormat, hour, minuteFormat, minute);
     }
-    return 0;
+    return [];
   }
 
   static Color getRandomColor() {
@@ -211,7 +236,8 @@ class AppUtils {
         task.taskName,
         formatTimeToHHMM(duration.hour, duration.minute),
         getRandomColor(),
-        Jiffy(date).fromNow());
+        Jiffy(date).fromNow(),
+        TaskTypes.DurationTasks);
     return uiTask;
   }
 
@@ -228,7 +254,8 @@ class AppUtils {
         task.taskName,
         formatTimeToHHMM(duration[0], duration[1]),
         getRandomColor(),
-        Jiffy(date).fromNow());
+        Jiffy(date).fromNow(),
+        TaskTypes.StartEndTasks);
     return uiTask;
   }
 }

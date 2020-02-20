@@ -35,6 +35,8 @@ dependencies:
   shared_preferences: ^0.5.6+1
   jiffy: ^2.2.0
   autocomplete_textfield: ^1.7.3
+  mask_text_input_formatter: ^1.0.6
+
   
 dev_dependencies:
   flutter_test:

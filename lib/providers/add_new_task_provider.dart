@@ -13,6 +13,7 @@ class AddNewTaskProvider with ChangeNotifier {
   String _errorText;
   DBHelper _db;
   TextEditingController _nameController;
+  TextEditingController _durationController;
   List<String> _previousTasks;
   List<StartEndTask> _previousStartEndTasks;
 
@@ -23,6 +24,7 @@ class AddNewTaskProvider with ChangeNotifier {
   String get errorText => _errorText;
   List<String> get previousTasks => _previousTasks;
   TextEditingController get nameController => _nameController;
+  TextEditingController get durationController => _durationController;
   List<StartEndTask> get previousStartEndaTasks => _previousStartEndTasks;
 
   void onTaskNameSubmitted(String task) {
@@ -36,9 +38,8 @@ class AddNewTaskProvider with ChangeNotifier {
         this._pickedStartTime = startTime;
         notifyListeners();
         return;
-      }
-      else
-      return;
+      } else
+        return;
     }
     this._pickedStartTime = startTime;
     this._pickedDurationTime = null;
@@ -46,19 +47,19 @@ class AddNewTaskProvider with ChangeNotifier {
   }
 
   void setPickedEndTime(TimeOfDay endTime) {
-    if(endTime!=null){
-    if (_pickedStartTime != null) {
-      if (endTime.hour >= _pickedStartTime.hour) {
-        if (endTime.hour == _pickedStartTime.hour) {
-          if (endTime.minute <= _pickedStartTime.minute) return;
+    if (endTime != null) {
+      if (_pickedStartTime != null) {
+        if (endTime.hour >= _pickedStartTime.hour) {
+          if (endTime.hour == _pickedStartTime.hour) {
+            if (endTime.minute <= _pickedStartTime.minute) return;
+          }
+          this._pickedEndTime = endTime;
+          notifyListeners();
         }
+      } else {
         this._pickedEndTime = endTime;
         notifyListeners();
       }
-    } else {
-      this._pickedEndTime = endTime;
-      notifyListeners();
-    }
     }
   }
 
@@ -83,7 +84,7 @@ class AddNewTaskProvider with ChangeNotifier {
     if (validateDuration(duration)) {
       this._pickedDurationTime = AppUtils.formatHHMMTimeToTimeOfDay(duration);
     } else {
-      _errorText = 'Duration has to be in HH:MM format.';
+      _errorText = 'Please enter a valid duration.';
     }
     notifyListeners();
   }
@@ -108,7 +109,7 @@ class AddNewTaskProvider with ChangeNotifier {
             if (!checkIfOverlappingTask()) {
               StartEndTask task = StartEndTask(
                   null,
-                  nameController.text.trim(),
+                  _nameController.text.trim(),
                   AppUtils.formatTimeOfDayToTimeInSeconds(_pickedStartTime),
                   AppUtils.formatTimeOfDayToTimeInSeconds(_pickedEndTime),
                   AppUtils.currentTimeInSeconds());
@@ -160,11 +161,13 @@ class AddNewTaskProvider with ChangeNotifier {
   bool validateTaskInputs() {
     switch (_currentTaskType) {
       case TaskTypes.DurationTasks:
-        if (nameController.text != null && _pickedDurationTime != null)
-          return true;
+        if (nameController.text != null &&
+            _pickedDurationTime != null &&
+            nameController.text.isNotEmpty) return true;
         return false;
       case TaskTypes.StartEndTasks:
         if (nameController.text != null &&
+            nameController.text.isNotEmpty &&
             _pickedStartTime != null &&
             _pickedEndTime != null) return true;
         return false;
@@ -204,7 +207,10 @@ class AddNewTaskProvider with ChangeNotifier {
     if (_pickedStartTime != null && _pickedEndTime != null) {
       if (_pickedStartTime.hour.toString().isNotEmpty &&
           _pickedEndTime.hour.toString().isNotEmpty) {
-            List<int>duration=AppUtils.calculateDuration(_pickedStartTime.hour, _pickedEndTime.hour,_pickedStartTime.minute,
+        List<int> duration = AppUtils.calculateDuration(
+            _pickedStartTime.hour,
+            _pickedEndTime.hour,
+            _pickedStartTime.minute,
             _pickedEndTime.minute);
         String durationHours = AppUtils.formatTimeToTwoDecimals(duration[0]);
         String durationMinutes = AppUtils.formatTimeToTwoDecimals(duration[1]);
