@@ -127,6 +127,10 @@ static List<int> minusTime(
     List<String> time = formattedTime.split(':');
     if (time.length >= 1) {
       int hour = int.parse(time[0]);
+      print('hour is $hour');
+      if(hour>24){
+        return 0.0;
+      }
       return hour / defaultFormat.round();
     }
     return 0.0;
@@ -210,7 +214,7 @@ static List<int> minusTime(
     if (time.length >= 1) {
       int hour = int.parse(time[0]);
       int minute=int.parse(time[1].substring(0,2));
-      if (hourFormat - hour <= 0||minuteFormat-minute<=0) return [0,0];
+      if (hourFormat - hour <= 0) return [0,0];
       return minusTime(hourFormat, hour, minuteFormat, minute);
     }
     return [];
