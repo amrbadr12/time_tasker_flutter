@@ -3,8 +3,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:time_tasker/models/task.dart';
 import 'package:time_tasker/reusable_widgets/white_container_reusable.dart';
+import 'package:time_tasker/utils/dialog_utils.dart';
 
 import '../constants.dart';
+import '../utils/app_utils.dart';
 
 class MainScreenReusableTab extends StatelessWidget {
   final String date;
@@ -95,51 +97,51 @@ class MainScreenReusableTab extends StatelessWidget {
                   backgroundColor: blueGradient[1]),
             ),
           ),
-          Visibility(
-            visible: taskType == 'Start/End' && upcomingTask != null ?? false,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Flexible(
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                        top: kTitleDefaultPaddingVertical,
-                        left: kTitleDefaultPaddingHorizontal,
-                        bottom: 5.0),
-                    child: Text(
-                      'Upcoming Task',
-                      style: kTitleTextStyle.copyWith(fontSize: 20.0),
-                    ),
-                  ),
-                ),
-                Card(
-                  margin: EdgeInsets.only(
-                      top: kTitleDefaultPaddingHorizontal,
-                      right: kTitleDefaultPaddingHorizontal,
-                      left: kTitleDefaultPaddingHorizontal),
-                  color: Colors.blue.shade600,
-                  elevation: 5.0,
-                  child: ListTile(
-                    title: Text(
-                      upcomingTask != null
-                          ? upcomingTask.taskName.toUpperCase()
-                          : '',
-                      style: TextStyle(color: Colors.white, fontSize: 20.0),
-                    ),
-                    subtitle: Text(
-                        upcomingTask != null ? upcomingTask.date : '',
-                        style: TextStyle(color: Colors.grey[100])),
-                    leading: Icon(FontAwesomeIcons.dotCircle,
-                        color: Colors.blue.shade200),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(
-            height: 15.0,
-          ),
+//          Visibility(
+//            visible: taskType == 'Start/End' && upcomingTask != null ?? false,
+//            child: Column(
+//              crossAxisAlignment: CrossAxisAlignment.start,
+//              mainAxisSize: MainAxisSize.min,
+//              children: <Widget>[
+//                Flexible(
+//                  child: Padding(
+//                    padding: EdgeInsets.only(
+//                        top: kTitleDefaultPaddingVertical,
+//                        left: kTitleDefaultPaddingHorizontal,
+//                        bottom: 5.0),
+//                    child: Text(
+//                      'Upcoming Task',
+//                      style: kTitleTextStyle.copyWith(fontSize: 20.0),
+//                    ),
+//                  ),
+//                ),
+//                Card(
+//                  margin: EdgeInsets.only(
+//                      top: kTitleDefaultPaddingHorizontal,
+//                      right: kTitleDefaultPaddingHorizontal,
+//                      left: kTitleDefaultPaddingHorizontal),
+//                  color: Colors.blue.shade600,
+//                  elevation: 5.0,
+//                  child: ListTile(
+//                    title: Text(
+//                      upcomingTask != null
+//                          ? upcomingTask.taskName.toUpperCase()
+//                          : '',
+//                      style: TextStyle(color: Colors.white, fontSize: 20.0),
+//                    ),
+//                    subtitle: Text(
+//                        upcomingTask != null ? upcomingTask.date : '',
+//                        style: TextStyle(color: Colors.grey[100])),
+//                    leading: Icon(FontAwesomeIcons.dotCircle,
+//                        color: Colors.blue.shade200),
+//                  ),
+//                ),
+//              ],
+//            ),
+//          ),
+//          SizedBox(
+//            height: 15.0,
+//          ),
           Divider(
             thickness: 2.0,
           ),
@@ -158,8 +160,7 @@ class MainScreenReusableTab extends StatelessWidget {
                     Flexible(
                       child: Padding(
                         padding: EdgeInsets.symmetric(horizontal: 15.0),
-                        child:
-                            Text('Recorded Tasks', style: kSubTitleTextStyle),
+                        child: Text('Tasks', style: kSubTitleTextStyle),
                       ),
                     ),
                     Expanded(
@@ -197,11 +198,25 @@ class MainScreenReusableTab extends StatelessWidget {
                     physics: NeverScrollableScrollPhysics(),
                     itemBuilder: (BuildContext context, int index) {
                       return Dismissible(
+                        confirmDismiss: (direction) async {
+                          if (direction == DismissDirection.startToEnd) {
+                            return await DialogUtils.showConfirmDeleteDialog(
+                                context);
+                          }
+                          return false;
+                        },
                         onDismissed: (direction) {
-                          onTaskDelete(recentTasksList[index].id);
+                          if (direction == DismissDirection.startToEnd)
+                            onTaskDelete(recentTasksList[index].id);
                         },
                         child: ListTile(
                           title: Text(recentTasksList[index].taskName),
+                          subtitle: recentTasksList[index].taskType ==
+                                  TaskTypes.StartEndTasks
+                              ? Text(AppUtils.formatTimeToAndFrom(
+                                  recentTasksList[index].startTime,
+                                  recentTasksList[index].endTime))
+                              : null,
                           leading: Icon(FontAwesomeIcons.dotCircle,
                               color: kTasksDateIconColor2),
                           trailing: Text(recentTasksList[index].duration),

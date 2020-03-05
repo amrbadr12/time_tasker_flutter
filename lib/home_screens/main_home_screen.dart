@@ -64,6 +64,25 @@ class _HomeScreenState extends State<HomeScreen> {
               title: Text(kAppName,
                   textAlign: TextAlign.center, style: kAppBarTextStyle),
             ),
+            floatingActionButton: snapshot.noTodayTasks == null
+                ? null
+                : snapshot.noTodayTasks
+                    ? FloatingActionButton(
+                        onPressed: () {
+                          snapshot.onTaskAddButtonTap(() async {
+                            await Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => AddDurationTask()));
+                            snapshot.refreshMainScreen();
+                          }, () async {
+                            await Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => AddStartEndTaskScreen()));
+                            snapshot.refreshMainScreen();
+                          });
+                        },
+                        child: Icon(Icons.add),
+                        backgroundColor: Colors.blue,
+                      )
+                    : null,
             bottomNavigationBar: BottomNavigationBar(
               selectedItemColor: kMainBlueColor,
               unselectedItemColor: kTasksDateIconColor2,
@@ -84,10 +103,10 @@ class _HomeScreenState extends State<HomeScreen> {
               currentIndex: snapshot.currentBottomNavBarIndex,
               onTap: (value) {
                 snapshot.onBottomNavBarTap(value, () {
-                  DialogUitls.showResetTasksDialog(
+                  DialogUtils.showResetTasksDialog(
                       snapshot.selectedTaskType, context, () {
                     snapshot.displayResetDialog(() {
-                      DialogUitls.showResetTasksDialog(
+                      DialogUtils.showResetTasksDialog(
                           snapshot.selectedTaskType, context, () {
                         snapshot.deleteAllTodaysTasksForTaskType();
                       });
@@ -112,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             taskType: snapshot.selectedTaskType,
                             onReset: () {
                               snapshot.displayResetDialog(() {
-                                DialogUitls.showResetTasksDialog(
+                                DialogUtils.showResetTasksDialog(
                                     snapshot.selectedTaskType, context, () {
                                   snapshot.deleteAllTodaysTasksForTaskType();
                                 });
@@ -125,13 +144,18 @@ class _HomeScreenState extends State<HomeScreen> {
                             recentTasksList: snapshot.recentTasks,
                             onTaskDelete: snapshot.onTaskDelete,
                             onAddButtonTap: () {
-                              snapshot.onTaskAddButtonTap(() {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) => AddDurationTask()));
-                              }, () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) =>
-                                        AddStartEndTaskScreen()));
+                              snapshot.onTaskAddButtonTap(() async {
+                                await Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            AddDurationTask()));
+                                snapshot.refreshMainScreen();
+                              }, () async {
+                                await Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            AddStartEndTaskScreen()));
+                                snapshot.refreshMainScreen();
                               });
                             })));
       }),

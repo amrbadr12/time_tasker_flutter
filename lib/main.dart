@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:time_tasker/constants.dart';
-import 'package:time_tasker/home_screens/main_home_screen.dart';
 import 'package:time_tasker/intro_screens/intro_screen.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
@@ -21,7 +20,7 @@ class MyApp extends StatelessWidget {
             backgroundColor: appBarColor,
             appBarTheme: AppBarTheme(
               color: Colors.grey.shade200,
-              brightness:Platform.isIOS?Brightness.light:null,
+              brightness: Platform.isIOS ? Brightness.light : null,
               elevation: 2.0,
               iconTheme: IconThemeData(
                 color: Colors.grey[700],
@@ -54,8 +53,6 @@ class MyApp extends StatelessWidget {
     SharedPerferencesUtils utils =
         SharedPerferencesUtils(await SharedPreferences.getInstance());
     bool showHome = utils.getBoolFromSharedPreferences(kShowIntroScreenKey);
-    //int currentSlider = utils.getIntFromSharedPreferences(kTotalBalanceKey);
-    //print('current slider is $currentslider');
     return showHome ? AddTaskScreen(true) : IntroScreen();
   }
 }

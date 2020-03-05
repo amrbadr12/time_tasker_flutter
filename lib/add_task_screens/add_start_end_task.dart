@@ -4,6 +4,7 @@ import 'package:time_tasker/db_helper.dart';
 import 'package:time_tasker/providers/add_new_task_provider.dart';
 import 'package:time_tasker/reusable_widgets/add_new_task._input.dart';
 import 'package:time_tasker/utils/app_utils.dart';
+import 'package:time_tasker/utils/dialog_utils.dart';
 
 import '../constants.dart';
 
@@ -50,7 +51,12 @@ class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
                             },
                             onStartDateChanged: () async {
                               snapshot.setPickedStartTime(
-                                  await AppUtils.showTimePickerDialog(context));
+                                  await AppUtils.showTimePickerDialog(context),
+                                  () async {
+                                snapshot.setSleepTask(
+                                    await DialogUtils.showBedSleepTasksDialog(
+                                        context));
+                              });
                             },
                             startDateText: snapshot.getStartTime(),
                             onEndDateChanged: () async {
@@ -79,13 +85,14 @@ class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
                                         color: Colors.white)),
                                 onPressed: () {
                                   snapshot.addNewTaskToDB(() {
-                                     Navigator.of(context).popUntil((route)=>route.isFirst);
+                                    Navigator.of(context)
+                                        .popUntil((route) => route.isFirst);
                                     AppUtils.showFlushBar(
                                         'Success',
                                         'Your Task was added successfully!',
                                         context);
-                                  },(){
-                                     AppUtils.showFlushBar(
+                                  }, () {
+                                    AppUtils.showFlushBar(
                                         'Task Already Exists',
                                         'Your already have a task set between this period.',
                                         context);

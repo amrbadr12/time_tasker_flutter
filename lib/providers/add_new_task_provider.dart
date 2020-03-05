@@ -5,6 +5,8 @@ import 'package:time_tasker/db_helper.dart';
 import 'package:time_tasker/models/task.dart';
 import 'package:time_tasker/utils/app_utils.dart';
 
+import '../utils/app_utils.dart';
+
 class AddNewTaskProvider with ChangeNotifier {
   TimeOfDay _pickedStartTime;
   TimeOfDay _pickedEndTime;
@@ -25,13 +27,14 @@ class AddNewTaskProvider with ChangeNotifier {
   List<String> get previousTasks => _previousTasks;
   TextEditingController get nameController => _nameController;
   TextEditingController get durationController => _durationController;
-  List<StartEndTask> get previousStartEndaTasks => _previousStartEndTasks;
+  List<StartEndTask> get previousStartEndTasks => _previousStartEndTasks;
 
   void onTaskNameSubmitted(String task) {
     nameController.text = task;
   }
 
-  void setPickedStartTime(TimeOfDay startTime) {
+  void setPickedStartTime(
+      TimeOfDay startTime, Function onShowRecordTillEndOfDayDialog) async {
     if (_pickedEndTime != null) {
       if (_pickedEndTime.hour >= startTime.hour &&
           _pickedEndTime.minute >= startTime.minute) {
@@ -42,8 +45,18 @@ class AddNewTaskProvider with ChangeNotifier {
         return;
     }
     this._pickedStartTime = startTime;
+    if (_checkIfTaskIsBedOrSleep(startTime)) onShowRecordTillEndOfDayDialog();
     this._pickedDurationTime = null;
     notifyListeners();
+  }
+
+  void setSleepTask(bool recordTillEOD) {
+    if (recordTillEOD) {
+      DateTime now = DateTime.now();
+      DateTime newEndTime = DateTime(now.year, now.month, now.day, 23, 59);
+      this._pickedEndTime = TimeOfDay.fromDateTime(newEndTime);
+      notifyListeners();
+    }
   }
 
   void setPickedEndTime(TimeOfDay endTime) {
@@ -63,6 +76,14 @@ class AddNewTaskProvider with ChangeNotifier {
     }
   }
 
+  bool _checkIfTaskIsBedOrSleep(TimeOfDay startTime) {
+    if (_nameController.text.toLowerCase() == 'bed' ||
+        _nameController.text.toLowerCase() == 'sleep') {
+      return startTime.hour >= 20 && startTime.hour < 24;
+    }
+    return false;
+  }
+
   bool checkIfOverlappingTask() {
     if (_previousStartEndTasks != null) {
       if (_previousStartEndTasks.isNotEmpty) {
@@ -71,6 +92,7 @@ class AddNewTaskProvider with ChangeNotifier {
         for (StartEndTask task in _previousStartEndTasks) {
           if (userStartTimeTask >= task.startTime &&
               userStartTimeTask <= task.endTime) {
+            print('overlapping task');
             return true;
           }
         }
@@ -81,7 +103,7 @@ class AddNewTaskProvider with ChangeNotifier {
 
   void setPickedDuration(String duration) {
     _errorText = null;
-    if (validateDuration(duration)) {
+    if (AppUtils.validateDuration(duration)) {
       this._pickedDurationTime = AppUtils.formatHHMMTimeToTimeOfDay(duration);
     } else {
       _errorText = 'Please enter a valid duration.';
@@ -139,14 +161,10 @@ class AddNewTaskProvider with ChangeNotifier {
       }
     }
     _previousTasks = List();
+    _previousStartEndTasks = tasks;
     _previousTasks = filterDataDuplicates(tasks);
     notifyListeners();
     return _previousTasks;
-  }
-
-  bool validateDuration(String inputDuration) {
-    final hhmmFormatReg = RegExp(r'^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$');
-    return hhmmFormatReg.hasMatch(inputDuration);
   }
 
   List<String> filterDataDuplicates(List<Task> tasks) {

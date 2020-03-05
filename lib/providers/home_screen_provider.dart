@@ -146,7 +146,7 @@ class HomeScreenProvider with ChangeNotifier {
     if (_recentTasks != null) {
       if (_recentTasks.isNotEmpty) {
         for (UITask task in _recentTasks) {
-          task.tasktype == TaskTypes.DurationTasks
+          task.taskType == TaskTypes.DurationTasks
               ? await _db.deleteDurationTask(task.id)
               : await _db.deleteStartEndTask(task.id);
         }
@@ -156,9 +156,9 @@ class HomeScreenProvider with ChangeNotifier {
   }
 
   void displayResetDialog(Function dialogCallback) {
-      if (!noTodayTasks) {
-        dialogCallback();
-      }
+    if (!noTodayTasks) {
+      dialogCallback();
+    }
   }
 
   void _getRecentTasksFromDB(List<Task> tasks, TaskTypes taskTypes) {
@@ -176,7 +176,7 @@ class HomeScreenProvider with ChangeNotifier {
           List<StartEndTask> startEndTasks = tasks.cast();
           for (StartEndTask task in startEndTasks) {
             _recentTasks
-                .add(AppUtils.formatStartEndTaskToUIListComponenet(task));
+                .add(AppUtils.formatStartEndTaskToUIListComponent(task));
           }
           break;
       }

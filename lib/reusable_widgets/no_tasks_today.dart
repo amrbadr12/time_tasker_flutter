@@ -8,15 +8,28 @@ class NoTasksTodayWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.end,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
-        Center(child: Image.asset('images/launch_illustration.png',width:400,height:400)),
-        Flexible(child: Text('No $taskType Tasks For Today',textAlign:TextAlign.center,style:kSubTitleTextStyle,softWrap:true,)),
-        SizedBox(height:kMainDefaultHeightPadding),
-        Flexible(child: Text('Kickstart your day and start adding new tasks!',textAlign:TextAlign.center,softWrap:true,
-        style:kSubTitleTextStyle.copyWith(color:Colors.grey[400]),)),
-        SizedBox(height:kMainDefaultHeightPadding),
+        Center(
+            child: Image.asset('images/launch_illustration.png',
+                width: 400, height: 400)),
+        Flexible(
+            child: Text(
+          'No $taskType Tasks For Today',
+          textAlign: TextAlign.center,
+          style: kSubTitleTextStyle,
+          softWrap: true,
+        )),
+        SizedBox(height: kMainDefaultHeightPadding),
+        Flexible(
+            child: Text(
+          'Kickstart your day and start adding new tasks!',
+          textAlign: TextAlign.center,
+          softWrap: true,
+          style: kSubTitleTextStyle.copyWith(color: Colors.grey[400]),
+        )),
+        SizedBox(height: kMainDefaultHeightPadding),
       ],
     );
   }
