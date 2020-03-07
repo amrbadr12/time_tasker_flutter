@@ -7,6 +7,7 @@ import 'package:time_tasker/utils/app_utils.dart';
 import 'package:time_tasker/utils/dialog_utils.dart';
 
 import '../constants.dart';
+import '../utils/dialog_utils.dart';
 
 class AddStartEndTaskScreen extends StatefulWidget {
   @override
@@ -96,7 +97,10 @@ class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
                                         'Task Already Exists',
                                         'Your already have a task set between this period.',
                                         context);
-                                  });
+                                  },
+                                      () async => await DialogUtils
+                                          .showAddTaskToCalendarDialog(
+                                              context));
                                 },
                               ),
                             ),

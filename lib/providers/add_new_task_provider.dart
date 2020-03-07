@@ -1,3 +1,4 @@
+import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:time_tasker/constants.dart';
@@ -111,8 +112,8 @@ class AddNewTaskProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<int> addNewTaskToDB(
-      Function onSuccess, Function onOverlappingTask) async {
+  Future<int> addNewTaskToDB(Function onSuccess, Function onOverlappingTask,
+      Function onAddingTaskToCalendar) async {
     int taskID = -1;
     if (_db != null) {
       if (validateTaskInputs()) {
@@ -135,12 +136,24 @@ class AddNewTaskProvider with ChangeNotifier {
                   AppUtils.formatTimeOfDayToTimeInSeconds(_pickedStartTime),
                   AppUtils.formatTimeOfDayToTimeInSeconds(_pickedEndTime),
                   AppUtils.currentTimeInSeconds());
+              //Adding the task to the device's calendar
+              if (await onAddingTaskToCalendar()) {
+                final Event event = Event(
+                  title: _nameController.text.trim(),
+                  description: 'TT Task',
+                  location: '',
+                  startDate:
+                      AppUtils.formatTimeOfDayToDateTime(_pickedStartTime),
+                  endDate: AppUtils.formatTimeOfDayToDateTime(_pickedEndTime),
+                );
+                Add2Calendar.addEvent2Cal(event);
+              }
+              //Adding the task to the local db
               StartEndTask insertedTask = await _db.insertNewStartEndTask(task);
               taskID = insertedTask.id;
               onSuccess();
-            } else {
+            } else
               onOverlappingTask();
-            }
             break;
         }
       }

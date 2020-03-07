@@ -36,6 +36,7 @@ dependencies:
   jiffy: ^2.2.0
   autocomplete_textfield: ^1.7.3
   mask_text_input_formatter: ^1.0.6
+  add_2_calendar: ^1.4.0
 
   
 dev_dependencies:

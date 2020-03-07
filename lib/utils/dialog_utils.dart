@@ -86,4 +86,33 @@ class DialogUtils {
           );
         });
   }
+
+  static Future<bool> showAddTaskToCalendarDialog(BuildContext context) async {
+    bool res = await showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: Text('Sync this task with your Calendar?'),
+            content: Text(
+                'Would you like to add this task to your device\'s calendar?'),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('No'),
+                onPressed: () {
+                  Navigator.of(context).pop(false);
+                },
+                textColor: Colors.lightBlue,
+              ),
+              FlatButton(
+                child: Text('Sync'),
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                },
+                textColor: Colors.red[600],
+              ),
+            ],
+          );
+        });
+    return res;
+  }
 }

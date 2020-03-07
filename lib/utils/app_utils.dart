@@ -32,6 +32,11 @@ class AppUtils {
         minute: int.parse(time.split(":")[1]));
   }
 
+  static DateTime formatTimeOfDayToDateTime(TimeOfDay tod) {
+    DateTime now = DateTime.now();
+    return DateTime(now.year, now.month, now.day, tod.hour, tod.minute);
+  }
+
   static int formatTimeOfDayToTimeInSeconds(TimeOfDay tod) {
     final now = new DateTime.now();
     final dt = DateTime(now.year, now.month, now.day, tod.hour, tod.minute);
@@ -94,10 +99,7 @@ class AppUtils {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final aDate = DateTime(time.year, time.month, time.day);
-    if (aDate == today) {
-      return true;
-    }
-    return false;
+    return aDate == today;
   }
 
   static String formatTimeOfDay(TimeOfDay tod) {
