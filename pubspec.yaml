@@ -37,8 +37,11 @@ dependencies:
   autocomplete_textfield: ^1.7.3
   mask_text_input_formatter: ^1.0.6
   add_2_calendar: ^1.4.0
+  device_calendar: ^3.0.0+3
+  expandable: ^4.1.2
 
-  
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

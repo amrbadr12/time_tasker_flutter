@@ -1,8 +1,11 @@
-import 'package:add_2_calendar/add_2_calendar.dart';
+import 'package:add_2_calendar/add_2_calendar.dart' as add_2_calendar;
+import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:time_tasker/constants.dart';
 import 'package:time_tasker/db_helper.dart';
+import 'package:time_tasker/models/expandedStateModel.dart';
 import 'package:time_tasker/models/task.dart';
 import 'package:time_tasker/utils/app_utils.dart';
 
@@ -18,20 +21,60 @@ class AddNewTaskProvider with ChangeNotifier {
   TextEditingController _nameController;
   TextEditingController _durationController;
   List<String> _previousTasks;
-  List<StartEndTask> _previousStartEndTasks;
+  List _previousStartEndTasks;
+  List _prefillCalendarEvents;
+  bool _calendarTask = false;
+  List<ExpandedStateModel> _expandedTasks;
 
-  AddNewTaskProvider(this._db, this._currentTaskType, this._nameController) {
+  AddNewTaskProvider(this._db, this._currentTaskType, this._nameController,
+      this._prefillCalendarEvents) {
     readMainScreenElementsFromDB(_currentTaskType);
+    _prefillCalendarEventToUI();
+    if (_currentTaskType == TaskTypes.DurationTasks)
+      _expandedTasks = [ExpandedStateModel.empty(addNewExpandedTask)];
   }
 
   String get errorText => _errorText;
+
   List<String> get previousTasks => _previousTasks;
+
   TextEditingController get nameController => _nameController;
+
   TextEditingController get durationController => _durationController;
-  List<StartEndTask> get previousStartEndTasks => _previousStartEndTasks;
+
+  List get previousStartEndTasks => _previousStartEndTasks;
+
+  List<ExpandedStateModel> get expandedTasks => _expandedTasks;
+
+  getExpandedTasks() {
+    if (_expandedTasks != null) return _expandedTasks;
+    return List();
+  }
+
+  void addNewExpandedTask() {
+    int currentIndex = _expandedTasks.length - 1;
+    _expandedTasks[currentIndex].icon = FontAwesomeIcons.minusCircle;
+    _expandedTasks[currentIndex].addOrRemoveTask = () {
+      removeTask(currentIndex);
+    };
+    _expandedTasks.add(ExpandedStateModel(addNewExpandedTask,
+        FontAwesomeIcons.plusCircle, TextEditingController()));
+    notifyListeners();
+  }
 
   void onTaskNameSubmitted(String task) {
     nameController.text = task;
+  }
+
+  void removeTask(int currentIndex) {
+    if (_expandedTasks.length == 1) {
+      _expandedTasks[currentIndex].icon = FontAwesomeIcons.plusCircle;
+      _expandedTasks[currentIndex].addOrRemoveTask = () {
+        addNewExpandedTask();
+      };
+    } else
+      _expandedTasks.removeAt(currentIndex);
+    notifyListeners();
   }
 
   void setPickedStartTime(
@@ -119,35 +162,43 @@ class AddNewTaskProvider with ChangeNotifier {
       if (validateTaskInputs()) {
         switch (_currentTaskType) {
           case TaskTypes.DurationTasks:
+            String commaSeparatedTasks =
+                AppUtils.parseExpandedTasksToCommaSeparatedTasks(
+                    _expandedTasks);
             DurationTask task = DurationTask(
-                null,
-                _nameController.text.trim(),
-                AppUtils.formatTimeOfDayToTimeInSeconds(_pickedDurationTime),
-                AppUtils.currentTimeInSeconds());
+              null,
+              _nameController.text.trim(),
+              AppUtils.formatTimeOfDayToTimeInSeconds(_pickedDurationTime),
+              AppUtils.currentTimeInSeconds(),
+              commaSeparatedTasks,
+            );
             DurationTask insertedTask = await _db.insertNewDurationTask(task);
             taskID = insertedTask.id;
             onSuccess();
             break;
           case TaskTypes.StartEndTasks:
             if (!checkIfOverlappingTask()) {
+              //Adding the task to the device's calendar
+              if (!_calendarTask) {
+                if (await onAddingTaskToCalendar()) {
+                  final add_2_calendar.Event event = add_2_calendar.Event(
+                    title: _nameController.text.trim(),
+                    description: 'TT Task',
+                    location: '',
+                    startDate:
+                        AppUtils.formatTimeOfDayToDateTime(_pickedStartTime),
+                    endDate: AppUtils.formatTimeOfDayToDateTime(_pickedEndTime),
+                  );
+                  add_2_calendar.Add2Calendar.addEvent2Cal(event);
+                }
+              }
               StartEndTask task = StartEndTask(
                   null,
                   _nameController.text.trim(),
                   AppUtils.formatTimeOfDayToTimeInSeconds(_pickedStartTime),
                   AppUtils.formatTimeOfDayToTimeInSeconds(_pickedEndTime),
-                  AppUtils.currentTimeInSeconds());
-              //Adding the task to the device's calendar
-              if (await onAddingTaskToCalendar()) {
-                final Event event = Event(
-                  title: _nameController.text.trim(),
-                  description: 'TT Task',
-                  location: '',
-                  startDate:
-                      AppUtils.formatTimeOfDayToDateTime(_pickedStartTime),
-                  endDate: AppUtils.formatTimeOfDayToDateTime(_pickedEndTime),
-                );
-                Add2Calendar.addEvent2Cal(event);
-              }
+                  AppUtils.currentTimeInSeconds(),
+                  _calendarTask ? 1 : 0);
               //Adding the task to the local db
               StartEndTask insertedTask = await _db.insertNewStartEndTask(task);
               taskID = insertedTask.id;
@@ -159,6 +210,25 @@ class AddNewTaskProvider with ChangeNotifier {
       }
     }
     return taskID;
+  }
+
+  _prefillCalendarEventToUI() {
+    if (_currentTaskType == TaskTypes.StartEndTasks) {
+      if (_prefillCalendarEvents != null) {
+        if (_prefillCalendarEvents.isNotEmpty) {
+          Event calendarEvent = _prefillCalendarEvents[0];
+          _nameController.text = calendarEvent.title;
+          _pickedStartTime =
+              AppUtils.formatDateTimeToTimeOfDay(calendarEvent.start);
+          _pickedEndTime =
+              AppUtils.formatDateTimeToTimeOfDay(calendarEvent.end);
+
+          _calendarTask = true;
+          //_prefillCalendarEvents.removeAt(0);
+          notifyListeners();
+        }
+      }
+    }
   }
 
   Future<void> readMainScreenElementsFromDB(TaskTypes taskTypes) async {
@@ -252,6 +322,7 @@ class AddNewTaskProvider with ChangeNotifier {
   }
 
   void resetTime() {
+    _calendarTask = false;
     _pickedStartTime = null;
     _pickedEndTime = null;
     _pickedDurationTime = null;

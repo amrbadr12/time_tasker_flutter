@@ -17,8 +17,9 @@ class UITask {
   DateTime startTime;
   DateTime endTime;
   String date;
+  var expandedTasks;
 
-  UITask(id, name, duration, color, date, type, start, end) {
+  UITask(id, name, duration, color, date, type, start, end, expandedTasks) {
     this.id = id;
     this.taskName = name;
     this.duration = duration;
@@ -27,6 +28,7 @@ class UITask {
     this.taskType = type;
     this.startTime = start;
     this.endTime = end;
+    this.expandedTasks = expandedTasks;
   }
 
   @override
@@ -37,12 +39,14 @@ class UITask {
 
 class DurationTask extends Task {
   var durationTime;
+  var expandedTasks;
 
-  DurationTask(id, taskName, duration, dateInserted) {
+  DurationTask(id, taskName, duration, dateInserted, expandedTasks) {
     this.id = id;
     this.taskName = taskName;
     this.durationTime = duration;
     this.date = dateInserted;
+    this.expandedTasks = expandedTasks;
   }
 
   @override
@@ -51,7 +55,8 @@ class DurationTask extends Task {
       'id': this.id,
       'name': this.taskName,
       'duration': this.durationTime,
-      'date': this.date
+      'date': this.date,
+      'expanded_tasks': this.expandedTasks,
     };
   }
 
@@ -60,19 +65,22 @@ class DurationTask extends Task {
     taskName = map['name'];
     durationTime = map['duration'];
     date = map['date'];
+    this.expandedTasks = map['expanded_tasks'];
   }
 }
 
 class StartEndTask extends Task {
   var startTime;
   var endTime;
+  int isCalendarTask;
 
-  StartEndTask(id, taskName, start, end, dateInserted) {
+  StartEndTask(id, taskName, start, end, dateInserted, calendarTask) {
     this.id = id;
     this.taskName = taskName;
     this.startTime = start;
     this.endTime = end;
     this.date = dateInserted;
+    this.isCalendarTask = calendarTask;
   }
 
   @override
@@ -82,7 +90,8 @@ class StartEndTask extends Task {
       'name': this.taskName,
       'start_time': this.startTime,
       'end_time': this.endTime,
-      'date': this.date
+      'date': this.date,
+      'calendar_task': this.isCalendarTask
     };
   }
 
@@ -92,5 +101,6 @@ class StartEndTask extends Task {
     this.startTime = map['start_time'];
     this.endTime = map['end_time'];
     this.date = map['date'];
+    this.isCalendarTask = map['calendar_task'];
   }
 }

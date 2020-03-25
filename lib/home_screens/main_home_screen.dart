@@ -1,3 +1,4 @@
+import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
@@ -15,7 +16,9 @@ import '../db_helper.dart';
 
 class HomeScreen extends StatefulWidget {
   final TaskTypes defaultTaskType;
+
   HomeScreen(this.defaultTaskType);
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -24,8 +27,15 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) =>
-          HomeScreenProvider(DBHelper(), widget.defaultTaskType),
+      create: (context) => HomeScreenProvider(
+          DBHelper(), widget.defaultTaskType, DeviceCalendarPlugin(),
+          (events) async {
+        if (await DialogUtils.showTasksFromCalendarDialog(context, events)) {
+          await Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) =>
+                  AddStartEndTaskScreen(prefillCalendarEvent: events)));
+        }
+      }),
       child: Consumer<HomeScreenProvider>(builder: (context, snapshot, _) {
         return Scaffold(
             appBar: AppBar(

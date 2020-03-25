@@ -13,6 +13,8 @@ class DBHelper {
   static const String END_TIME = 'end_time';
   static const String DURATION = 'duration';
   static const String TASK_DATE = 'date';
+  static const String EXPANDED_TASKS = 'expanded_tasks';
+  static const String IS_DEVICE_CALENDAR_TASK = 'calendar_task';
   static const String DURATION_TABLE = 'duration_task';
   static const String START_END_TABLE = 'start_end_task';
   static const String DB_NAME = 'timer_tasker.db';
@@ -28,15 +30,15 @@ class DBHelper {
   initDB() async {
     Directory documentDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentDirectory.path, DB_NAME);
-    var db = await openDatabase(path, version: 1, onCreate: _onCreate);
+    var db = await openDatabase(path, version: 2, onCreate: _onCreate);
     return db;
   }
 
   _onCreate(Database db, int version) async {
     await db.execute(
-        "CREATE TABLE $DURATION_TABLE ($ID INTEGER PRIMARY KEY, $NAME TEXT, $DURATION INTEGER, $TASK_DATE INTEGER DEFAULT (cast(strftime('%s','now') as int)))");
+        "CREATE TABLE $DURATION_TABLE ($ID INTEGER PRIMARY KEY, $NAME TEXT, $DURATION INTEGER, $TASK_DATE INTEGER DEFAULT (cast(strftime('%s','now') as int)), $EXPANDED_TASKS TEXT)");
     await db.execute(
-        "CREATE TABLE $START_END_TABLE ($ID INTEGER PRIMARY KEY, $NAME TEXT, $START_TIME INTEGER, $END_TIME INTEGER, $TASK_DATE INTEGER DEFAULT (cast(strftime('%s','now') as int)))");
+        "CREATE TABLE $START_END_TABLE ($ID INTEGER PRIMARY KEY, $NAME TEXT, $START_TIME INTEGER, $END_TIME INTEGER, $TASK_DATE INTEGER DEFAULT (cast(strftime('%s','now') as int)), $IS_DEVICE_CALENDAR_TASK INTEGER)");
   }
 
   Future<DurationTask> insertNewDurationTask(DurationTask task) async {
@@ -54,7 +56,8 @@ class DBHelper {
   Future<List<DurationTask>> getDurationTasks() async {
     var dbClient = await database;
     List<Map> maps = await dbClient.query(DURATION_TABLE,
-        columns: [ID, NAME, DURATION, TASK_DATE], orderBy: '$TASK_DATE DESC');
+        columns: [ID, NAME, DURATION, TASK_DATE, EXPANDED_TASKS],
+        orderBy: '$TASK_DATE DESC');
     List<DurationTask> durationTasksList = [];
     if (maps.length > 0) {
       for (int i = 0; i < maps.length; i++) {
@@ -67,7 +70,14 @@ class DBHelper {
   Future<List<StartEndTask>> getStartEndTasks() async {
     var dbClient = await database;
     List<Map> maps = await dbClient.query(START_END_TABLE,
-        columns: [ID, NAME, START_TIME, END_TIME, TASK_DATE],
+        columns: [
+          ID,
+          NAME,
+          START_TIME,
+          END_TIME,
+          TASK_DATE,
+          IS_DEVICE_CALENDAR_TASK
+        ],
         orderBy: '$START_TIME ASC');
     List<StartEndTask> startEndTasksList = [];
     if (maps.length > 0) {
@@ -79,7 +89,6 @@ class DBHelper {
   }
 
   Future<int> deleteDurationTask(int id) async {
-    print('task id $id');
     var dbClient = await database;
     return await dbClient
         .delete(DURATION_TABLE, where: '$ID = ?', whereArgs: [id]);

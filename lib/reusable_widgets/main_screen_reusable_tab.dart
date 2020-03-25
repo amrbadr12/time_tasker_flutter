@@ -1,3 +1,4 @@
+import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
@@ -20,17 +21,18 @@ class MainScreenReusableTab extends StatelessWidget {
   final Function onAddButtonTap;
   final Function onReset;
 
-  MainScreenReusableTab(
-      {this.date,
-      this.mainTitle,
-      this.circularCenterText,
-      this.circlePercent,
-      this.upcomingTask,
-      this.taskType,
-      this.onTaskDelete,
-      this.recentTasksList,
-      this.onAddButtonTap,
-      this.onReset});
+  MainScreenReusableTab({
+    this.date,
+    this.mainTitle,
+    this.circularCenterText,
+    this.circlePercent,
+    this.upcomingTask,
+    this.taskType,
+    this.onTaskDelete,
+    this.recentTasksList,
+    this.onAddButtonTap,
+    this.onReset,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +88,9 @@ class MainScreenReusableTab extends StatelessWidget {
               child: CircularPercentIndicator(
                   radius: 150.0,
                   lineWidth: 5.0,
-                  percent: circlePercent,
+                  percent: circlePercent >= 1.0 || circlePercent <= 0
+                      ? 1.0
+                      : circlePercent,
                   animation: true,
                   animationDuration: 1200,
                   center: Text(
@@ -209,17 +213,51 @@ class MainScreenReusableTab extends StatelessWidget {
                           if (direction == DismissDirection.startToEnd)
                             onTaskDelete(recentTasksList[index].id);
                         },
-                        child: ListTile(
-                          title: Text(recentTasksList[index].taskName),
-                          subtitle: recentTasksList[index].taskType ==
-                                  TaskTypes.StartEndTasks
-                              ? Text(AppUtils.formatTimeToAndFrom(
-                                  recentTasksList[index].startTime,
-                                  recentTasksList[index].endTime))
-                              : null,
-                          leading: Icon(FontAwesomeIcons.dotCircle,
-                              color: kTasksDateIconColor2),
-                          trailing: Text(recentTasksList[index].duration),
+                        child: ExpandablePanel(
+                          header: ListTile(
+                            title: Text(recentTasksList[index].taskName),
+                            subtitle: recentTasksList[index].taskType ==
+                                    TaskTypes.StartEndTasks
+                                ? Text(AppUtils.formatTimeToAndFrom(
+                                    recentTasksList[index].startTime,
+                                    recentTasksList[index].endTime))
+                                : null,
+                            leading: Icon(FontAwesomeIcons.dotCircle,
+                                color: kTasksDateIconColor2),
+                            trailing: Text(recentTasksList[index].duration),
+                          ),
+                          expanded: ListView.builder(
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              itemCount:
+                                  (recentTasksList[index].expandedTasks.length),
+                              itemBuilder: (BuildContext context, int ind) {
+                                if (ind >=
+                                    recentTasksList[index].expandedTasks.length)
+                                  return SizedBox(
+                                    width: 0.0,
+                                  );
+                                return ListTile(
+                                    leading: Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 8.0),
+                                      child: Icon(FontAwesomeIcons.dotCircle,
+                                          size: 20.0, color: Colors.blue[700]),
+                                    ),
+                                    title: Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 8.0),
+                                      child: Text(
+                                        recentTasksList[index]
+                                            .expandedTasks[ind],
+                                        style: TextStyle(fontSize: 15.0),
+                                      ),
+                                    ));
+                              }),
+                          theme: ExpandableThemeData(
+                              iconColor: Colors.blue[700],
+                              iconPadding:
+                                  EdgeInsets.all(kMainDefaultHeightPadding)),
                         ),
                         key: UniqueKey(),
                       );

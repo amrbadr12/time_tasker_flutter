@@ -115,4 +115,35 @@ class DialogUtils {
         });
     return res;
   }
+
+  static Future<bool> showTasksFromCalendarDialog(
+      BuildContext context, List events) async {
+    String task = 'tasks';
+    if (events.length == 1) task = 'task';
+    bool res = await showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: Text('${events.length} Calendar $task found.'),
+            content: Text('Would you like to sync them with TT?'),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('No'),
+                onPressed: () {
+                  Navigator.of(context).pop(false);
+                },
+                textColor: Colors.lightBlue,
+              ),
+              FlatButton(
+                child: Text('Sync'),
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                },
+                textColor: Colors.red[600],
+              ),
+            ],
+          );
+        });
+    return res;
+  }
 }

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:time_tasker/constants.dart';
+import 'package:time_tasker/models/expandedStateModel.dart';
 import 'package:time_tasker/models/task.dart';
 
 class AppUtils {
@@ -26,6 +27,20 @@ class AppUtils {
     return (ms / 1000).round();
   }
 
+  static String formatTaskLengthToHHMM(int hour, int minutes, int tasksLength) {
+    return '$tasksLength X ${formatTimeToHHMM(hour, minutes)}';
+  }
+
+  static String calculateTotalTimeExpandedTask() {
+    //    String result;
+//    int hourToMinutes = (hour * 60) + minutes;
+//    double tasksDuration = (hourToMinutes / tasksLength).roundToDouble();
+//    if (tasksDuration >= 60) {
+//      Duration duation = Duration(minutes: hourToMinutes);
+//      int minute =duation.inMinutes-(duation.inHours)*60;
+//      print('${duation.inHours} and minutes ${duation.inMinutes}');
+  }
+
   static TimeOfDay formatHHMMTimeToTimeOfDay(String time) {
     return TimeOfDay(
         hour: int.parse(time.split(":")[0]),
@@ -35,6 +50,10 @@ class AppUtils {
   static DateTime formatTimeOfDayToDateTime(TimeOfDay tod) {
     DateTime now = DateTime.now();
     return DateTime(now.year, now.month, now.day, tod.hour, tod.minute);
+  }
+
+  static TimeOfDay formatDateTimeToTimeOfDay(DateTime dt) {
+    return TimeOfDay(hour: dt.hour, minute: dt.minute);
   }
 
   static int formatTimeOfDayToTimeInSeconds(TimeOfDay tod) {
@@ -50,6 +69,31 @@ class AppUtils {
       message: message,
       duration: Duration(seconds: 3),
     )..show(context);
+  }
+
+  static String parseExpandedTasksToCommaSeparatedTasks(
+      List<ExpandedStateModel> tasks) {
+    if (tasks != null) {
+      if (tasks.isEmpty) return '';
+      String result = '';
+      for (int i = 0; i < tasks.length; i++) {
+        result = result + tasks[i].task.text.trim();
+        if (i != tasks.length - 1) result = result + ',';
+      }
+      return result;
+    }
+    return '';
+  }
+
+  static List parseCommaSeparatedExpandedTasksToString(String tasks) {
+    if (tasks != null) {
+      if (tasks.isNotEmpty) {
+        List split = tasks.split(',');
+        return split;
+      }
+      return List();
+    }
+    return List();
   }
 
   static List<int> addTime(
@@ -83,6 +127,7 @@ class AppUtils {
   static List<int> calculateDuration(
       int startHour, int endHour, int startMinute, int endMinute) {
     int resultMinute = endMinute - startMinute;
+    if (endHour == 0) endHour = 24;
     int resultHour = endHour - startHour;
     if (endMinute - startMinute < 0) {
       resultMinute = (60 - startMinute) + endMinute;
@@ -137,7 +182,6 @@ class AppUtils {
     List<String> time = formattedTime.split(':');
     if (time.length >= 1) {
       int hour = int.parse(time[0]);
-      print('hour is $hour');
       if (hour > 24) {
         return 0.0;
       }
@@ -150,7 +194,6 @@ class AppUtils {
     List<StartEndTask> upcomingTasks = List();
     for (StartEndTask task in tasks) {
       if (currentTimeInSeconds() < task.startTime) {
-        print('task added ${task.taskName}');
         upcomingTasks.add(task);
       }
     }
@@ -201,7 +244,7 @@ class AppUtils {
     }
     String resultText = 'in $time $timeFormat';
     result = UITask(0, nearestTask.taskName, '', Colors.white, resultText,
-        TaskTypes.StartEndTasks, null, null);
+        TaskTypes.StartEndTasks, null, null, null);
     return result;
   }
 
@@ -246,15 +289,23 @@ class AppUtils {
     DateTime duration =
         convertMillisecondsSinceEpochToDateTime(task.durationTime);
     DateTime date = convertMillisecondsSinceEpochToDateTime(task.date);
+    String durationInHHMM = formatTimeToHHMM(duration.hour, duration.minute);
+    List expandedTasks =
+        parseCommaSeparatedExpandedTasksToString(task.expandedTasks);
+    if (expandedTasks.isNotEmpty) {
+      durationInHHMM = formatTaskLengthToHHMM(
+          duration.hour, duration.minute, expandedTasks.length);
+    }
     UITask uiTask = UITask(
         task.id,
         task.taskName,
-        formatTimeToHHMM(duration.hour, duration.minute),
+        durationInHHMM,
         getRandomColor(),
         Jiffy(date).fromNow(),
         TaskTypes.DurationTasks,
         null,
-        null);
+        null,
+        expandedTasks);
     return uiTask;
   }
 
@@ -274,7 +325,8 @@ class AppUtils {
         Jiffy(date).fromNow(),
         TaskTypes.StartEndTasks,
         startTime,
-        endTime);
+        endTime,
+        null);
     return uiTask;
   }
 }

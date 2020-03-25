@@ -10,6 +10,8 @@ import '../constants.dart';
 import '../utils/dialog_utils.dart';
 
 class AddStartEndTaskScreen extends StatefulWidget {
+  final List prefillCalendarEvent;
+  AddStartEndTaskScreen({this.prefillCalendarEvent});
   @override
   _AddStartEndTaskScreenState createState() => _AddStartEndTaskScreenState();
 }
@@ -26,8 +28,11 @@ class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
         body: SingleChildScrollView(
             child: Container(
                 child: ChangeNotifierProvider<AddNewTaskProvider>(
-                    create: (context) => AddNewTaskProvider(DBHelper(),
-                        TaskTypes.StartEndTasks, TextEditingController()),
+                    create: (context) => AddNewTaskProvider(
+                        DBHelper(),
+                        TaskTypes.StartEndTasks,
+                        TextEditingController(),
+                        widget.prefillCalendarEvent),
                     child: Consumer<AddNewTaskProvider>(
                         builder: (context, snapshot, _) {
                       return Column(
