@@ -35,8 +35,12 @@ class _AddDurationTaskState extends State<AddDurationTask> {
         body: SingleChildScrollView(
             child: Container(
                 child: ChangeNotifierProvider<AddNewTaskProvider>(
-                    create: (context) => AddNewTaskProvider(DBHelper(),
-                        TaskTypes.DurationTasks, TextEditingController(), null),
+                    create: (context) => AddNewTaskProvider(
+                        DBHelper(),
+                        TaskTypes.DurationTasks,
+                        TextEditingController(),
+                        null,
+                        ExpandableController()),
                     child: Consumer<AddNewTaskProvider>(
                         builder: (context, snapshot, _) {
                       return Column(
@@ -118,6 +122,7 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                                     style: kInputAddTaskLabelTextStyle.copyWith(
                                         color: Colors.black),
                                   ),
+                                  controller: snapshot.expandableController,
                                   expanded: ListView.builder(
                                       shrinkWrap: true,
                                       physics: NeverScrollableScrollPhysics(),
@@ -125,9 +130,8 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                                       itemBuilder:
                                           (BuildContext context, int index) {
                                         return ListTile(
-                                          title: TextField(
-                                            decoration: InputDecoration(
-                                                labelText: 'Task'),
+                                          title: TextFormField(
+                                            decoration: InputDecoration(),
                                             controller: snapshot
                                                 .expandedTasks[index].task,
                                           ),
@@ -140,6 +144,7 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                                             ),
                                             onPressed: () {
                                               //snapshot.addNewExpandedTask();
+                                              print('this was called');
                                               snapshot.expandedTasks[index]
                                                   .addOrRemoveTask();
                                             },

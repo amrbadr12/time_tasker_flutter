@@ -32,7 +32,8 @@ class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
                         DBHelper(),
                         TaskTypes.StartEndTasks,
                         TextEditingController(),
-                        widget.prefillCalendarEvent),
+                        widget.prefillCalendarEvent,
+                        null),
                     child: Consumer<AddNewTaskProvider>(
                         builder: (context, snapshot, _) {
                       return Column(

@@ -1,5 +1,6 @@
 import 'package:add_2_calendar/add_2_calendar.dart' as add_2_calendar;
 import 'package:device_calendar/device_calendar.dart';
+import 'package:expandable/expandable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -24,14 +25,25 @@ class AddNewTaskProvider with ChangeNotifier {
   List _previousStartEndTasks;
   List _prefillCalendarEvents;
   bool _calendarTask = false;
+  String _taskName;
+  var _overLapPeriod;
+  ExpandableController _expandableController;
   List<ExpandedStateModel> _expandedTasks;
 
   AddNewTaskProvider(this._db, this._currentTaskType, this._nameController,
-      this._prefillCalendarEvents) {
+      this._prefillCalendarEvents, this._expandableController) {
     readMainScreenElementsFromDB(_currentTaskType);
     _prefillCalendarEventToUI();
-    if (_currentTaskType == TaskTypes.DurationTasks)
-      _expandedTasks = [ExpandedStateModel.empty(addNewExpandedTask)];
+    _expandedTasks = List();
+    if (_expandableController != null) {
+      _expandableController.addListener(() {
+        if (_expandableController.expanded && _expandedTasks.length == 0) {
+          _expandedTasks
+              .add(ExpandedStateModel.empty(addNewExpandedTask, taskName));
+          notifyListeners();
+        }
+      });
+    }
   }
 
   String get errorText => _errorText;
@@ -44,7 +56,13 @@ class AddNewTaskProvider with ChangeNotifier {
 
   List get previousStartEndTasks => _previousStartEndTasks;
 
-  List<ExpandedStateModel> get expandedTasks => _expandedTasks;
+  ExpandableController get expandableController => _expandableController;
+
+  String get taskName =>
+      _nameController != null ? _nameController.text.trim() : '';
+
+  List<ExpandedStateModel> get expandedTasks =>
+      _expandedTasks != null ? _expandedTasks : List();
 
   getExpandedTasks() {
     if (_expandedTasks != null) return _expandedTasks;
@@ -57,8 +75,12 @@ class AddNewTaskProvider with ChangeNotifier {
     _expandedTasks[currentIndex].addOrRemoveTask = () {
       removeTask(currentIndex);
     };
-    _expandedTasks.add(ExpandedStateModel(addNewExpandedTask,
-        FontAwesomeIcons.plusCircle, TextEditingController()));
+    TextEditingController controller = TextEditingController(text: taskName);
+//    print(
+//        'current index is $currentIndex and controller text is ${_nameController.text.trim()}');
+    // controller.text = _nameController.text.trim();
+    _expandedTasks.add(ExpandedStateModel(
+        addNewExpandedTask, FontAwesomeIcons.plusCircle, controller));
     notifyListeners();
   }
 
@@ -133,10 +155,25 @@ class AddNewTaskProvider with ChangeNotifier {
       if (_previousStartEndTasks.isNotEmpty) {
         int userStartTimeTask =
             AppUtils.formatTimeOfDayToTimeInSeconds(_pickedStartTime);
+        int userEndTimeTask =
+            AppUtils.formatTimeOfDayToTimeInSeconds(_pickedEndTime);
         for (StartEndTask task in _previousStartEndTasks) {
           if (userStartTimeTask >= task.startTime &&
               userStartTimeTask <= task.endTime) {
-            print('overlapping task');
+            if (userEndTimeTask > task.endTime) {
+              TimeOfDay overLappingTask = AppUtils.formatDateTimeToTimeOfDay(
+                  AppUtils.convertMillisecondsSinceEpochToDateTime(
+                      task.endTime));
+              List overLap = AppUtils.minusTime(
+                  _pickedEndTime.hour,
+                  overLappingTask.hour,
+                  _pickedEndTime.minute,
+                  overLappingTask.minute);
+              _overLapPeriod = '${overLap[0]},${overLap[1]}';
+              print('overlap period is $_overLapPeriod');
+              return false;
+            } else
+              print('overlapping task');
             return true;
           }
         }
@@ -198,7 +235,8 @@ class AddNewTaskProvider with ChangeNotifier {
                   AppUtils.formatTimeOfDayToTimeInSeconds(_pickedStartTime),
                   AppUtils.formatTimeOfDayToTimeInSeconds(_pickedEndTime),
                   AppUtils.currentTimeInSeconds(),
-                  _calendarTask ? 1 : 0);
+                  _calendarTask ? 1 : 0,
+                  _overLapPeriod ?? '');
               //Adding the task to the local db
               StartEndTask insertedTask = await _db.insertNewStartEndTask(task);
               taskID = insertedTask.id;

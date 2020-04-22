@@ -230,7 +230,11 @@ class MainScreenReusableTab extends StatelessWidget {
                               shrinkWrap: true,
                               physics: NeverScrollableScrollPhysics(),
                               itemCount:
-                                  (recentTasksList[index].expandedTasks.length),
+                                  recentTasksList[index].expandedTasks != null
+                                      ? (recentTasksList[index]
+                                          .expandedTasks
+                                          .length)
+                                      : 0,
                               itemBuilder: (BuildContext context, int ind) {
                                 if (ind >=
                                     recentTasksList[index].expandedTasks.length)

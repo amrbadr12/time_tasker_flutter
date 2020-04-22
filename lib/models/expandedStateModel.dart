@@ -8,8 +8,8 @@ class ExpandedStateModel {
 
   ExpandedStateModel(this.addOrRemoveTask, this.icon, this.task);
 
-  factory ExpandedStateModel.empty(addOrRemoveTask) {
-    return ExpandedStateModel(
-        addOrRemoveTask, FontAwesomeIcons.plusCircle, TextEditingController());
+  factory ExpandedStateModel.empty(addOrRemoveTask, initial) {
+    return ExpandedStateModel(addOrRemoveTask, FontAwesomeIcons.plusCircle,
+        TextEditingController(text: initial));
   }
 }

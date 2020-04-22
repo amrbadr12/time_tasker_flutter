@@ -14,6 +14,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   SharedPerferencesUtils _sharedPreferences;
   double _hoursSliderValue;
   double _minutesSliderValue;
+  bool _currentResetSetting = false;
+
   @override
   void initState() {
     getSharedPrefs();
@@ -60,7 +62,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 softWrap: true, style: kInputAddTaskLabelTextStyle),
           ),
           Slider(
-              value: _hoursSliderValue==24.0?_minutesSliderValue=0.0:_minutesSliderValue??1.0,
+              value: _hoursSliderValue == 24.0
+                  ? _minutesSliderValue = 0.0
+                  : _minutesSliderValue ?? 1.0,
               divisions: 60,
               label: currentMinutesSliderText,
               min: 0.0,
@@ -85,6 +89,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Text(
                   'You can adjust the time frame to calculate your tasks from 1 minute - 24 hours.',
                   style: TextStyle(fontSize: 13.0, color: Colors.grey[700]))),
+          SizedBox(
+            height: kTitleDefaultPaddingVertical,
+          ),
+          SwitchListTile(
+            title: Padding(
+                padding: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
+                child: Text(
+                  'Show Reset Dialog',
+                  style: kInputAddTaskLabelTextStyle,
+                )),
+            value: _currentResetSetting,
+            activeColor: kTasksDateIconColor2,
+            onChanged: (bool value) {
+              setState(() {
+                _currentResetSetting = value;
+              });
+            },
+          ),
           SizedBox(
             height: kTitleDefaultPaddingVertical,
           ),
@@ -119,6 +141,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           readSliderItemFromLocal(kTotalBalanceHoursKey).toDouble();
       _minutesSliderValue =
           readSliderItemFromLocal(kTotalBalancMinutesKey).toDouble();
+      _currentResetSetting =
+          readResetSettingFromLocal(kResetDialogSettingsOption);
     });
   }
 
@@ -128,6 +152,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           kTotalBalanceHoursKey, _hoursSliderValue.toInt());
       _sharedPreferences.saveIntToSharedPreferences(
           kTotalBalancMinutesKey, _minutesSliderValue.toInt());
+      _sharedPreferences.saveBoolToSharedPreferences(
+          kResetDialogSettingsOption, _currentResetSetting);
       onSuccess();
     }
   }
@@ -159,5 +185,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       return _sharedPreferences.getIntFromSharedPreferences(key);
     }
     return 0;
+  }
+
+  bool readResetSettingFromLocal(String key) {
+    if (_sharedPreferences != null) {
+      return _sharedPreferences.getBoolFromSharedPreferences(key);
+    }
+    return false;
   }
 }

@@ -52,25 +52,32 @@ class AddNewTaskInputWidget extends StatelessWidget {
             suggestions: previousTasks,
             style: kInputAddTaskLabelTextStyle,
             itemFilter: (item, query) {
-              return item
-                  .toLowerCase()
-                  .startsWith(query.toLowerCase());
+              return item.toLowerCase().startsWith(query.toLowerCase());
             },
-            controller:nameController,
+            controller: nameController,
             decoration: InputDecoration(
               labelStyle: kInputAddTaskLabelTextStyle,
               hintText: 'Task Name',
             ),
             clearOnSubmit: false,
             itemBuilder: (BuildContext context, String suggestion) {
-              return Padding(padding:EdgeInsets.all(kMainDefaultPadding),
-                child: Text(suggestion,style:kInputAddTaskLabelTextStyle.copyWith(fontSize:12.0,color:Colors.black),));
+              return Padding(
+                  padding: EdgeInsets.all(kMainDefaultPadding),
+                  child: Text(
+                    suggestion,
+                    style: kInputAddTaskLabelTextStyle.copyWith(
+                        fontSize: 12.0, color: Colors.black),
+                  ));
             },
             itemSorter: (String a, String b) {
               return a.compareTo(b);
             },
             itemSubmitted: (String data) {
-             onTaskNameSubmitted(data);
+              onTaskNameSubmitted(data);
+              FocusScopeNode currentFocus = FocusScope.of(context);
+              if (!currentFocus.hasPrimaryFocus) {
+                currentFocus.unfocus();
+              }
             },
             key: GlobalKey<AutoCompleteTextFieldState<String>>(),
           ),
@@ -127,7 +134,7 @@ class AddNewTaskInputWidget extends StatelessWidget {
               //controller:durationController,
               style: kInputAddTaskLabelTextStyle,
               maxLength: 5,
-              inputFormatters:[maskTextInputFormatter],
+              inputFormatters: [maskTextInputFormatter],
               keyboardType: TextInputType.datetime,
               decoration: InputDecoration(
                 errorText: errorText,
@@ -135,7 +142,7 @@ class AddNewTaskInputWidget extends StatelessWidget {
                   FontAwesomeIcons.stopwatch,
                   color: kTasksDateIconColor2,
                 ),
-                suffixText:'HH:MM',
+                suffixText: 'HH:MM',
                 labelStyle: kInputAddTaskLabelTextStyle,
                 hintText: 'Duration in HH:MM',
               ),

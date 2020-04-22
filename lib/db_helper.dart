@@ -15,6 +15,7 @@ class DBHelper {
   static const String TASK_DATE = 'date';
   static const String EXPANDED_TASKS = 'expanded_tasks';
   static const String IS_DEVICE_CALENDAR_TASK = 'calendar_task';
+  static const String OVERLAP_PERIOD = 'overlap_period';
   static const String DURATION_TABLE = 'duration_task';
   static const String START_END_TABLE = 'start_end_task';
   static const String DB_NAME = 'timer_tasker.db';
@@ -38,7 +39,7 @@ class DBHelper {
     await db.execute(
         "CREATE TABLE $DURATION_TABLE ($ID INTEGER PRIMARY KEY, $NAME TEXT, $DURATION INTEGER, $TASK_DATE INTEGER DEFAULT (cast(strftime('%s','now') as int)), $EXPANDED_TASKS TEXT)");
     await db.execute(
-        "CREATE TABLE $START_END_TABLE ($ID INTEGER PRIMARY KEY, $NAME TEXT, $START_TIME INTEGER, $END_TIME INTEGER, $TASK_DATE INTEGER DEFAULT (cast(strftime('%s','now') as int)), $IS_DEVICE_CALENDAR_TASK INTEGER)");
+        "CREATE TABLE $START_END_TABLE ($ID INTEGER PRIMARY KEY, $NAME TEXT, $START_TIME INTEGER, $END_TIME INTEGER, $TASK_DATE INTEGER DEFAULT (cast(strftime('%s','now') as int)), $IS_DEVICE_CALENDAR_TASK INTEGER, $OVERLAP_PERIOD TEXT)");
   }
 
   Future<DurationTask> insertNewDurationTask(DurationTask task) async {
@@ -76,7 +77,8 @@ class DBHelper {
           START_TIME,
           END_TIME,
           TASK_DATE,
-          IS_DEVICE_CALENDAR_TASK
+          IS_DEVICE_CALENDAR_TASK,
+          OVERLAP_PERIOD
         ],
         orderBy: '$START_TIME ASC');
     List<StartEndTask> startEndTasksList = [];

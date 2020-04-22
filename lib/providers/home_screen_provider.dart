@@ -218,15 +218,17 @@ class HomeScreenProvider with ChangeNotifier {
         case TaskTypes.DurationTasks:
           for (DurationTask task in tasksList) {
             DateTime taskDuration;
+            DateTime fixedDuration;
             List expandedList =
                 AppUtils.parseCommaSeparatedExpandedTasksToString(
                     task.expandedTasks);
             if (expandedList.length > 0) {
               taskDuration = AppUtils.convertMillisecondsSinceEpochToDateTime(
                   task.durationTime);
+              fixedDuration = taskDuration;
               for (int i = 0; i < expandedList.length - 1; i++) {
                 taskDuration = taskDuration.add(Duration(
-                    hours: taskDuration.hour, minutes: taskDuration.minute));
+                    hours: fixedDuration.hour, minutes: fixedDuration.minute));
               }
             } else
               taskDuration = AppUtils.convertMillisecondsSinceEpochToDateTime(
@@ -240,15 +242,24 @@ class HomeScreenProvider with ChangeNotifier {
           break;
         case TaskTypes.StartEndTasks:
           for (StartEndTask task in tasksList) {
-            DateTime taskStartTime =
-                AppUtils.convertMillisecondsSinceEpochToDateTime(
-                    task.startTime);
-            DateTime taskEndTime =
-                AppUtils.convertMillisecondsSinceEpochToDateTime(task.endTime);
-            List<int> duration = AppUtils.calculateDuration(taskStartTime.hour,
-                taskEndTime.hour, taskStartTime.minute, taskEndTime.minute);
-            List<int> time =
-                AppUtils.addTime(duration[0], hour, duration[1], minute);
+            List<int> time;
+            List<int> duration;
+            //if there's an overlapping task, no need for calculation, it's already provided in the db.
+            if (task.overlapPeriod.toString().trim().isNotEmpty) {
+              List split = task.overlapPeriod.toString().split(',');
+              time = [int.parse(split[0]), int.parse(split[1])];
+              duration = time;
+            } else {
+              DateTime taskStartTime =
+                  AppUtils.convertMillisecondsSinceEpochToDateTime(
+                      task.startTime);
+              DateTime taskEndTime =
+                  AppUtils.convertMillisecondsSinceEpochToDateTime(
+                      task.endTime);
+              duration = AppUtils.calculateDuration(taskStartTime.hour,
+                  taskEndTime.hour, taskStartTime.minute, taskEndTime.minute);
+            }
+            time = AppUtils.addTime(duration[0], hour, duration[1], minute);
             hour = time[0];
             minute = time[1];
           }

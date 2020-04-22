@@ -2,6 +2,7 @@ import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:time_tasker/add_task_screens/add_duration_task.dart';
 import 'package:time_tasker/add_task_screens/add_start_end_task.dart';
 import 'package:time_tasker/add_task_screens/add_task_screen.dart';
@@ -11,6 +12,7 @@ import 'package:time_tasker/reusable_widgets/main_screen_reusable_tab.dart';
 import 'package:time_tasker/reusable_widgets/no_tasks_today.dart';
 import 'package:time_tasker/settings_screen.dart';
 import 'package:time_tasker/utils/dialog_utils.dart';
+import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
 import '../db_helper.dart';
 
@@ -24,6 +26,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  SharedPerferencesUtils _sharedPreferences;
+  bool _showResetDialog = false;
+  @override
+  void initState() {
+    getSharedPrefs();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -45,9 +55,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: Colors.blueGrey[700],
                   size: 15.0,
                 ),
-                onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
+                onPressed: () async {
+                  await Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) => SettingsScreen()));
+                  getSharedPrefs();
                 },
               ),
               actions: <Widget>[
@@ -112,17 +123,16 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
               currentIndex: snapshot.currentBottomNavBarIndex,
               onTap: (value) {
-                snapshot.onBottomNavBarTap(value, () {
-                  DialogUtils.showResetTasksDialog(
-                      snapshot.selectedTaskType, context, () {
-                    snapshot.displayResetDialog(() {
-                      DialogUtils.showResetTasksDialog(
-                          snapshot.selectedTaskType, context, () {
-                        snapshot.deleteAllTodaysTasksForTaskType();
-                      });
-                    });
-                  });
-                });
+                snapshot.onBottomNavBarTap(
+                    value,
+                    _showResetDialog
+                        ? () {
+                            DialogUtils.showResetTasksDialog(
+                                snapshot.selectedTaskType, context, () {
+                              snapshot.deleteAllTodaysTasksForTaskType();
+                            });
+                          }
+                        : () {});
               },
             ),
             body: Container(
@@ -170,5 +180,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             })));
       }),
     );
+  }
+
+  void getSharedPrefs() async {
+    _sharedPreferences =
+        SharedPerferencesUtils(await SharedPreferences.getInstance());
+    setState(() {
+      _showResetDialog = _sharedPreferences
+          .getBoolFromSharedPreferences(kResetDialogSettingsOption);
+    });
   }
 }

@@ -73,14 +73,17 @@ class StartEndTask extends Task {
   var startTime;
   var endTime;
   int isCalendarTask;
+  var overlapPeriod;
 
-  StartEndTask(id, taskName, start, end, dateInserted, calendarTask) {
+  StartEndTask(
+      id, taskName, start, end, dateInserted, calendarTask, overlapPeriod) {
     this.id = id;
     this.taskName = taskName;
     this.startTime = start;
     this.endTime = end;
     this.date = dateInserted;
     this.isCalendarTask = calendarTask;
+    this.overlapPeriod = overlapPeriod;
   }
 
   @override
@@ -91,7 +94,8 @@ class StartEndTask extends Task {
       'start_time': this.startTime,
       'end_time': this.endTime,
       'date': this.date,
-      'calendar_task': this.isCalendarTask
+      'calendar_task': this.isCalendarTask,
+      'overlap_period': this.overlapPeriod
     };
   }
 
@@ -102,5 +106,6 @@ class StartEndTask extends Task {
     this.endTime = map['end_time'];
     this.date = map['date'];
     this.isCalendarTask = map['calendar_task'];
+    this.overlapPeriod = map['overlap_period'];
   }
 }

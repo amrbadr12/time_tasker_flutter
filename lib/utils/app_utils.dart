@@ -31,16 +31,6 @@ class AppUtils {
     return '$tasksLength X ${formatTimeToHHMM(hour, minutes)}';
   }
 
-  static String calculateTotalTimeExpandedTask() {
-    //    String result;
-//    int hourToMinutes = (hour * 60) + minutes;
-//    double tasksDuration = (hourToMinutes / tasksLength).roundToDouble();
-//    if (tasksDuration >= 60) {
-//      Duration duation = Duration(minutes: hourToMinutes);
-//      int minute =duation.inMinutes-(duation.inHours)*60;
-//      print('${duation.inHours} and minutes ${duation.inMinutes}');
-  }
-
   static TimeOfDay formatHHMMTimeToTimeOfDay(String time) {
     return TimeOfDay(
         hour: int.parse(time.split(":")[0]),
