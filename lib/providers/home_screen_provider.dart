@@ -24,11 +24,11 @@ class HomeScreenProvider with ChangeNotifier {
   DeviceCalendarPlugin _deviceCalendarPlugin;
 
   HomeScreenProvider(this._db, this._selectedTask, this._deviceCalendarPlugin,
-      Function onCalendarTasksFound) {
+      Function onCalendarTasksFound, Function onSelectDeviceCalendar) {
     _setTaskType();
     _setTasksData(TaskAction.TotalTime);
     _recentTasks = [];
-    _getDefaultCalendar(onCalendarTasksFound);
+    getDefaultCalendar(onCalendarTasksFound, onSelectDeviceCalendar);
   }
 
   TabModel get currentTabModel => _currentTabModel;
@@ -272,7 +272,8 @@ class HomeScreenProvider with ChangeNotifier {
 
   //Retrieve user's calendars from mobile device
   //Request permissions first if they haven't been granted
-  _getDefaultCalendar(Function onCalendarTasksFound) async {
+  getDefaultCalendar(
+      Function onCalendarTasksFound, Function onCalendarFoundDialog) async {
     try {
       var permissionsGranted = await _deviceCalendarPlugin.hasPermissions();
       if (permissionsGranted.isSuccess && !permissionsGranted.data) {
@@ -283,13 +284,21 @@ class HomeScreenProvider with ChangeNotifier {
       }
       final calendarsResult = await _deviceCalendarPlugin.retrieveCalendars();
       final data = calendarsResult.data;
-      for (Calendar calendar in data) {
-        if (!calendar.isReadOnly) {
-          _defaultUserCalendar = calendar;
-          break;
+      final result = await onCalendarFoundDialog(data);
+      if (result != null) {
+        print('$result selected');
+        for (Calendar calendar in data) {
+          if (calendar.name == result) {
+            _defaultUserCalendar = calendar;
+            break;
+          }
+//        if (!calendar.isReadOnly) {
+//          _defaultUserCalendar = calendar;
+//          break;
+//        }
         }
+        _popCalendarTasksDialog(onCalendarTasksFound);
       }
-      _popCalendarTasksDialog(onCalendarTasksFound);
     } catch (e) {}
   }
 

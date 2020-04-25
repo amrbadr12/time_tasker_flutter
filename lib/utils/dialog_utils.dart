@@ -1,5 +1,7 @@
+import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:time_tasker/constants.dart';
 
 class DialogUtils {
   static void showResetTasksDialog(
@@ -145,5 +147,70 @@ class DialogUtils {
           );
         });
     return res;
+  }
+
+  static Future<String> showAvailableCalendarsDialog(
+      BuildContext context, List<Calendar> calendars) async {
+    List<String> calendarStrings = List();
+    for (Calendar calendar in calendars) {
+      calendarStrings.add(calendar.name);
+    }
+    return await showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          String selectedCalendar = calendarStrings[0];
+          return CupertinoAlertDialog(
+            title: Text('Select which calendar you want to sync with'),
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                SizedBox(
+                  height: kMainDefaultPadding,
+                ),
+                Text('Calendar:'),
+                SizedBox(
+                  height: 10.0,
+                ),
+                StatefulBuilder(
+                    builder: (BuildContext context, StateSetter setState) {
+                  return Material(
+                    color: Colors.grey[300],
+                    child: DropdownButton<String>(
+                      value: selectedCalendar,
+                      onChanged: (String newValue) {
+                        setState(() {
+                          selectedCalendar = newValue;
+                        });
+                      },
+                      items: calendarStrings
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ),
+                  );
+                }),
+              ],
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('Cancel'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                textColor: Colors.red[800],
+              ),
+              FlatButton(
+                child: Text('Select'),
+                onPressed: () {
+                  Navigator.of(context).pop(selectedCalendar);
+                },
+                textColor: Colors.lightBlue,
+              ),
+            ],
+          );
+        });
   }
 }

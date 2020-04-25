@@ -45,6 +45,8 @@ class _HomeScreenState extends State<HomeScreen> {
               builder: (context) =>
                   AddStartEndTaskScreen(prefillCalendarEvent: events)));
         }
+      }, (data) async {
+        return await DialogUtils.showAvailableCalendarsDialog(context, data);
       }),
       child: Consumer<HomeScreenProvider>(builder: (context, snapshot, _) {
         return Scaffold(
@@ -62,6 +64,28 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
               actions: <Widget>[
+                IconButton(
+                  icon: Icon(
+                    FontAwesomeIcons.calendar,
+                    color: Colors.blueGrey[700],
+                    size: 15.0,
+                  ),
+                  padding: EdgeInsets.all(0.0),
+                  onPressed: () async {
+                    await snapshot.getDefaultCalendar((events) async {
+                      if (await DialogUtils.showTasksFromCalendarDialog(
+                          context, events)) {
+                        await Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => AddStartEndTaskScreen(
+                                prefillCalendarEvent: events)));
+                      }
+                    }, (data) async {
+                      return await DialogUtils.showAvailableCalendarsDialog(
+                          context, data);
+                    });
+                    snapshot.refreshMainScreen();
+                  },
+                ),
                 FlatButton(
                   child: Text(
                     'TT',
