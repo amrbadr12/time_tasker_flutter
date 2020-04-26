@@ -33,6 +33,7 @@ class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
                         TaskTypes.StartEndTasks,
                         TextEditingController(),
                         widget.prefillCalendarEvent,
+                        null,
                         null),
                     child: Consumer<AddNewTaskProvider>(
                         builder: (context, snapshot, _) {
@@ -91,22 +92,25 @@ class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
                                     style: kAppBarTextStyle.copyWith(
                                         color: Colors.white)),
                                 onPressed: () {
-                                  snapshot.addNewTaskToDB(() {
-                                    Navigator.of(context)
-                                        .popUntil((route) => route.isFirst);
-                                    AppUtils.showFlushBar(
-                                        'Success',
-                                        'Your Task was added successfully!',
-                                        context);
-                                  }, () {
-                                    AppUtils.showFlushBar(
-                                        'Task Already Exists',
-                                        'Your already have a task set between this period.',
-                                        context);
-                                  },
-                                      () async => await DialogUtils
-                                          .showAddTaskToCalendarDialog(
-                                              context));
+                                  snapshot.addNewTaskToDB(
+                                      onSuccess: () {
+                                        Navigator.of(context)
+                                            .popUntil((route) => route.isFirst);
+                                        AppUtils.showFlushBar(
+                                            'Success',
+                                            'Your Task was added successfully!',
+                                            context);
+                                      },
+                                      onOverlappingTask: () {
+                                        AppUtils.showFlushBar(
+                                            'Task Already Exists',
+                                            'Your already have a task set between this period.',
+                                            context);
+                                      },
+                                      onAddingTaskToCalendar: () async =>
+                                          await DialogUtils
+                                              .showAddTaskToCalendarDialog(
+                                                  context));
                                 },
                               ),
                             ),

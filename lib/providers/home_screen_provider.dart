@@ -13,6 +13,7 @@ class HomeScreenProvider with ChangeNotifier {
   String _firstNavBarItemName;
   TabModel _currentTabModel;
   String _totalTime;
+  List _durationTotalTime;
   String _totalBalance;
   List<UITask> _recentTasks;
   UITask _upcomingTask;
@@ -23,21 +24,32 @@ class HomeScreenProvider with ChangeNotifier {
   Calendar _defaultUserCalendar;
   DeviceCalendarPlugin _deviceCalendarPlugin;
 
-  HomeScreenProvider(this._db, this._selectedTask, this._deviceCalendarPlugin,
-      Function onCalendarTasksFound, Function onSelectDeviceCalendar) {
+  HomeScreenProvider(
+      this._db,
+      this._selectedTask,
+      this._deviceCalendarPlugin,
+      Function onCalendarTasksFound,
+      Function onSelectDeviceCalendar,
+      Function onTasksNotFound) {
     _setTaskType();
     _setTasksData(TaskAction.TotalTime);
     _recentTasks = [];
-    getDefaultCalendar(onCalendarTasksFound, onSelectDeviceCalendar);
+    if (_selectedTask == TaskTypes.StartEndTasks)
+      getDefaultCalendar(
+          onCalendarTasksFound, onSelectDeviceCalendar, onTasksNotFound);
   }
 
   TabModel get currentTabModel => _currentTabModel;
 
   String get firstNavBarItemName => _firstNavBarItemName;
 
+  TaskTypes get selectedTask => _selectedTask;
+
   String get selectedTaskTypes => _selectedTaskType;
 
   String get totalTime => _totalTime;
+
+  List get durationTotalTime => _durationTotalTime;
 
   bool get noTodayTasks => _noTodayTasks;
 
@@ -226,7 +238,7 @@ class HomeScreenProvider with ChangeNotifier {
               taskDuration = AppUtils.convertMillisecondsSinceEpochToDateTime(
                   task.durationTime);
               fixedDuration = taskDuration;
-              for (int i = 0; i < expandedList.length - 1; i++) {
+              for (int i = 0; i < expandedList.length; i++) {
                 taskDuration = taskDuration.add(Duration(
                     hours: fixedDuration.hour, minutes: fixedDuration.minute));
               }
@@ -237,6 +249,7 @@ class HomeScreenProvider with ChangeNotifier {
                 taskDuration.hour, hour, taskDuration.minute, minute);
             hour = time[0];
             minute = time[1];
+            _durationTotalTime = time;
           }
           return AppUtils.formatTimeToHHMM(hour, minute);
           break;
@@ -272,8 +285,8 @@ class HomeScreenProvider with ChangeNotifier {
 
   //Retrieve user's calendars from mobile device
   //Request permissions first if they haven't been granted
-  getDefaultCalendar(
-      Function onCalendarTasksFound, Function onCalendarFoundDialog) async {
+  getDefaultCalendar(Function onCalendarTasksFound,
+      Function onCalendarFoundDialog, Function onCalendarTasksNotFound) async {
     try {
       var permissionsGranted = await _deviceCalendarPlugin.hasPermissions();
       if (permissionsGranted.isSuccess && !permissionsGranted.data) {
@@ -285,8 +298,8 @@ class HomeScreenProvider with ChangeNotifier {
       final calendarsResult = await _deviceCalendarPlugin.retrieveCalendars();
       final data = calendarsResult.data;
       final result = await onCalendarFoundDialog(data);
+      print('calendar selected is $result');
       if (result != null) {
-        print('$result selected');
         for (Calendar calendar in data) {
           if (calendar.name == result) {
             _defaultUserCalendar = calendar;
@@ -297,12 +310,13 @@ class HomeScreenProvider with ChangeNotifier {
 //          break;
 //        }
         }
-        _popCalendarTasksDialog(onCalendarTasksFound);
+        _popCalendarTasksDialog(onCalendarTasksFound, onCalendarTasksNotFound);
       }
     } catch (e) {}
   }
 
-  _popCalendarTasksDialog(Function onCalendarTasksFound) async {
+  _popCalendarTasksDialog(
+      Function onCalendarTasksFound, Function onCalendarTasksNotFound) async {
     if (_defaultUserCalendar != null && _deviceCalendarPlugin != null) {
       DateTime now = DateTime.now();
       DateTime today = DateTime(now.year, now.month, now.day);
@@ -313,8 +327,12 @@ class HomeScreenProvider with ChangeNotifier {
       if (calendarEvents.data != null) {
         if (calendarEvents.data.length > 0) {
           List events = await _filterCalendarExistingTasks(calendarEvents.data);
-          if (events.length > 0) onCalendarTasksFound(events);
-        }
+          if (events.length > 0)
+            onCalendarTasksFound(events);
+          else
+            onCalendarTasksNotFound();
+        } else
+          onCalendarTasksNotFound();
       }
     }
   }

@@ -3,21 +3,25 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:time_tasker/db_helper.dart';
 import 'package:time_tasker/providers/add_new_task_provider.dart';
 import 'package:time_tasker/reusable_widgets/add_new_task._input.dart';
 import 'package:time_tasker/utils/app_utils.dart';
+import 'package:time_tasker/utils/dialog_utils.dart';
+import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
 import '../constants.dart';
 
 class AddDurationTask extends StatefulWidget {
+  final List totalDurationTime;
+  AddDurationTask(this.totalDurationTime);
   @override
   _AddDurationTaskState createState() => _AddDurationTaskState();
 }
 
 class _AddDurationTaskState extends State<AddDurationTask> {
   MaskTextInputFormatter mask;
-
   @override
   void initState() {
     mask = MaskTextInputFormatter(mask: '##:##');
@@ -40,7 +44,8 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                         TaskTypes.DurationTasks,
                         TextEditingController(),
                         null,
-                        ExpandableController()),
+                        ExpandableController(),
+                        widget.totalDurationTime),
                     child: Consumer<AddNewTaskProvider>(
                         builder: (context, snapshot, _) {
                       return Column(
@@ -84,15 +89,24 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                                 child: Text('Add Task',
                                     style: kAppBarTextStyle.copyWith(
                                         color: Colors.white)),
-                                onPressed: () {
-                                  snapshot.addNewTaskToDB(() {
-                                    Navigator.of(context)
-                                        .popUntil((route) => route.isFirst);
-                                    AppUtils.showFlushBar(
-                                        'Success',
-                                        'Your Task was added successfully!',
-                                        context);
-                                  }, () {}, () {});
+                                onPressed: () async {
+                                  snapshot.addNewTaskToDB(
+                                      sharedPerferencesUtils:
+                                          SharedPerferencesUtils(
+                                              await SharedPreferences
+                                                  .getInstance()),
+                                      onSuccess: () {
+                                        Navigator.of(context)
+                                            .popUntil((route) => route.isFirst);
+                                        AppUtils.showFlushBar(
+                                            'Success',
+                                            'Your Task was added successfully!',
+                                            context);
+                                      },
+                                      onExceedTimeFrameDialog: (errorText) {
+                                        DialogUtils.showDurationExceedDialog(
+                                            context, errorText);
+                                      });
                                 },
                               ),
                             ),
@@ -144,7 +158,6 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                                             ),
                                             onPressed: () {
                                               //snapshot.addNewExpandedTask();
-                                              print('this was called');
                                               snapshot.expandedTasks[index]
                                                   .addOrRemoveTask();
                                             },

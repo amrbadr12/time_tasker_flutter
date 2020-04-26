@@ -8,7 +8,8 @@ import 'package:time_tasker/reusable_widgets/add_task_reusable_cards.dart';
 
 class AddTaskScreen extends StatefulWidget {
   final bool navigateToHome;
-  AddTaskScreen(this.navigateToHome);
+  final durationTotalTime;
+  AddTaskScreen({this.navigateToHome, this.durationTotalTime});
   @override
   _AddTaskScreenState createState() => _AddTaskScreenState();
 }
@@ -29,20 +30,19 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       body: Column(
         children: <Widget>[
           Padding(
-              padding: EdgeInsets.symmetric(
-                  horizontal: kMainDefaultPadding),
+              padding: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
               child: Text(
                 'Choose\nHow To Calculate The Time',
                 softWrap: true,
                 style: kTitleTextStyle.copyWith(
-                    fontSize: 30.0,
-                    fontWeight: FontWeight.bold),
+                    fontSize: 30.0, fontWeight: FontWeight.bold),
               )),
           Expanded(
             child: Align(
-              alignment:Alignment.center,
+              alignment: Alignment.center,
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal:kMainDefaultHeightPadding),
+                padding:
+                    EdgeInsets.symmetric(horizontal: kMainDefaultHeightPadding),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -52,11 +52,14 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                       color: Colors.white70,
                       iconData: FontAwesomeIcons.clock,
                       onTap: () {
-                        widget.navigateToHome?
-                        Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(
-                            builder: (context) => HomeScreen(TaskTypes.StartEndTasks)),(route)=>false):
-                            Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => AddStartEndTaskScreen()));
+                        widget.navigateToHome
+                            ? Navigator.of(context).pushAndRemoveUntil(
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        HomeScreen(TaskTypes.StartEndTasks)),
+                                (route) => false)
+                            : Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => AddStartEndTaskScreen()));
                       },
                     ),
                     SizedBox(
@@ -67,11 +70,15 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                       color: Colors.white70,
                       iconData: FontAwesomeIcons.stopwatch,
                       onTap: () {
-                        widget.navigateToHome?
-                        Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(
-                            builder: (context) => HomeScreen(TaskTypes.DurationTasks)),(route)=>false):
-                            Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => AddDurationTask()));
+                        widget.navigateToHome
+                            ? Navigator.of(context).pushAndRemoveUntil(
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        HomeScreen(TaskTypes.DurationTasks)),
+                                (route) => false)
+                            : Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) =>
+                                    AddDurationTask(widget.durationTotalTime)));
                       },
                     )
                   ],

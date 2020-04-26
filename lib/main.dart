@@ -53,6 +53,10 @@ class MyApp extends StatelessWidget {
     SharedPerferencesUtils utils =
         SharedPerferencesUtils(await SharedPreferences.getInstance());
     bool showHome = utils.getBoolFromSharedPreferences(kShowIntroScreenKey);
-    return showHome ? AddTaskScreen(true) : IntroScreen();
+    return showHome
+        ? AddTaskScreen(
+            navigateToHome: true,
+          )
+        : IntroScreen();
   }
 }

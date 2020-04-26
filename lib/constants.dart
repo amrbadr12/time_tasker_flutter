@@ -45,6 +45,14 @@ final String firstBodyText =
 final String fourthTitleText = 'TimeTasker';
 final String fourthBodyText =
     'TimeTasker is a revolutionary way to put more time in your day!';
+final String timeMoreThan24Hours = """
+The duration of this task exceeds the amount of time you have available. You can not have tasks set for more than 24 hours. 
+
+Please return to your Total Time summary without adding this task and review your Total Time, your Time Balance and tasks. 
+""";
+final String timeLessThan24Hours = """
+The duration of this task exceeds the amount of time you have available. Please re-set your TimeTasker time frame or review your Total Time summary tasks. 
+""";
 final PageDecoration introPageDecoration = PageDecoration(
     titleTextStyle: kTitleTextStyle, bodyTextStyle: kSubTitleTextStyle);
 final introScreenImagesSize = 700.0;

@@ -60,7 +60,11 @@ class _IntroScreenState extends State<IntroScreen> {
         utils.saveIntToSharedPreferences(kTotalBalanceHoursKey, 24);
         utils.saveIntToSharedPreferences(kTotalBalancMinutesKey, 0);
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => AddTaskScreen(true)));
+            context,
+            MaterialPageRoute(
+                builder: (context) => AddTaskScreen(
+                      navigateToHome: true,
+                    )));
       },
       showSkipButton: true,
       skip: const Text("Skip"),

@@ -15,7 +15,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>NSCalendarsUsageDescription</key>
-    <string>This app needs to sync the tasks with the device calendar</string>
+    <string>TimeTasker will need to access your calendar if you request your calendar entries to be synced into TimeTasker</string>
     <key>NSContactsUsageDescription</key>
     <string>Needs to sync with contacts</string>
 	<key>CFBundleShortVersionString</key>

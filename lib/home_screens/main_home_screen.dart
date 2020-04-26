@@ -47,6 +47,8 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }, (data) async {
         return await DialogUtils.showAvailableCalendarsDialog(context, data);
+      }, () {
+        DialogUtils.showCalendarTasksNotFoundDialog(context);
       }),
       child: Consumer<HomeScreenProvider>(builder: (context, snapshot, _) {
         return Scaffold(
@@ -64,28 +66,36 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
               actions: <Widget>[
-                IconButton(
-                  icon: Icon(
-                    FontAwesomeIcons.calendar,
-                    color: Colors.blueGrey[700],
-                    size: 15.0,
-                  ),
-                  padding: EdgeInsets.all(0.0),
-                  onPressed: () async {
-                    await snapshot.getDefaultCalendar((events) async {
-                      if (await DialogUtils.showTasksFromCalendarDialog(
-                          context, events)) {
-                        await Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => AddStartEndTaskScreen(
-                                prefillCalendarEvent: events)));
-                      }
-                    }, (data) async {
-                      return await DialogUtils.showAvailableCalendarsDialog(
-                          context, data);
-                    });
-                    snapshot.refreshMainScreen();
-                  },
-                ),
+                snapshot.selectedTask == TaskTypes.StartEndTasks
+                    ? IconButton(
+                        icon: Icon(
+                          FontAwesomeIcons.calendar,
+                          color: Colors.blueGrey[700],
+                          size: 15.0,
+                        ),
+                        padding: EdgeInsets.all(0.0),
+                        onPressed: () async {
+                          await snapshot.getDefaultCalendar((events) async {
+                            if (await DialogUtils.showTasksFromCalendarDialog(
+                                context, events)) {
+                              await Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          AddStartEndTaskScreen(
+                                              prefillCalendarEvent: events)));
+                            }
+                          }, (data) async {
+                            return await DialogUtils
+                                .showAvailableCalendarsDialog(context, data);
+                          }, () {
+                            DialogUtils.showCalendarTasksNotFoundDialog(
+                                context);
+                          });
+                          snapshot.refreshMainScreen();
+                        })
+                    : SizedBox(
+                        width: 0.0,
+                      ),
                 FlatButton(
                   child: Text(
                     'TT',
@@ -96,7 +106,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: () async {
                     await Navigator.of(context)
                         .push(MaterialPageRoute(
-                            builder: (context) => AddTaskScreen(false)))
+                            builder: (context) => AddTaskScreen(
+                                  navigateToHome: false,
+                                  durationTotalTime: snapshot.durationTotalTime,
+                                )))
                         .then((onValue) {
                       try {
                         if (snapshot != null) snapshot.refreshMainScreen();
@@ -116,7 +129,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         onPressed: () {
                           snapshot.onTaskAddButtonTap(() async {
                             await Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => AddDurationTask()));
+                                builder: (context) => AddDurationTask(
+                                    snapshot.durationTotalTime)));
                             snapshot.refreshMainScreen();
                           }, () async {
                             await Navigator.of(context).push(MaterialPageRoute(
@@ -191,8 +205,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               snapshot.onTaskAddButtonTap(() async {
                                 await Navigator.of(context).push(
                                     MaterialPageRoute(
-                                        builder: (context) =>
-                                            AddDurationTask()));
+                                        builder: (context) => AddDurationTask(
+                                            snapshot.durationTotalTime)));
                                 snapshot.refreshMainScreen();
                               }, () async {
                                 await Navigator.of(context).push(

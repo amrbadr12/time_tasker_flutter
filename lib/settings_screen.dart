@@ -96,7 +96,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: Padding(
                 padding: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
                 child: Text(
-                  'Show Reset Dialog',
+                  'Enable re-set function',
                   style: kInputAddTaskLabelTextStyle,
                 )),
             value: _currentResetSetting,

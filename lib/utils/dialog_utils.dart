@@ -61,6 +61,49 @@ class DialogUtils {
         });
   }
 
+  static Future<bool> showDurationExceedDialog(
+      BuildContext context, String errorText) async {
+    return await showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: Text('Duration is more than selected time frame'),
+            content: Text(errorText),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('Ok'),
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                },
+                textColor: Colors.lightBlue,
+              ),
+            ],
+          );
+        });
+  }
+
+  static Future<bool> showCalendarTasksNotFoundDialog(
+      BuildContext context) async {
+    return await showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: Text('No tasks found...'),
+            content:
+                Text('Time Tasker could\'t found any tasks in this calendar.'),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('Ok'),
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                },
+                textColor: Colors.lightBlue,
+              ),
+            ],
+          );
+        });
+  }
+
   static Future<bool> showBedSleepTasksDialog(BuildContext context) async {
     return await showCupertinoDialog(
         context: context,

@@ -9,6 +9,7 @@ import 'package:time_tasker/db_helper.dart';
 import 'package:time_tasker/models/expandedStateModel.dart';
 import 'package:time_tasker/models/task.dart';
 import 'package:time_tasker/utils/app_utils.dart';
+import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
 import '../utils/app_utils.dart';
 
@@ -24,14 +25,19 @@ class AddNewTaskProvider with ChangeNotifier {
   List<String> _previousTasks;
   List _previousStartEndTasks;
   List _prefillCalendarEvents;
+  final _totalUserDurationTime;
   bool _calendarTask = false;
-  String _taskName;
   var _overLapPeriod;
   ExpandableController _expandableController;
   List<ExpandedStateModel> _expandedTasks;
 
-  AddNewTaskProvider(this._db, this._currentTaskType, this._nameController,
-      this._prefillCalendarEvents, this._expandableController) {
+  AddNewTaskProvider(
+      this._db,
+      this._currentTaskType,
+      this._nameController,
+      this._prefillCalendarEvents,
+      this._expandableController,
+      this._totalUserDurationTime) {
     readMainScreenElementsFromDB(_currentTaskType);
     _prefillCalendarEventToUI();
     _expandedTasks = List();
@@ -55,6 +61,8 @@ class AddNewTaskProvider with ChangeNotifier {
   TextEditingController get durationController => _durationController;
 
   List get previousStartEndTasks => _previousStartEndTasks;
+
+  get userTotalDurationTime => _totalUserDurationTime;
 
   ExpandableController get expandableController => _expandableController;
 
@@ -170,11 +178,9 @@ class AddNewTaskProvider with ChangeNotifier {
                   _pickedEndTime.minute,
                   overLappingTask.minute);
               _overLapPeriod = '${overLap[0]},${overLap[1]}';
-              print('overlap period is $_overLapPeriod');
               return false;
             } else
-              print('overlapping task');
-            return true;
+              return true;
           }
         }
       }
@@ -192,13 +198,62 @@ class AddNewTaskProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<int> addNewTaskToDB(Function onSuccess, Function onOverlappingTask,
-      Function onAddingTaskToCalendar) async {
+  Future<int> addNewTaskToDB(
+      {SharedPerferencesUtils sharedPerferencesUtils,
+      Function onSuccess,
+      Function onOverlappingTask,
+      Function onExceedTimeFrameDialog,
+      Function onAddingTaskToCalendar,
+      Function onError}) async {
     int taskID = -1;
     if (_db != null) {
       if (validateTaskInputs()) {
         switch (_currentTaskType) {
           case TaskTypes.DurationTasks:
+            int userTotalHourBalance = sharedPerferencesUtils
+                .getIntFromSharedPreferences(kTotalBalanceHoursKey);
+            int userTotalMinutesBalance = sharedPerferencesUtils
+                .getIntFromSharedPreferences(kTotalBalancMinutesKey);
+            TimeOfDay totalDuration;
+            _totalUserDurationTime != null
+                ? totalDuration = TimeOfDay(
+                    hour: _totalUserDurationTime[0] ?? 0,
+                    minute: _totalUserDurationTime[1] ?? 0)
+                : totalDuration = TimeOfDay(hour: 0, minute: 0);
+            List expandedTime = [
+              _pickedDurationTime.hour,
+              _pickedDurationTime.minute
+            ];
+            if (_expandedTasks.length > 0) {
+              for (int i = 0; i < _expandedTasks.length; i++) {
+                expandedTime = AppUtils.addTime(
+                    expandedTime[0],
+                    _pickedDurationTime.hour,
+                    expandedTime[1],
+                    _pickedDurationTime.minute);
+              }
+            }
+            List addedTime = AppUtils.addTime(totalDuration.hour,
+                expandedTime[0], totalDuration.minute, expandedTime[1]);
+            switch (userTotalHourBalance) {
+              case 24:
+                if (addedTime[0] >= userTotalHourBalance) {
+                  if (addedTime[0] == userTotalHourBalance) {
+                    if (addedTime[1] < userTotalMinutesBalance) break;
+                  }
+                  onExceedTimeFrameDialog(timeMoreThan24Hours);
+                  return -1;
+                }
+                break;
+              default:
+                if (addedTime[0] >= userTotalHourBalance) {
+                  if (addedTime[0] == userTotalHourBalance) {
+                    if (addedTime[1] < userTotalMinutesBalance) break;
+                  }
+                  onExceedTimeFrameDialog(timeMoreThan24Hours);
+                  return -1;
+                }
+            }
             String commaSeparatedTasks =
                 AppUtils.parseExpandedTasksToCommaSeparatedTasks(
                     _expandedTasks);
