@@ -23,6 +23,9 @@ class HomeScreenProvider with ChangeNotifier {
   DBHelper _db;
   Calendar _defaultUserCalendar;
   DeviceCalendarPlugin _deviceCalendarPlugin;
+  Function _onCalendarTasksFound;
+  Function _onSelectDeviceCalendar;
+  Function _onTasksNotFound;
 
   HomeScreenProvider(
       this._db,
@@ -32,11 +35,13 @@ class HomeScreenProvider with ChangeNotifier {
       Function onSelectDeviceCalendar,
       Function onTasksNotFound) {
     _setTaskType();
+    _onCalendarTasksFound = onCalendarTasksFound;
+    _onSelectDeviceCalendar = onSelectDeviceCalendar;
+    _onTasksNotFound = onTasksNotFound;
     _setTasksData(TaskAction.TotalTime);
     _recentTasks = [];
     if (_selectedTask == TaskTypes.StartEndTasks)
-      getDefaultCalendar(
-          onCalendarTasksFound, onSelectDeviceCalendar, onTasksNotFound);
+      getDefaultCalendar(repeat: true);
   }
 
   TabModel get currentTabModel => _currentTabModel;
@@ -89,6 +94,11 @@ class HomeScreenProvider with ChangeNotifier {
         ? index = 1
         : index = currentBottomNavBarIndex;
     onBottomNavBarTap(index, () {});
+  }
+
+  void refreshAndShowCalendarDialog() {
+    refreshMainScreen();
+    getDefaultCalendar(repeat: true);
   }
 
   onTaskAddButtonTap(Function navigateToDurationCallback,
@@ -285,8 +295,7 @@ class HomeScreenProvider with ChangeNotifier {
 
   //Retrieve user's calendars from mobile device
   //Request permissions first if they haven't been granted
-  getDefaultCalendar(Function onCalendarTasksFound,
-      Function onCalendarFoundDialog, Function onCalendarTasksNotFound) async {
+  getDefaultCalendar({bool repeat}) async {
     try {
       var permissionsGranted = await _deviceCalendarPlugin.hasPermissions();
       if (permissionsGranted.isSuccess && !permissionsGranted.data) {
@@ -297,26 +306,19 @@ class HomeScreenProvider with ChangeNotifier {
       }
       final calendarsResult = await _deviceCalendarPlugin.retrieveCalendars();
       final data = calendarsResult.data;
-      final result = await onCalendarFoundDialog(data);
-      print('calendar selected is $result');
-      if (result != null) {
-        for (Calendar calendar in data) {
-          if (calendar.name == result) {
-            _defaultUserCalendar = calendar;
-            break;
-          }
-//        if (!calendar.isReadOnly) {
-//          _defaultUserCalendar = calendar;
-//          break;
-//        }
+//      final result = await _onSelectDeviceCalendar(data);
+//      print('calendar selected is $result');
+      for (Calendar calendar in data) {
+        if (!calendar.isReadOnly) {
+          _defaultUserCalendar = calendar;
+          break;
         }
-        _popCalendarTasksDialog(onCalendarTasksFound, onCalendarTasksNotFound);
       }
+      _popCalendarTasksDialog(repeat);
     } catch (e) {}
   }
 
-  _popCalendarTasksDialog(
-      Function onCalendarTasksFound, Function onCalendarTasksNotFound) async {
+  _popCalendarTasksDialog(bool repeat) async {
     if (_defaultUserCalendar != null && _deviceCalendarPlugin != null) {
       DateTime now = DateTime.now();
       DateTime today = DateTime(now.year, now.month, now.day);
@@ -326,13 +328,13 @@ class HomeScreenProvider with ChangeNotifier {
           RetrieveEventsParams(startDate: today, endDate: tomorrow));
       if (calendarEvents.data != null) {
         if (calendarEvents.data.length > 0) {
-          List events = await _filterCalendarExistingTasks(calendarEvents.data);
-          if (events.length > 0)
-            onCalendarTasksFound(events);
-          else
-            onCalendarTasksNotFound();
-        } else
-          onCalendarTasksNotFound();
+          List events = _filterAllDayEvents(
+              await _filterCalendarExistingTasks(calendarEvents.data));
+          if (events.length > 0) {
+            final result = await _onCalendarTasksFound(events);
+            if (result) refreshAndShowCalendarDialog();
+          } else if (!repeat) _onTasksNotFound();
+        } else if (!repeat) _onTasksNotFound();
       }
     }
   }
@@ -362,6 +364,14 @@ class HomeScreenProvider with ChangeNotifier {
       }
     }
     return eventsResult;
+  }
+
+  List _filterAllDayEvents(List<Event> events) {
+    List<Event> result = List();
+    for (Event e in events) {
+      if (!e.allDay) result.add(e);
+    }
+    return result;
   }
 
   Future<List> readMainScreenElementsFromDB(TaskTypes taskTypes) async {

@@ -40,11 +40,15 @@ class _HomeScreenState extends State<HomeScreen> {
       create: (context) => HomeScreenProvider(
           DBHelper(), widget.defaultTaskType, DeviceCalendarPlugin(),
           (events) async {
-        if (await DialogUtils.showTasksFromCalendarDialog(context, events)) {
+        final result =
+            await DialogUtils.showTasksFromCalendarDialog(context, events);
+        print('dialog result is $result');
+        if (result) {
           await Navigator.of(context).push(MaterialPageRoute(
               builder: (context) =>
                   AddStartEndTaskScreen(prefillCalendarEvent: events)));
         }
+        return result;
       }, (data) async {
         return await DialogUtils.showAvailableCalendarsDialog(context, data);
       }, () {
@@ -75,23 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         padding: EdgeInsets.all(0.0),
                         onPressed: () async {
-                          await snapshot.getDefaultCalendar((events) async {
-                            if (await DialogUtils.showTasksFromCalendarDialog(
-                                context, events)) {
-                              await Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          AddStartEndTaskScreen(
-                                              prefillCalendarEvent: events)));
-                            }
-                          }, (data) async {
-                            return await DialogUtils
-                                .showAvailableCalendarsDialog(context, data);
-                          }, () {
-                            DialogUtils.showCalendarTasksNotFoundDialog(
-                                context);
-                          });
-                          snapshot.refreshMainScreen();
+                          await snapshot.getDefaultCalendar();
                         })
                     : SizedBox(
                         width: 0.0,
