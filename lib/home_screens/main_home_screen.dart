@@ -42,7 +42,6 @@ class _HomeScreenState extends State<HomeScreen> {
           (events) async {
         final result =
             await DialogUtils.showTasksFromCalendarDialog(context, events);
-        print('dialog result is $result');
         if (result) {
           await Navigator.of(context).push(MaterialPageRoute(
               builder: (context) =>
@@ -79,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         padding: EdgeInsets.all(0.0),
                         onPressed: () async {
-                          await snapshot.getDefaultCalendar();
+                          await snapshot.getDefaultCalendar(repeat: false);
                         })
                     : SizedBox(
                         width: 0.0,

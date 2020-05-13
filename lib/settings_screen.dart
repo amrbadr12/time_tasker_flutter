@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:time_tasker/reusable_widgets/add_task_reusable_cards.dart';
 import 'package:time_tasker/utils/app_utils.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
@@ -15,6 +17,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   double _hoursSliderValue;
   double _minutesSliderValue;
   bool _currentResetSetting = false;
+  TimeOfDay _timeSelected;
 
   @override
   void initState() {
@@ -90,7 +93,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   'You can adjust the time frame to calculate your tasks from 1 minute - 24 hours.',
                   style: TextStyle(fontSize: 13.0, color: Colors.grey[700]))),
           SizedBox(
-            height: kTitleDefaultPaddingVertical,
+            height: kMainDefaultPadding,
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
+            child: DateInputField(
+              icon: Icon(
+                FontAwesomeIcons.clock,
+                size: 20.0,
+                color: kTasksDateIconColor1,
+              ),
+              containerColor: kTasksDateContainerColor,
+              text: _timeSelected != null
+                  ? AppUtils.formatTimeOfDay(_timeSelected) + ' selected'
+                  : 'Or set the  time',
+              onDateChanged: () async {
+                _timeSelected = await AppUtils.showTimePickerDialog(context);
+                setState(() {
+                  calculateSliderHoursAndMinutesFromTimeOfDay(_timeSelected);
+                });
+              },
+            ),
+          ),
+          SizedBox(
+            height: kMainDefaultPadding,
           ),
           SwitchListTile(
             title: Padding(
@@ -192,5 +218,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
       return _sharedPreferences.getBoolFromSharedPreferences(key);
     }
     return false;
+  }
+
+  void calculateSliderHoursAndMinutesFromTimeOfDay(TimeOfDay tod) {
+    DateTime nowDate = DateTime.now();
+    DateTime selectedTimeOfDay = AppUtils.formatTimeOfDayToDateTime(tod);
+    if (selectedTimeOfDay.hour < nowDate.hour) return;
+    List<int> time = AppUtils.minusTime(selectedTimeOfDay.hour, nowDate.hour,
+        selectedTimeOfDay.minute, nowDate.minute);
+    _hoursSliderValue = double.parse(time[0].toString());
+    _minutesSliderValue = double.parse(time[1].toString());
   }
 }
