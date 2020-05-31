@@ -31,7 +31,7 @@ dependencies:
   path: ^1.6.4
   provider: ^4.0.3
   intl: ^0.16.1
-  flushbar: ^1.9.1
+  flushbar: 1.10.4
   shared_preferences: ^0.5.6+1
   jiffy: ^2.2.0
   autocomplete_textfield: ^1.7.3

@@ -11,6 +11,7 @@ final String kShowIntroScreenKey = 'show_intro_screen_key';
 final String kTotalBalanceHoursKey = 'total_balance_hours_key';
 final String kTotalBalancMinutesKey = 'total_balance_minutes_key';
 final String kResetDialogSettingsOption = 'reset_settings_key';
+final String kSavedCalendarKey = 'user_saved_calendar_key';
 final kTitleDefaultPaddingHorizontal = 20.0;
 final kTitleDefaultPaddingVertical = 30.0;
 final TextStyle kAppBarTextStyle = GoogleFonts.lato(

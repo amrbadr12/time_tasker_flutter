@@ -306,14 +306,27 @@ class HomeScreenProvider with ChangeNotifier {
       }
       final calendarsResult = await _deviceCalendarPlugin.retrieveCalendars();
       final data = calendarsResult.data;
-//      final result = await _onSelectDeviceCalendar(data);
-//      print('calendar selected is $result');
-      for (Calendar calendar in data) {
-        if (!calendar.isReadOnly) {
-          _defaultUserCalendar = calendar;
-          break;
+      SharedPerferencesUtils sharedPrefsUtils =
+          SharedPerferencesUtils(await SharedPreferences.getInstance());
+      String userSavedCalendar =
+          sharedPrefsUtils.getStringFromSharedPreferences(kSavedCalendarKey);
+      if (userSavedCalendar == null) {
+        for (Calendar calendar in data) {
+          if (!calendar.isReadOnly) {
+            _defaultUserCalendar = calendar;
+            break;
+          }
+        }
+      } else {
+        for (Calendar calendar in data) {
+          if (calendar.name == userSavedCalendar) {
+            _defaultUserCalendar = calendar;
+            break;
+          }
         }
       }
+//      final result = await _onSelectDeviceCalendar(data);
+//      print('calendar selected is $result');
       _popCalendarTasksDialog(repeat);
     } catch (e) {}
   }

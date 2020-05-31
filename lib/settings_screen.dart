@@ -1,3 +1,4 @@
+import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,14 +15,20 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   SharedPerferencesUtils _sharedPreferences;
+  DeviceCalendarPlugin _deviceCalendarPlugin;
+  List<String> _calendars = List();
   double _hoursSliderValue;
   double _minutesSliderValue;
   bool _currentResetSetting = false;
   TimeOfDay _timeSelected;
+  String _selectedDropDownValue;
+  bool _isCalendarPermissionsGranted = true;
 
   @override
   void initState() {
+    _deviceCalendarPlugin = DeviceCalendarPlugin();
     getSharedPrefs();
+    getDefaultCalendar();
     super.initState();
   }
 
@@ -115,10 +122,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
           ),
-          SizedBox(
-            height: kMainDefaultPadding,
-          ),
           SwitchListTile(
+            contentPadding: EdgeInsets.all(0),
             title: Padding(
                 padding: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
                 child: Text(
@@ -133,6 +138,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
               });
             },
           ),
+          SizedBox(
+            height: 10.0,
+          ),
+          _isCalendarPermissionsGranted
+              ? Row(
+                  children: [
+                    Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
+                      child: Text(
+                        'Default Calendar:',
+                        style: kInputAddTaskLabelTextStyle,
+                      ),
+                    ),
+                    Expanded(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: _selectedDropDownValue,
+                        onChanged: (String newValue) {
+                          setState(() {
+                            _selectedDropDownValue = newValue;
+                          });
+                        },
+                        items: _calendars
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(
+                              value,
+                              style: kInputAddTaskLabelTextStyle.copyWith(
+                                  fontSize: 15),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ],
+                )
+              : Padding(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
+                  child: Text(
+                      'Please enable the calendar permission from your phone settings.',
+                      style:
+                          TextStyle(fontSize: 13.0, color: Colors.red[700]))),
           SizedBox(
             height: kTitleDefaultPaddingVertical,
           ),
@@ -180,6 +230,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           kTotalBalancMinutesKey, _minutesSliderValue.toInt());
       _sharedPreferences.saveBoolToSharedPreferences(
           kResetDialogSettingsOption, _currentResetSetting);
+      _sharedPreferences.saveStringToSharedPreferences(
+          kSavedCalendarKey, _selectedDropDownValue);
       onSuccess();
     }
   }
@@ -218,6 +270,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
       return _sharedPreferences.getBoolFromSharedPreferences(key);
     }
     return false;
+  }
+
+  getDefaultCalendar() async {
+    try {
+      var permissionsGranted = await _deviceCalendarPlugin.hasPermissions();
+      if (permissionsGranted.isSuccess && !permissionsGranted.data) {
+        permissionsGranted = await _deviceCalendarPlugin.requestPermissions();
+        if (!permissionsGranted.isSuccess || !permissionsGranted.data) {
+          setState(() {
+            _isCalendarPermissionsGranted = false;
+          });
+          return;
+        }
+      }
+      _isCalendarPermissionsGranted = true;
+      final calendarsResult = await _deviceCalendarPlugin.retrieveCalendars();
+      final data = calendarsResult.data;
+      for (Calendar calendar in data) {
+        _calendars.add(calendar.name);
+      }
+      final localCalendar =
+          _sharedPreferences.getStringFromSharedPreferences(kSavedCalendarKey);
+      localCalendar != null
+          ? _selectedDropDownValue = localCalendar
+          : _selectedDropDownValue = _calendars[0];
+      setState(() {});
+    } catch (e) {}
   }
 
   void calculateSliderHoursAndMinutesFromTimeOfDay(TimeOfDay tod) {

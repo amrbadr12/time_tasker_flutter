@@ -284,7 +284,7 @@ class AppUtils {
         parseCommaSeparatedExpandedTasksToString(task.expandedTasks);
     if (expandedTasks.isNotEmpty) {
       durationInHHMM = formatTaskLengthToHHMM(
-          duration.hour, duration.minute, expandedTasks.length);
+          duration.hour, duration.minute, expandedTasks.length + 1);
     }
     UITask uiTask = UITask(
         task.id,

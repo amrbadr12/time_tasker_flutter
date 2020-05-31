@@ -250,7 +250,7 @@ class AddNewTaskProvider with ChangeNotifier {
                   if (addedTime[0] == userTotalHourBalance) {
                     if (addedTime[1] < userTotalMinutesBalance) break;
                   }
-                  onExceedTimeFrameDialog(timeMoreThan24Hours);
+                  onExceedTimeFrameDialog(timeLessThan24Hours);
                   return -1;
                 }
             }
