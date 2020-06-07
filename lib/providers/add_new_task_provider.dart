@@ -25,6 +25,7 @@ class AddNewTaskProvider with ChangeNotifier {
   List<String> _previousTasks;
   List _previousStartEndTasks;
   List _prefillCalendarEvents;
+  List<int> _calculatedDuration;
   final _totalUserDurationTime;
   bool _calendarTask = false;
   var _overLapPeriod;
@@ -208,12 +209,12 @@ class AddNewTaskProvider with ChangeNotifier {
     int taskID = -1;
     if (_db != null) {
       if (validateTaskInputs()) {
+        int userTotalHourBalance = sharedPerferencesUtils
+            .getIntFromSharedPreferences(kTotalBalanceHoursKey);
+        int userTotalMinutesBalance = sharedPerferencesUtils
+            .getIntFromSharedPreferences(kTotalBalanceMinutesKey);
         switch (_currentTaskType) {
           case TaskTypes.DurationTasks:
-            int userTotalHourBalance = sharedPerferencesUtils
-                .getIntFromSharedPreferences(kTotalBalanceHoursKey);
-            int userTotalMinutesBalance = sharedPerferencesUtils
-                .getIntFromSharedPreferences(kTotalBalancMinutesKey);
             TimeOfDay totalDuration;
             _totalUserDurationTime != null
                 ? totalDuration = TimeOfDay(
@@ -235,25 +236,11 @@ class AddNewTaskProvider with ChangeNotifier {
             }
             List addedTime = AppUtils.addTime(totalDuration.hour,
                 expandedTime[0], totalDuration.minute, expandedTime[1]);
-            switch (userTotalHourBalance) {
-              case 24:
-                if (addedTime[0] >= userTotalHourBalance) {
-                  if (addedTime[0] == userTotalHourBalance) {
-                    if (addedTime[1] < userTotalMinutesBalance) break;
-                  }
-                  onExceedTimeFrameDialog(timeMoreThan24Hours);
-                  return -1;
-                }
-                break;
-              default:
-                if (addedTime[0] >= userTotalHourBalance) {
-                  if (addedTime[0] == userTotalHourBalance) {
-                    if (addedTime[1] < userTotalMinutesBalance) break;
-                  }
-                  onExceedTimeFrameDialog(timeLessThan24Hours);
-                  return -1;
-                }
-            }
+            if (_checkIfTimeIsMoreThanTimeBalance(
+                onExceedTimeFrameDialog,
+                userTotalHourBalance,
+                userTotalMinutesBalance,
+                addedTime)) return -1;
             String commaSeparatedTasks =
                 AppUtils.parseExpandedTasksToCommaSeparatedTasks(
                     _expandedTasks);
@@ -271,6 +258,16 @@ class AddNewTaskProvider with ChangeNotifier {
           case TaskTypes.StartEndTasks:
             if (!checkIfOverlappingTask()) {
               //Adding the task to the device's calendar
+              List addedTime = AppUtils.addTime(
+                  _totalUserDurationTime[0],
+                  _calculatedDuration[0],
+                  _totalUserDurationTime[1],
+                  _calculatedDuration[1]);
+              if (_checkIfTimeIsMoreThanTimeBalance(
+                  onExceedTimeFrameDialog,
+                  userTotalHourBalance,
+                  userTotalMinutesBalance,
+                  addedTime)) return -1;
               if (!_calendarTask) {
                 if (await onAddingTaskToCalendar()) {
                   final add_2_calendar.Event event = add_2_calendar.Event(
@@ -317,7 +314,6 @@ class AddNewTaskProvider with ChangeNotifier {
               AppUtils.formatDateTimeToTimeOfDay(calendarEvent.end);
 
           _calendarTask = true;
-          //_prefillCalendarEvents.removeAt(0);
           notifyListeners();
         }
       }
@@ -350,6 +346,30 @@ class AddNewTaskProvider with ChangeNotifier {
     }
     textTasks = textTasks.toSet().toList();
     return textTasks;
+  }
+
+  bool _checkIfTimeIsMoreThanTimeBalance(Function onExceedTimeFrame,
+      int userTotalHourBalance, int userTotalMinutesBalance, List addedTime) {
+    switch (userTotalHourBalance) {
+      case 24:
+        if (addedTime[0] >= userTotalHourBalance) {
+          if (addedTime[0] == userTotalHourBalance) {
+            if (addedTime[1] < userTotalMinutesBalance) break;
+          }
+          onExceedTimeFrame(timeMoreThan24Hours);
+          return true;
+        }
+        break;
+      default:
+        if (addedTime[0] >= userTotalHourBalance) {
+          if (addedTime[0] == userTotalHourBalance) {
+            if (addedTime[1] < userTotalMinutesBalance) break;
+          }
+          onExceedTimeFrame(timeLessThan24Hours);
+          return true;
+        }
+    }
+    return false;
   }
 
   bool validateTaskInputs() {
@@ -401,13 +421,15 @@ class AddNewTaskProvider with ChangeNotifier {
     if (_pickedStartTime != null && _pickedEndTime != null) {
       if (_pickedStartTime.hour.toString().isNotEmpty &&
           _pickedEndTime.hour.toString().isNotEmpty) {
-        List<int> duration = AppUtils.calculateDuration(
+        _calculatedDuration = AppUtils.calculateDuration(
             _pickedStartTime.hour,
             _pickedEndTime.hour,
             _pickedStartTime.minute,
             _pickedEndTime.minute);
-        String durationHours = AppUtils.formatTimeToTwoDecimals(duration[0]);
-        String durationMinutes = AppUtils.formatTimeToTwoDecimals(duration[1]);
+        String durationHours =
+            AppUtils.formatTimeToTwoDecimals(_calculatedDuration[0]);
+        String durationMinutes =
+            AppUtils.formatTimeToTwoDecimals(_calculatedDuration[1]);
         return 'Total Duration: $durationHours h: $durationMinutes m';
       }
     }

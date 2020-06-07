@@ -23,6 +23,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   TimeOfDay _timeSelected;
   String _selectedDropDownValue;
   bool _isCalendarPermissionsGranted = true;
+  bool _isTimerPickerSelected = false;
 
   @override
   void initState() {
@@ -47,7 +48,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Padding(
               padding: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
               child: Text(
-                'TimeTasker time frame',
+                'TimeTasker Settings',
                 softWrap: true,
                 style: kTitleTextStyle.copyWith(
                     fontSize: 30.0, fontWeight: FontWeight.bold),
@@ -64,6 +65,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onChanged: (value) {
                 setState(() {
                   _hoursSliderValue = value;
+                  _isTimerPickerSelected = false;
                 });
               }),
           Padding(
@@ -84,6 +86,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onChanged: (value) {
                 setState(() {
                   _minutesSliderValue = value;
+                  _isTimerPickerSelected = false;
                 });
               }),
           Padding(
@@ -115,29 +118,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ? AppUtils.formatTimeOfDay(_timeSelected) + ' selected'
                   : 'Or set the  time',
               onDateChanged: () async {
-                _timeSelected = await AppUtils.showTimePickerDialog(context);
-                setState(() {
-                  calculateSliderHoursAndMinutesFromTimeOfDay(_timeSelected);
-                });
+                TimeOfDay temp = await AppUtils.showTimePickerDialog(context);
+                if (AppUtils.checkIfTimePickerDateIsToday(temp)) {
+                  _timeSelected = temp;
+                  setState(() {
+                    calculateSliderHoursAndMinutesFromTimeOfDay(
+                      _timeSelected,
+                    );
+                  });
+                }
               },
             ),
           ),
-          SwitchListTile(
-            contentPadding: EdgeInsets.all(0),
-            title: Padding(
-                padding: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
-                child: Text(
-                  'Enable re-set function',
-                  style: kInputAddTaskLabelTextStyle,
-                )),
-            value: _currentResetSetting,
-            activeColor: kTasksDateIconColor2,
-            onChanged: (bool value) {
-              setState(() {
-                _currentResetSetting = value;
-              });
-            },
-          ),
+//          SwitchListTile(
+//            contentPadding: EdgeInsets.all(0),
+//            title: Padding(
+//                padding: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
+//                child: Text(
+//                  'Enable re-set function',
+//                  style: kInputAddTaskLabelTextStyle,
+//                )),
+//            value: _currentResetSetting,
+//            activeColor: kTasksDateIconColor2,
+//            onChanged: (bool value) {
+//              setState(() {
+//                _currentResetSetting = value;
+//              });
+//            },
+//          ),
           SizedBox(
             height: 10.0,
           ),
@@ -216,9 +224,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _hoursSliderValue =
           readSliderItemFromLocal(kTotalBalanceHoursKey).toDouble();
       _minutesSliderValue =
-          readSliderItemFromLocal(kTotalBalancMinutesKey).toDouble();
+          readSliderItemFromLocal(kTotalBalanceMinutesKey).toDouble();
       _currentResetSetting =
           readResetSettingFromLocal(kResetDialogSettingsOption);
+      int timeSaved = _sharedPreferences
+          .getIntFromSharedPreferences(kTimeSelectedSettingsKey);
+      if (timeSaved != 0) {
+        _isTimerPickerSelected = true;
+        DateTime timeSavedDateTime =
+            AppUtils.convertMillisecondsSinceEpochToDateTime(timeSaved);
+        _timeSelected = AppUtils.formatDateTimeToTimeOfDay(timeSavedDateTime);
+      }
     });
   }
 
@@ -227,11 +243,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _sharedPreferences.saveIntToSharedPreferences(
           kTotalBalanceHoursKey, _hoursSliderValue.toInt());
       _sharedPreferences.saveIntToSharedPreferences(
-          kTotalBalancMinutesKey, _minutesSliderValue.toInt());
+          kTotalBalanceMinutesKey, _minutesSliderValue.toInt());
       _sharedPreferences.saveBoolToSharedPreferences(
           kResetDialogSettingsOption, _currentResetSetting);
       _sharedPreferences.saveStringToSharedPreferences(
           kSavedCalendarKey, _selectedDropDownValue);
+      if (_timeSelected != null) {
+        if (_isTimerPickerSelected) {
+          _sharedPreferences.saveIntToSharedPreferences(
+              kTimeSelectedSettingsKey,
+              AppUtils.formatTimeOfDayToTimeInSeconds(_timeSelected));
+        } else {
+          _sharedPreferences.saveIntToSharedPreferences(
+              kTimeSelectedSettingsKey, 0);
+        }
+      }
       onSuccess();
     }
   }
@@ -307,5 +333,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         selectedTimeOfDay.minute, nowDate.minute);
     _hoursSliderValue = double.parse(time[0].toString());
     _minutesSliderValue = double.parse(time[1].toString());
+    _isTimerPickerSelected = true;
   }
 }

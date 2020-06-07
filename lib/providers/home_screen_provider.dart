@@ -14,6 +14,7 @@ class HomeScreenProvider with ChangeNotifier {
   TabModel _currentTabModel;
   String _totalTime;
   List _durationTotalTime;
+  List _startEndDurationTotalTime;
   String _totalBalance;
   List<UITask> _recentTasks;
   UITask _upcomingTask;
@@ -55,6 +56,8 @@ class HomeScreenProvider with ChangeNotifier {
   String get totalTime => _totalTime;
 
   List get durationTotalTime => _durationTotalTime;
+
+  List get startEndTotalTime => _startEndDurationTotalTime;
 
   bool get noTodayTasks => _noTodayTasks;
 
@@ -151,7 +154,7 @@ class HomeScreenProvider with ChangeNotifier {
           int userTotalHourBalance = sharedPerferencesUtils
               .getIntFromSharedPreferences(kTotalBalanceHoursKey);
           int userTotalMinutesBalance = sharedPerferencesUtils
-              .getIntFromSharedPreferences(kTotalBalancMinutesKey);
+              .getIntFromSharedPreferences(kTotalBalanceMinutesKey);
           List<int> totalBalance =
               AppUtils.calculateTimeBalanceFromFormattedTime(
                   _totalTime, userTotalHourBalance, userTotalMinutesBalance);
@@ -285,6 +288,7 @@ class HomeScreenProvider with ChangeNotifier {
             time = AppUtils.addTime(duration[0], hour, duration[1], minute);
             hour = time[0];
             minute = time[1];
+            _startEndDurationTotalTime = time;
           }
           return AppUtils.formatTimeToHHMM(hour, minute);
           break;

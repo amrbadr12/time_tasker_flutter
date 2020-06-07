@@ -181,15 +181,15 @@ class MainScreenReusableTab extends StatelessWidget {
                             ),
                             onPressed: onReset,
                           ),
-                          IconButton(
-                            padding: EdgeInsets.all(0.0),
-                            icon: Icon(
-                              FontAwesomeIcons.plus,
-                              color: Colors.blue[700],
-                              size: 15.0,
-                            ),
-                            onPressed: onAddButtonTap,
-                          ),
+//                          IconButton(
+//                            padding: EdgeInsets.all(0.0),
+//                            icon: Icon(
+//                              FontAwesomeIcons.plus,
+//                              color: Colors.blue[700],
+//                              size: 15.0,
+//                            ),
+//                            onPressed: onAddButtonTap,
+//                          ),
                         ],
                       ),
                     ),

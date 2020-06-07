@@ -91,8 +91,13 @@ class AppUtils {
     int resultMinute;
     int resultHour;
     if (currentMinute + minuteToAdd <= 60) {
-      resultMinute = currentMinute + minuteToAdd;
-      resultHour = currentHour + hourToAdd;
+      if (currentMinute + minuteToAdd == 60) {
+        resultHour = currentHour + hourToAdd + 1;
+        resultMinute = 0;
+      } else {
+        resultMinute = currentMinute + minuteToAdd;
+        resultHour = currentHour + hourToAdd;
+      }
     } else {
       resultHour = currentHour + hourToAdd + 1;
       resultMinute = (currentMinute + minuteToAdd) - 60;
@@ -135,6 +140,19 @@ class AppUtils {
     final today = DateTime(now.year, now.month, now.day);
     final aDate = DateTime(time.year, time.month, time.day);
     return aDate == today;
+  }
+
+  static bool checkIfTimePickerDateIsToday(TimeOfDay date) {
+    final DateTime now = DateTime.now();
+    if (now.hour >= 12) {
+      if (date.hour <= 12)
+        return false;
+      else {
+        if (date.hour >= now.hour) return true;
+        return false;
+      }
+    }
+    return true;
   }
 
   static String formatTimeOfDay(TimeOfDay tod) {

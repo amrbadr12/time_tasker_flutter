@@ -44,8 +44,9 @@ class _HomeScreenState extends State<HomeScreen> {
             await DialogUtils.showTasksFromCalendarDialog(context, events);
         if (result) {
           await Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) =>
-                  AddStartEndTaskScreen(prefillCalendarEvent: events)));
+              builder: (context) => AddStartEndTaskScreen(
+                    prefillCalendarEvent: events,
+                  )));
         }
         return result;
       }, (data) async {
@@ -83,52 +84,65 @@ class _HomeScreenState extends State<HomeScreen> {
                     : SizedBox(
                         width: 0.0,
                       ),
-                FlatButton(
-                  child: Text(
-                    'TT',
-                    style: kAppBarTextStyle.copyWith(
-                        color: Colors.blue[700], fontSize: 16.0),
-                  ),
-                  textColor: Colors.lightBlue,
-                  onPressed: () async {
-                    await Navigator.of(context)
-                        .push(MaterialPageRoute(
-                            builder: (context) => AddTaskScreen(
-                                  navigateToHome: false,
-                                  durationTotalTime: snapshot.durationTotalTime,
-                                )))
-                        .then((onValue) {
-                      try {
-                        if (snapshot != null) snapshot.refreshMainScreen();
-                      } catch (e) {}
-                    });
-                  },
-                ),
+//                FlatButton(
+//                  child: Text(
+//                    'TT',
+//                    style: kAppBarTextStyle.copyWith(
+//                        color: Colors.blue[700], fontSize: 16.0),
+//                  ),
+//                  textColor: Colors.lightBlue,
+//                  onPressed: () async {
+//                    await Navigator.of(context)
+//                        .push(MaterialPageRoute(
+//                            builder: (context) => AddTaskScreen(
+//                                  navigateToHome: false,
+//                                  durationTotalTime: snapshot.durationTotalTime,
+//                                )))
+//                        .then((onValue) {
+//                      try {
+//                        if (snapshot != null) snapshot.refreshMainScreen();
+//                      } catch (e) {}
+//                    });
+//                  },
+//                ),
               ],
               centerTitle: true,
-              title: Text(kAppName,
-                  textAlign: TextAlign.center, style: kAppBarTextStyle),
+              title: FlatButton(
+                onPressed: () async {
+                  await Navigator.of(context)
+                      .push(MaterialPageRoute(
+                          builder: (context) => AddTaskScreen(
+                                navigateToHome: false,
+                                durationTotalTime: snapshot.durationTotalTime,
+                              )))
+                      .then((onValue) {
+                    try {
+                      if (snapshot != null) snapshot.refreshMainScreen();
+                    } catch (e) {}
+                  });
+                },
+                child: Text(kAppName,
+                    textAlign: TextAlign.center, style: kAppBarTextStyle),
+              ),
             ),
-            floatingActionButton: snapshot.noTodayTasks == null
-                ? null
-                : snapshot.noTodayTasks
-                    ? FloatingActionButton(
-                        onPressed: () {
-                          snapshot.onTaskAddButtonTap(() async {
-                            await Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => AddDurationTask(
-                                    snapshot.durationTotalTime)));
-                            snapshot.refreshMainScreen();
-                          }, () async {
-                            await Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => AddStartEndTaskScreen()));
-                            snapshot.refreshMainScreen();
-                          });
-                        },
-                        child: Icon(Icons.add),
-                        backgroundColor: Colors.blue,
-                      )
-                    : null,
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {
+                snapshot.onTaskAddButtonTap(() async {
+                  await Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) =>
+                          AddDurationTask(snapshot.durationTotalTime)));
+                  snapshot.refreshMainScreen();
+                }, () async {
+                  await Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => AddStartEndTaskScreen(
+                            totalDurationTime: snapshot.startEndTotalTime,
+                          )));
+                  snapshot.refreshMainScreen();
+                });
+              },
+              child: Icon(Icons.add),
+              backgroundColor: Colors.blue,
+            ),
             bottomNavigationBar: BottomNavigationBar(
               selectedItemColor: kMainBlueColor,
               unselectedItemColor: kTasksDateIconColor2,
@@ -199,7 +213,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 await Navigator.of(context).push(
                                     MaterialPageRoute(
                                         builder: (context) =>
-                                            AddStartEndTaskScreen()));
+                                            AddStartEndTaskScreen(
+                                              totalDurationTime:
+                                                  snapshot.startEndTotalTime,
+                                            )));
                                 snapshot.refreshMainScreen();
                               });
                             })));

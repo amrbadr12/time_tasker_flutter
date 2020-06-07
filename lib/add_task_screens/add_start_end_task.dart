@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:time_tasker/db_helper.dart';
 import 'package:time_tasker/providers/add_new_task_provider.dart';
 import 'package:time_tasker/reusable_widgets/add_new_task._input.dart';
 import 'package:time_tasker/utils/app_utils.dart';
 import 'package:time_tasker/utils/dialog_utils.dart';
+import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
 import '../constants.dart';
 import '../utils/dialog_utils.dart';
 
 class AddStartEndTaskScreen extends StatefulWidget {
   final List prefillCalendarEvent;
-  AddStartEndTaskScreen({this.prefillCalendarEvent});
+  final List totalDurationTime;
+  AddStartEndTaskScreen({this.prefillCalendarEvent, this.totalDurationTime});
   @override
   _AddStartEndTaskScreenState createState() => _AddStartEndTaskScreenState();
 }
@@ -34,7 +37,7 @@ class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
                         TextEditingController(),
                         widget.prefillCalendarEvent,
                         null,
-                        null),
+                        widget.totalDurationTime),
                     child: Consumer<AddNewTaskProvider>(
                         builder: (context, snapshot, _) {
                       return Column(
@@ -91,7 +94,7 @@ class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
                                 child: Text('Add Task',
                                     style: kAppBarTextStyle.copyWith(
                                         color: Colors.white)),
-                                onPressed: () {
+                                onPressed: () async {
                                   snapshot.addNewTaskToDB(
                                       onSuccess: () {
                                         Navigator.of(context)
@@ -101,11 +104,19 @@ class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
                                             'Your Task was added successfully!',
                                             context);
                                       },
+                                      sharedPerferencesUtils:
+                                          SharedPerferencesUtils(
+                                              await SharedPreferences
+                                                  .getInstance()),
                                       onOverlappingTask: () {
                                         AppUtils.showFlushBar(
                                             'Task Already Exists',
                                             'Your already have a task set between this period.',
                                             context);
+                                      },
+                                      onExceedTimeFrameDialog: (errorText) {
+                                        DialogUtils.showDurationExceedDialog(
+                                            context, errorText);
                                       },
                                       onAddingTaskToCalendar: () async =>
                                           await DialogUtils

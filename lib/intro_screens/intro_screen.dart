@@ -58,7 +58,7 @@ class _IntroScreenState extends State<IntroScreen> {
             SharedPerferencesUtils(await SharedPreferences.getInstance());
         utils.saveBoolToSharedPreferences(kShowIntroScreenKey, true);
         utils.saveIntToSharedPreferences(kTotalBalanceHoursKey, 24);
-        utils.saveIntToSharedPreferences(kTotalBalancMinutesKey, 0);
+        utils.saveIntToSharedPreferences(kTotalBalanceMinutesKey, 0);
         Navigator.push(
             context,
             MaterialPageRoute(

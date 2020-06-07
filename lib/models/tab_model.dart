@@ -15,7 +15,7 @@ class TabModel {
     selectedTask = selectedTask;
   }
 
-  static TabModel getDefaultTabModel(){
-    return TabModel('TODAY','Your Total Time','',0.0,TaskTypes.DurationTasks);
+  static TabModel getDefaultTabModel() {
+    return TabModel('TODAY', 'Total Time', '', 0.0, TaskTypes.DurationTasks);
   }
 }
