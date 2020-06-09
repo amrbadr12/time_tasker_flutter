@@ -104,7 +104,7 @@ class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
                                             'Your Task was added successfully!',
                                             context);
                                       },
-                                      sharedPerferencesUtils:
+                                      sharedPreferencesUtils:
                                           SharedPerferencesUtils(
                                               await SharedPreferences
                                                   .getInstance()),

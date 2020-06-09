@@ -91,7 +91,7 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                                         color: Colors.white)),
                                 onPressed: () async {
                                   snapshot.addNewTaskToDB(
-                                      sharedPerferencesUtils:
+                                      sharedPreferencesUtils:
                                           SharedPerferencesUtils(
                                               await SharedPreferences
                                                   .getInstance()),

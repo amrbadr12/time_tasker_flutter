@@ -200,7 +200,7 @@ class AddNewTaskProvider with ChangeNotifier {
   }
 
   Future<int> addNewTaskToDB(
-      {SharedPerferencesUtils sharedPerferencesUtils,
+      {SharedPerferencesUtils sharedPreferencesUtils,
       Function onSuccess,
       Function onOverlappingTask,
       Function onExceedTimeFrameDialog,
@@ -209,9 +209,9 @@ class AddNewTaskProvider with ChangeNotifier {
     int taskID = -1;
     if (_db != null) {
       if (validateTaskInputs()) {
-        int userTotalHourBalance = sharedPerferencesUtils
+        int userTotalHourBalance = sharedPreferencesUtils
             .getIntFromSharedPreferences(kTotalBalanceHoursKey);
-        int userTotalMinutesBalance = sharedPerferencesUtils
+        int userTotalMinutesBalance = sharedPreferencesUtils
             .getIntFromSharedPreferences(kTotalBalanceMinutesKey);
         switch (_currentTaskType) {
           case TaskTypes.DurationTasks:
@@ -258,16 +258,18 @@ class AddNewTaskProvider with ChangeNotifier {
           case TaskTypes.StartEndTasks:
             if (!checkIfOverlappingTask()) {
               //Adding the task to the device's calendar
-              List addedTime = AppUtils.addTime(
-                  _totalUserDurationTime[0],
-                  _calculatedDuration[0],
-                  _totalUserDurationTime[1],
-                  _calculatedDuration[1]);
-              if (_checkIfTimeIsMoreThanTimeBalance(
-                  onExceedTimeFrameDialog,
-                  userTotalHourBalance,
-                  userTotalMinutesBalance,
-                  addedTime)) return -1;
+              if (_totalUserDurationTime != null) {
+                List addedTime = AppUtils.addTime(
+                    _totalUserDurationTime[0],
+                    _calculatedDuration[0],
+                    _totalUserDurationTime[1],
+                    _calculatedDuration[1]);
+                if (_checkIfTimeIsMoreThanTimeBalance(
+                    onExceedTimeFrameDialog,
+                    userTotalHourBalance,
+                    userTotalMinutesBalance,
+                    addedTime)) return -1;
+              }
               if (!_calendarTask) {
                 if (await onAddingTaskToCalendar()) {
                   final add_2_calendar.Event event = add_2_calendar.Event(

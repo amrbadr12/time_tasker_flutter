@@ -37,6 +37,7 @@ class HomeScreenProvider with ChangeNotifier {
       Function onTasksNotFound) {
     _setTaskType();
     _onCalendarTasksFound = onCalendarTasksFound;
+    _durationTotalTime = [0, 0];
     _onSelectDeviceCalendar = onSelectDeviceCalendar;
     _onTasksNotFound = onTasksNotFound;
     _setTasksData(TaskAction.TotalTime);
@@ -183,6 +184,14 @@ class HomeScreenProvider with ChangeNotifier {
   void deleteAllTodaysTasksForTaskType() async {
     if (_recentTasks != null) {
       if (_recentTasks.isNotEmpty) {
+        switch (_selectedTask) {
+          case TaskTypes.DurationTasks:
+            _durationTotalTime = [0, 0];
+            break;
+          case TaskTypes.StartEndTasks:
+            _startEndDurationTotalTime = [0, 0];
+            break;
+        }
         for (UITask task in _recentTasks) {
           task.taskType == TaskTypes.DurationTasks
               ? await _db.deleteDurationTask(task.id)
