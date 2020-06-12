@@ -174,6 +174,12 @@ class AppUtils {
     return '$formattedHour:$formattedMinute $hourMinute';
   }
 
+  static String formatTimeToHHMM2(int hour, int minute) {
+    String formattedHour = formatTimeToTwoDecimals(hour);
+    String formattedMinute = formatTimeToTwoDecimals(minute);
+    return '$formattedHour:$formattedMinute';
+  }
+
   static String formatNowDateToMMDDYYYY() {
     DateTime now = DateTime.now();
     var formatter = new DateFormat('MM:dd:yyyy');
@@ -276,7 +282,7 @@ class AppUtils {
     if (time.length >= 1) {
       int hour = int.parse(time[0]);
       int minute = int.parse(time[1].substring(0, 2));
-      if (hourFormat - hour <= 0) return [0, 0];
+      if (hourFormat - hour <= 0 && minuteFormat - minute <= 0) return [0, 0];
       return minusTime(hourFormat, hour, minuteFormat, minute);
     }
     return [];
@@ -336,5 +342,11 @@ class AppUtils {
         endTime,
         null);
     return uiTask;
+  }
+
+  static String constructWhatsAppShareLink(String tasks) {
+    Uri actualText = Uri.parse(tasks);
+    String shareLink = 'whatsapp://send?text=$actualText';
+    return shareLink;
   }
 }

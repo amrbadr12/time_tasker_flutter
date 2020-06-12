@@ -85,9 +85,6 @@ class AddNewTaskProvider with ChangeNotifier {
       removeTask(currentIndex);
     };
     TextEditingController controller = TextEditingController(text: taskName);
-//    print(
-//        'current index is $currentIndex and controller text is ${_nameController.text.trim()}');
-    // controller.text = _nameController.text.trim();
     _expandedTasks.add(ExpandedStateModel(
         addNewExpandedTask, FontAwesomeIcons.plusCircle, controller));
     notifyListeners();
@@ -191,11 +188,10 @@ class AddNewTaskProvider with ChangeNotifier {
 
   void setPickedDuration(String duration) {
     _errorText = null;
-    if (AppUtils.validateDuration(duration)) {
+    if (AppUtils.validateDuration(duration))
       this._pickedDurationTime = AppUtils.formatHHMMTimeToTimeOfDay(duration);
-    } else {
+    else
       _errorText = 'Please enter a valid duration.';
-    }
     notifyListeners();
   }
 
@@ -356,7 +352,7 @@ class AddNewTaskProvider with ChangeNotifier {
       case 24:
         if (addedTime[0] >= userTotalHourBalance) {
           if (addedTime[0] == userTotalHourBalance) {
-            if (addedTime[1] < userTotalMinutesBalance) break;
+            if (addedTime[1] <= userTotalMinutesBalance) break;
           }
           onExceedTimeFrame(timeMoreThan24Hours);
           return true;
@@ -365,7 +361,7 @@ class AddNewTaskProvider with ChangeNotifier {
       default:
         if (addedTime[0] >= userTotalHourBalance) {
           if (addedTime[0] == userTotalHourBalance) {
-            if (addedTime[1] < userTotalMinutesBalance) break;
+            if (addedTime[1] <= userTotalMinutesBalance) break;
           }
           onExceedTimeFrame(timeLessThan24Hours);
           return true;

@@ -141,7 +141,6 @@ class HomeScreenProvider with ChangeNotifier {
         _upcomingTask = AppUtils.getUpcomingTask(todayStartEndTasks);
         notifyListeners();
       }
-      //_getRecentTasksFromDB(tasks, _selectedTask);
       _getRecentTasksFromDB(todayDurationTasks, _selectedTask);
       _totalTime = calculateTotalTimeInHHMMFormat(todayDurationTasks);
       switch (action) {
@@ -338,8 +337,6 @@ class HomeScreenProvider with ChangeNotifier {
           }
         }
       }
-//      final result = await _onSelectDeviceCalendar(data);
-//      print('calendar selected is $result');
       _popCalendarTasksDialog(repeat);
     } catch (e) {}
   }
@@ -376,19 +373,23 @@ class HomeScreenProvider with ChangeNotifier {
         tasksResult.add(task); //existing calendar task
     }
     bool isFound = true;
-    for (int i = 0; i < events.length; i++) {
-      for (int j = 0; j < tasksResult.length; j++) {
-        isFound = false;
-        if (events[i].title == tasksResult[j].taskName) {
+    //Compare existing calendar events
+    if (tasksResult.length > 0) {
+      for (int i = 0; i < events.length; i++) {
+        for (int j = 0; j < tasksResult.length; j++) {
+          isFound = false;
+          if (events[i].title == tasksResult[j].taskName) {
+            isFound = true;
+            break;
+          }
+        }
+        if (!isFound) {
+          eventsResult.add(events[i]);
           isFound = true;
-          break;
         }
       }
-      if (!isFound) {
-        eventsResult.add(events[i]);
-        isFound = true;
-      }
-    }
+    } else
+      eventsResult = events;
     return eventsResult;
   }
 
@@ -438,5 +439,27 @@ class HomeScreenProvider with ChangeNotifier {
           break;
       }
     }
+  }
+
+  String getShareableWhatsAppList() {
+    String result = '';
+    switch (_selectedTask) {
+      case TaskTypes.StartEndTasks:
+        for (UITask task in _recentTasks) {
+          result = result +
+              '\n' +
+              'Task:${task.taskName}, From:${AppUtils.formatTimeToHHMM2(task.startTime.hour, task.startTime.minute)} To:${AppUtils.formatTimeToHHMM2(task.endTime.hour, task.endTime.minute)}';
+        }
+        break;
+
+      case TaskTypes.DurationTasks:
+        for (UITask task in _recentTasks) {
+          result = result +
+              '\n' +
+              'Task:${task.taskName}, Duration:${task.duration}';
+        }
+        break;
+    }
+    return result;
   }
 }

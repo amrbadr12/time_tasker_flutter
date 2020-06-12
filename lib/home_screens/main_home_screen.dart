@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -13,6 +15,7 @@ import 'package:time_tasker/reusable_widgets/no_tasks_today.dart';
 import 'package:time_tasker/settings_screen.dart';
 import 'package:time_tasker/utils/dialog_utils.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../db_helper.dart';
 
@@ -157,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(FontAwesomeIcons.stopwatch),
-                  title: Text('Total Balance'),
+                  title: Text('Time Remaining'),
                 ),
               ],
               currentIndex: snapshot.currentBottomNavBarIndex,
@@ -196,6 +199,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 });
                               });
                             },
+                            onShareToWhatsApp: () {
+                              _launchURL(snapshot.getShareableWhatsAppList());
+                            },
                             circularCenterText:
                                 snapshot.currentTabModel.circularCenterText,
                             circlePercent:
@@ -231,5 +237,23 @@ class _HomeScreenState extends State<HomeScreen> {
       _showResetDialog = _sharedPreferences
           .getBoolFromSharedPreferences(kResetDialogSettingsOption);
     });
+  }
+
+  _launchURL(String url) async {
+    if (await canLaunch(url)) {
+      if (Platform.isIOS) {
+        final bool nativeAppLaunchSucceeded =
+            await launch(url, forceSafariVC: false, universalLinksOnly: true);
+        if (nativeAppLaunchSucceeded != null) {
+          if (!nativeAppLaunchSucceeded) {
+            await launch(url, forceSafariVC: true);
+          }
+        }
+      } else {
+        await launch(url);
+      }
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 }
