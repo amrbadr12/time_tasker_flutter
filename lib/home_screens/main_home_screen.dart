@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:social_share/social_share.dart';
 import 'package:time_tasker/add_task_screens/add_duration_task.dart';
 import 'package:time_tasker/add_task_screens/add_start_end_task.dart';
 import 'package:time_tasker/add_task_screens/add_task_screen.dart';
@@ -43,19 +44,19 @@ class _HomeScreenState extends State<HomeScreen> {
       create: (context) => HomeScreenProvider(
           DBHelper(), widget.defaultTaskType, DeviceCalendarPlugin(),
           (events) async {
-        final result =
-            await DialogUtils.showTasksFromCalendarDialog(context, events);
-        if (result) {
-          await Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => AddStartEndTaskScreen(
-                    prefillCalendarEvent: events,
-                  )));
-        }
-        return result;
+//        final result =
+//            await DialogUtils.showTasksFromCalendarDialog(context, events);
+//        if (result) {
+//          await Navigator.of(context).push(MaterialPageRoute(
+//              builder: (context) => AddStartEndTaskScreen(
+//                    prefillCalendarEvent: events,
+//                  )));
+//        }
+//        return result;
       }, (data) async {
-        return await DialogUtils.showAvailableCalendarsDialog(context, data);
+//        return await DialogUtils.showAvailableCalendarsDialog(context, data);
       }, () {
-        DialogUtils.showCalendarTasksNotFoundDialog(context);
+//        DialogUtils.showCalendarTasksNotFoundDialog(context);
       }),
       child: Consumer<HomeScreenProvider>(builder: (context, snapshot, _) {
         return Scaffold(
@@ -73,20 +74,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
               actions: <Widget>[
-                snapshot.selectedTask == TaskTypes.StartEndTasks
-                    ? IconButton(
-                        icon: Icon(
-                          FontAwesomeIcons.calendar,
-                          color: Colors.blueGrey[700],
-                          size: 15.0,
-                        ),
-                        padding: EdgeInsets.all(0.0),
-                        onPressed: () async {
-                          await snapshot.getDefaultCalendar(repeat: false);
-                        })
-                    : SizedBox(
-                        width: 0.0,
-                      ),
+//                snapshot.selectedTask == TaskTypes.StartEndTasks
+//                    ? IconButton(
+//                        icon: Icon(
+//                          FontAwesomeIcons.calendar,
+//                          color: Colors.blueGrey[700],
+//                          size: 15.0,
+//                        ),
+//                        padding: EdgeInsets.all(0.0),
+//                        onPressed: () async {
+//                          await snapshot.getDefaultCalendar(repeat: false);
+//                        })
+//                    : SizedBox(
+//                        width: 0.0,
+//                      ),
 //                FlatButton(
 //                  child: Text(
 //                    'TT',
@@ -199,8 +200,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                 });
                               });
                             },
-                            onShareToWhatsApp: () {
-                              _launchURL(snapshot.getShareableWhatsAppList());
+                            onShareToWhatsApp: () async {
+                              print(
+                                  'whatsapp list is ${snapshot.getShareableWhatsAppList()}');
+                              print(await SocialShare
+                                  .checkInstalledAppsForShare());
+                              SocialShare.shareWhatsapp(
+                                  snapshot.getShareableWhatsAppList());
+                              //_launchURL(snapshot.getShareableWhatsAppList());
                             },
                             circularCenterText:
                                 snapshot.currentTabModel.circularCenterText,

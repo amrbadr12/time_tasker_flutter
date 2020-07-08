@@ -274,7 +274,9 @@ class AppUtils {
       String formattedTime, int defaultHourFormat, int defaultMinuteFormat) {
     int hourFormat = 24;
     int minuteFormat = 0;
-    if (defaultHourFormat != null && defaultHourFormat != 0) {
+    if (defaultHourFormat != null
+        //&& defaultHourFormat != 0
+        ) {
       hourFormat = defaultHourFormat;
       minuteFormat = defaultMinuteFormat;
     }

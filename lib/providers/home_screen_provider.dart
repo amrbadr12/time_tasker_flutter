@@ -42,8 +42,8 @@ class HomeScreenProvider with ChangeNotifier {
     _onTasksNotFound = onTasksNotFound;
     _setTasksData(TaskAction.TotalTime);
     _recentTasks = [];
-    if (_selectedTask == TaskTypes.StartEndTasks)
-      getDefaultCalendar(repeat: true);
+//    if (_selectedTask == TaskTypes.StartEndTasks)
+//      getDefaultCalendar(repeat: true);
   }
 
   TabModel get currentTabModel => _currentTabModel;

@@ -146,51 +146,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
 //              });
 //            },
 //          ),
-          SizedBox(
-            height: 10.0,
-          ),
-          _isCalendarPermissionsGranted
-              ? Row(
-                  children: [
-                    Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
-                      child: Text(
-                        'Default Calendar:',
-                        style: kInputAddTaskLabelTextStyle,
-                      ),
-                    ),
-                    Expanded(
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: _selectedDropDownValue,
-                        onChanged: (String newValue) {
-                          setState(() {
-                            _selectedDropDownValue = newValue;
-                          });
-                        },
-                        items: _calendars
-                            .map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(
-                              value,
-                              style: kInputAddTaskLabelTextStyle.copyWith(
-                                  fontSize: 15),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ],
-                )
-              : Padding(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
-                  child: Text(
-                      'Please enable the calendar permission from your phone settings.',
-                      style:
-                          TextStyle(fontSize: 13.0, color: Colors.red[700]))),
+//          SizedBox(
+//            height: 10.0,
+//          ),
+//          _isCalendarPermissionsGranted
+//              ? Row(
+//                  children: [
+//                    Padding(
+//                      padding:
+//                          EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
+//                      child: Text(
+//                        'Default Calendar:',
+//                        style: kInputAddTaskLabelTextStyle,
+//                      ),
+//                    ),
+//                    Expanded(
+//                      child: DropdownButton<String>(
+//                        isExpanded: true,
+//                        value: _selectedDropDownValue,
+//                        onChanged: (String newValue) {
+//                          setState(() {
+//                            _selectedDropDownValue = newValue;
+//                          });
+//                        },
+//                        items: _calendars
+//                            .map<DropdownMenuItem<String>>((String value) {
+//                          return DropdownMenuItem<String>(
+//                            value: value,
+//                            child: Text(
+//                              value,
+//                              style: kInputAddTaskLabelTextStyle.copyWith(
+//                                  fontSize: 15),
+//                            ),
+//                          );
+//                        }).toList(),
+//                      ),
+//                    ),
+//                  ],
+//                )
+//              : Padding(
+//                  padding:
+//                      EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
+//                  child: Text(
+//                      'Please enable the calendar permission from your phone settings.',
+//                      style:
+//                          TextStyle(fontSize: 13.0, color: Colors.red[700]))),
           SizedBox(
             height: kTitleDefaultPaddingVertical,
           ),
