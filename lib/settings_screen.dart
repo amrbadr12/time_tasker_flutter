@@ -107,29 +107,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
-            child: DateInputField(
-              icon: Icon(
-                FontAwesomeIcons.clock,
-                size: 20.0,
-                color: kTasksDateIconColor1,
-              ),
-              containerColor: kTasksDateContainerColor,
-              text: _timeSelected != null
-                  ? AppUtils.formatTimeOfDay(_timeSelected) + ' selected'
-                  : 'Or set the  time',
-              onDateChanged: () async {
-                TimeOfDay temp = await AppUtils.showTimePickerDialog(context);
-                if (AppUtils.checkIfTimePickerDateIsToday(temp)) {
-                  _timeSelected = temp;
-                  setState(() {
-                    calculateSliderHoursAndMinutesFromTimeOfDay(
-                      _timeSelected,
-                    );
-                  });
-                }
-              },
+            child: Row(
+              children: [
+                Expanded(
+                  child: DateInputField(
+                    icon: Icon(
+                      FontAwesomeIcons.clock,
+                      size: 20.0,
+                      color: kTasksDateIconColor1,
+                    ),
+                    containerColor: kTasksDateContainerColor,
+                    text: _timeSelected != null
+                        ? AppUtils.formatTimeOfDay(_timeSelected) + ' selected'
+                        : 'Or set the  time',
+                    onDateChanged: () async {
+                      TimeOfDay temp =
+                          await AppUtils.showTimePickerDialog(context);
+                      if (AppUtils.checkIfTimePickerDateIsToday(temp)) {
+                        _timeSelected = temp;
+                        setState(() {
+                          calculateSliderHoursAndMinutesFromTimeOfDay(
+                            _timeSelected,
+                          );
+                        });
+                      }
+                    },
+                  ),
+                ),
+                Image.asset(
+                  'images/timmi_1.png',
+                  width: MediaQuery.of(context).size.width * 0.25,
+                  height: MediaQuery.of(context).size.height * 0.25,
+                ),
+              ],
             ),
           ),
+
 //          SwitchListTile(
 //            contentPadding: EdgeInsets.all(0),
 //            title: Padding(

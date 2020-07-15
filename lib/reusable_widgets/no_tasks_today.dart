@@ -12,8 +12,7 @@ class NoTasksTodayWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
         Center(
-            child: Image.asset('images/launch_illustration.png',
-                width: 400, height: 400)),
+            child: Image.asset('images/timmi_2.png', width: 400, height: 400)),
         Flexible(
             child: Text(
           'No $taskType Tasks For Today',

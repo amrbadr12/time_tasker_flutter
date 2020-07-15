@@ -17,7 +17,7 @@ class _IntroScreenState extends State<IntroScreen> {
       body: firstBodyText,
       decoration: introPageDecoration,
       image: Center(
-        child: Image.asset("images/first_intro.png",
+        child: Image.asset("images/timmi_4.png",
             height: introScreenImagesSize, width: introScreenImagesSize),
       ),
     ),
@@ -26,7 +26,7 @@ class _IntroScreenState extends State<IntroScreen> {
       body: secondBodyText,
       decoration: introPageDecoration,
       image: Center(
-        child: Image.asset("images/second_intro.png",
+        child: Image.asset("images/timmi_5.png",
             height: introScreenImagesSize, width: introScreenImagesSize),
       ),
     ),
@@ -35,7 +35,7 @@ class _IntroScreenState extends State<IntroScreen> {
       body: thirdBodyText,
       decoration: introPageDecoration,
       image: Center(
-        child: Image.asset("images/third_intro.png",
+        child: Image.asset("images/timmi_5.png",
             height: introScreenImagesSize, width: introScreenImagesSize),
       ),
     ),
@@ -44,7 +44,7 @@ class _IntroScreenState extends State<IntroScreen> {
       body: fourthBodyText,
       decoration: introPageDecoration,
       image: Center(
-        child: Image.asset("images/fourth_intro.png",
+        child: Image.asset("images/timmi_2.png",
             height: introScreenImagesSize, width: introScreenImagesSize),
       ),
     ),

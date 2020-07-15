@@ -31,11 +31,22 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         children: <Widget>[
           Padding(
               padding: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
-              child: Text(
-                'Choose\nHow To Calculate The Time',
-                softWrap: true,
-                style: kTitleTextStyle.copyWith(
-                    fontSize: 30.0, fontWeight: FontWeight.bold),
+              child: Row(
+                children: [
+                  Image.asset(
+                    'images/timmi_5.png',
+                    width: MediaQuery.of(context).size.width * 0.25,
+                    height: MediaQuery.of(context).size.height * 0.25,
+                  ),
+                  Expanded(
+                    child: Text(
+                      'Choose\nHow To Calculate The Time',
+                      softWrap: true,
+                      style: kTitleTextStyle.copyWith(
+                          fontSize: 30.0, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
               )),
           Expanded(
             child: Align(
