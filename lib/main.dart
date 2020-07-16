@@ -8,7 +8,14 @@ import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
 import 'add_task_screens/add_task_screen.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  runApp(
+//    DevicePreview(
+//      builder: (context) => MyApp(),
+//    ),
+    MyApp(),
+  );
+}
 
 class MyApp extends StatelessWidget {
   @override
