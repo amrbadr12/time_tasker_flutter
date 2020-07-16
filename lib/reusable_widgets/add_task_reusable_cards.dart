@@ -11,13 +11,15 @@ class AddTaskReusableCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
+    return Flexible(
       child: GestureDetector(
         onTap: onTap,
         child: Card(
           elevation: 2.0,
           child: Container(
-            height: 300.0,
+            height: MediaQuery.of(context).size.height * 0.2,
+            width: double.infinity,
+            padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.04),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                   begin: Alignment.bottomCenter,
@@ -27,22 +29,30 @@ class AddTaskReusableCard extends StatelessWidget {
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Icon(
                   iconData,
-                  size: 100,
+                  size: MediaQuery.of(context).size.width * 0.1,
                   color: color,
                 ),
                 SizedBox(
-                  height: kMainDefaultPadding,
+                  height: MediaQuery.of(context).size.height * 0.02,
                 ),
-                Text(
-                  cardText,
-                  style: kAppBarTextStyle.copyWith(color: Colors.white),
-                  textAlign: TextAlign.center,
-                  softWrap: true,
-                )
+                Flexible(
+                  child: Text(
+                    cardText,
+                    style: kAppBarTextStyle.copyWith(
+                        color: Colors.white,
+                        fontSize: MediaQuery.of(context).size.width * 0.04),
+                    textAlign: TextAlign.center,
+                    softWrap: true,
+                  ),
+                ),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.02,
+                ),
               ],
             ),
           ),

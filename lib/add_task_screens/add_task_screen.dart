@@ -22,78 +22,85 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.0,
+        title: Text(kAppName,
+            textAlign: TextAlign.center, style: kAppBarTextStyle),
+        centerTitle: true,
       ),
-//      appBar: AppBar(
-//        centerTitle: true,
-//        backgroundColor: appBarColor,
-//        title:Text('Choose Method',style:kAppBarTextStyle),),
       body: Column(
         children: <Widget>[
           Padding(
-              padding: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
-              child: Row(
-                children: [
-                  Image.asset(
+            padding:
+                EdgeInsets.symmetric(horizontal: kMainDefaultHeightPadding),
+            child: Row(
+              //  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                    child: Container(
+                  alignment: Alignment.center, // This is needed
+                  width: MediaQuery.of(context).size.width * 0.3,
+                  height: MediaQuery.of(context).size.height * 0.3,
+                  child: Image.asset(
                     'images/timmi_5.png',
-                    width: MediaQuery.of(context).size.width * 0.25,
-                    height: MediaQuery.of(context).size.height * 0.25,
+                    fit: BoxFit.contain,
                   ),
-                  Expanded(
-                    child: Text(
-                      'Choose\nHow To Calculate The Time',
-                      softWrap: true,
-                      style: kTitleTextStyle.copyWith(
-                          fontSize: 30.0, fontWeight: FontWeight.bold),
-                    ),
+                )),
+                Flexible(
+                  child: Text(
+                    'Choose how you want to calculate your time',
+                    softWrap: true,
+                    style: kTitleTextStyle.copyWith(
+                        fontSize: MediaQuery.of(context).size.width * 0.05,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding:
+                  EdgeInsets.symmetric(horizontal: kMainDefaultHeightPadding),
+              child: Column(
+                //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  AddTaskReusableCard(
+                    cardText: 'Duration',
+                    color: Colors.white70,
+                    iconData: FontAwesomeIcons.stopwatch,
+                    onTap: () {
+                      widget.navigateToHome
+                          ? Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      HomeScreen(TaskTypes.DurationTasks)),
+                              (route) => false)
+                          : Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) =>
+                                  AddDurationTask(widget.durationTotalTime)));
+                    },
+                  ),
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.02,
+                  ),
+                  AddTaskReusableCard(
+                    cardText: 'Start and End Times',
+                    color: Colors.white70,
+                    iconData: FontAwesomeIcons.clock,
+                    onTap: () {
+                      widget.navigateToHome
+                          ? Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      HomeScreen(TaskTypes.StartEndTasks)),
+                              (route) => false)
+                          : Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => AddStartEndTaskScreen()));
+                    },
+                  ),
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.02,
                   ),
                 ],
-              )),
-          Expanded(
-            child: Align(
-              alignment: Alignment.center,
-              child: Padding(
-                padding:
-                    EdgeInsets.symmetric(horizontal: kMainDefaultHeightPadding),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    AddTaskReusableCard(
-                      cardText: 'Start And End Dates',
-                      color: Colors.white70,
-                      iconData: FontAwesomeIcons.clock,
-                      onTap: () {
-                        widget.navigateToHome
-                            ? Navigator.of(context).pushAndRemoveUntil(
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        HomeScreen(TaskTypes.StartEndTasks)),
-                                (route) => false)
-                            : Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => AddStartEndTaskScreen()));
-                      },
-                    ),
-                    SizedBox(
-                      width: kTitleDefaultPaddingHorizontal,
-                    ),
-                    AddTaskReusableCard(
-                      cardText: 'Duration',
-                      color: Colors.white70,
-                      iconData: FontAwesomeIcons.stopwatch,
-                      onTap: () {
-                        widget.navigateToHome
-                            ? Navigator.of(context).pushAndRemoveUntil(
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        HomeScreen(TaskTypes.DurationTasks)),
-                                (route) => false)
-                            : Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) =>
-                                    AddDurationTask(widget.durationTotalTime)));
-                      },
-                    )
-                  ],
-                ),
               ),
             ),
           )

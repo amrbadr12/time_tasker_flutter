@@ -17,26 +17,21 @@ class _IntroScreenState extends State<IntroScreen> {
       body: firstBodyText,
       decoration: introPageDecoration,
       image: Center(
-        child: Image.asset("images/timmi_4.png",
-            height: introScreenImagesSize, width: introScreenImagesSize),
+        child: Image.asset("images/timmi_4.png"),
       ),
     ),
     PageViewModel(
       title: secondTitleText,
       body: secondBodyText,
       decoration: introPageDecoration,
-      image: Center(
-        child: Image.asset("images/timmi_5.png",
-            height: introScreenImagesSize, width: introScreenImagesSize),
-      ),
+      image: Center(child: Image.asset("images/timmi_5.png")),
     ),
     PageViewModel(
-      title: secondTitleText,
+      title: thirdTitleText,
       body: thirdBodyText,
       decoration: introPageDecoration,
       image: Center(
-        child: Image.asset("images/timmi_5.png",
-            height: introScreenImagesSize, width: introScreenImagesSize),
+        child: Image.asset("images/timmi_5.png"),
       ),
     ),
     PageViewModel(
@@ -44,8 +39,7 @@ class _IntroScreenState extends State<IntroScreen> {
       body: fourthBodyText,
       decoration: introPageDecoration,
       image: Center(
-        child: Image.asset("images/timmi_2.png",
-            height: introScreenImagesSize, width: introScreenImagesSize),
+        child: Image.asset("images/timmi_2.png"),
       ),
     ),
   ];
