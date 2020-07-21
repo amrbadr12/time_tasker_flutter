@@ -6,6 +6,8 @@ import 'package:time_tasker/constants.dart';
 import 'package:time_tasker/home_screens/main_home_screen.dart';
 import 'package:time_tasker/reusable_widgets/add_task_reusable_cards.dart';
 
+import '../settings_screen.dart';
+
 class AddTaskScreen extends StatefulWidget {
   final bool navigateToHome;
   final durationTotalTime;
@@ -25,6 +27,19 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         title: Text(kAppName,
             textAlign: TextAlign.center, style: kAppBarTextStyle),
         centerTitle: true,
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(
+              FontAwesomeIcons.solidClock,
+              color: Colors.blueGrey[700],
+              size: 15.0,
+            ),
+            onPressed: () async {
+              await Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => SettingsScreen()));
+            },
+          ),
+        ],
       ),
       body: Column(
         children: <Widget>[

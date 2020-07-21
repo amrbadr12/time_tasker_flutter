@@ -16,7 +16,7 @@ class NoTasksTodayWidget extends StatelessWidget {
           child: Center(
               child: Image.asset(
             'images/timmi_2.png',
-            width: MediaQuery.of(context).size.width * 0.8,
+            width: MediaQuery.of(context).size.width * 0.85,
           )),
         ),
         Flexible(

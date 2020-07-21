@@ -61,19 +61,19 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Consumer<HomeScreenProvider>(builder: (context, snapshot, _) {
         return Scaffold(
             appBar: AppBar(
-              leading: IconButton(
-                icon: Icon(
-                  FontAwesomeIcons.solidClock,
-                  color: Colors.blueGrey[700],
-                  size: 15.0,
-                ),
-                onPressed: () async {
-                  await Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => SettingsScreen()));
-                  getSharedPrefs();
-                },
-              ),
               actions: <Widget>[
+                IconButton(
+                  icon: Icon(
+                    FontAwesomeIcons.solidClock,
+                    color: Colors.blueGrey[700],
+                    size: 15.0,
+                  ),
+                  onPressed: () async {
+                    await Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => SettingsScreen()));
+                    getSharedPrefs();
+                  },
+                ),
 //                snapshot.selectedTask == TaskTypes.StartEndTasks
 //                    ? IconButton(
 //                        icon: Icon(
