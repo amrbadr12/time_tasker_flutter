@@ -33,7 +33,7 @@ final Color kDefaultGrey = Colors.grey[700];
 final kMainDefaultPadding = 30.0;
 final kTodayText = 'TODAY';
 final kYourTotalTimeText = 'Total Time';
-final kYourTotalBalanceText = 'Total Balance';
+final kYourTotalBalanceText = 'Time Remaining';
 final Color kMainBlueColor = Colors.blue[500];
 final String firstTitleText =
     'Are you ever late because you underestimated how long things take?';
