@@ -24,7 +24,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.0,
-        title: Text(kAppName,
+        title: Text('Choose a task type',
             textAlign: TextAlign.center, style: kAppBarTextStyle),
         centerTitle: true,
         actions: <Widget>[
@@ -46,29 +46,15 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
           Padding(
             padding:
                 EdgeInsets.symmetric(horizontal: kMainDefaultHeightPadding),
-            child: Row(
-              //  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                    child: Container(
-                  alignment: Alignment.center, // This is needed
-                  width: MediaQuery.of(context).size.width * 0.3,
-                  height: MediaQuery.of(context).size.height * 0.3,
-                  child: Image.asset(
-                    'images/timmi_5.png',
-                    fit: BoxFit.contain,
-                  ),
-                )),
-                Flexible(
-                  child: Text(
-                    'Choose how you want to calculate your time',
-                    softWrap: true,
-                    style: kTitleTextStyle.copyWith(
-                        fontSize: MediaQuery.of(context).size.width * 0.05,
-                        fontWeight: FontWeight.bold),
-                  ),
+            child: Center(
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.5,
+                height: MediaQuery.of(context).size.height * 0.3,
+                child: Image.asset(
+                  'images/timmi_5.png',
+                  fit: BoxFit.contain,
                 ),
-              ],
+              ),
             ),
           ),
           Expanded(
