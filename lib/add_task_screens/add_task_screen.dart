@@ -42,6 +42,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         ],
       ),
       body: Column(
+        mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Padding(
             padding:

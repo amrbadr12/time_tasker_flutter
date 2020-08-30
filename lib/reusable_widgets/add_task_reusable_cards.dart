@@ -11,45 +11,47 @@ class AddTaskReusableCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Card(
-        elevation: 2.0,
-        child: Container(
-          height: MediaQuery.of(context).size.height * 0.2,
-          width: double.infinity,
-          padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.04),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-                colors: blueGradient),
-            borderRadius: BorderRadius.circular(5.0),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Icon(
-                iconData,
-                size: MediaQuery.of(context).size.width * 0.1,
-                color: color,
-              ),
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.02,
-              ),
-              Flexible(
-                child: Text(
-                  cardText,
-                  style: kAppBarTextStyle.copyWith(
-                      color: Colors.white,
-                      fontSize: MediaQuery.of(context).size.width * 0.04),
+    return Flexible(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Card(
+          elevation: 2.0,
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.2,
+            width: double.infinity,
+          //  padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.04),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: blueGradient),
+              borderRadius: BorderRadius.circular(5.0),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Icon(
+                  iconData,
+                  size: MediaQuery.of(context).size.width * 0.1,
+                  color: color,
                 ),
-              ),
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.02,
-              ),
-            ],
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.02,
+                ),
+                Flexible(
+                  child: Text(
+                    cardText,
+                    style: kAppBarTextStyle.copyWith(
+                        color: Colors.white,
+                        fontSize: MediaQuery.of(context).size.width * 0.04),
+                  ),
+                ),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.02,
+                ),
+              ],
+            ),
           ),
         ),
       ),
