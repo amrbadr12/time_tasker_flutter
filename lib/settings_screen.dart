@@ -1,5 +1,6 @@
 import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:time_tasker/reusable_widgets/add_task_reusable_cards.dart';
@@ -21,6 +22,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   double _minutesSliderValue;
   bool _currentResetSetting = false;
   TimeOfDay _timeSelected;
+  int _timeSelectedInSeconds;
   String _selectedDropDownValue;
   bool _isCalendarPermissionsGranted = true;
   bool _isTimerPickerSelected = false;
@@ -121,16 +123,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ? AppUtils.formatTimeOfDay(_timeSelected) + ' selected'
                         : 'Or set the  time',
                     onDateChanged: () async {
-                      TimeOfDay temp =
-                          await AppUtils.showTimePickerDialog(context);
-                      if (AppUtils.checkIfTimePickerDateIsToday(temp)) {
-                        _timeSelected = temp;
-                        setState(() {
-                          calculateSliderHoursAndMinutesFromTimeOfDay(
-                            _timeSelected,
-                          );
-                        });
-                      }
+                      DatePicker.showDateTimePicker(context,
+                          showTitleActions: true,
+                          minTime: DateTime.now(),
+                          maxTime: DateTime.now().add(Duration(days: 1)),
+                          onConfirm: (date) {
+                        try {
+                          TimeOfDay temp =
+                              TimeOfDay(hour: date.hour, minute: date.minute);
+                          _timeSelected = temp;
+                          _timeSelectedInSeconds = date.millisecondsSinceEpoch;
+                          setState(() {
+                            calculateSliderHoursAndMinutesFromDateTime(date);
+                          });
+                        } catch (e) {
+                          print(
+                              'Exception failed while setting the time with $e');
+                        }
+                      }, currentTime: DateTime.now());
                     },
                   ),
                 ),
@@ -245,8 +255,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (timeSaved != 0) {
         _isTimerPickerSelected = true;
         DateTime timeSavedDateTime =
-            AppUtils.convertMillisecondsSinceEpochToDateTime(timeSaved);
-        _timeSelected = AppUtils.formatDateTimeToTimeOfDay(timeSavedDateTime);
+            DateTime.fromMillisecondsSinceEpoch(timeSaved);
+        calculateSliderHoursAndMinutesFromDateTime(timeSavedDateTime);
+        if (_hoursSliderValue < 0 ||
+            timeSavedDateTime.isBefore(DateTime.now())) {
+          _hoursSliderValue = 0;
+          _minutesSliderValue = 0;
+          _timeSelected = null;
+          saveSliderItemToLocal(() {});
+          _sharedPreferences.saveIntToSharedPreferences(
+              kTimeSelectedSettingsKey, 0);
+        } else
+          _timeSelected = AppUtils.formatDateTimeToTimeOfDay(timeSavedDateTime);
       }
     });
   }
@@ -262,10 +282,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _sharedPreferences.saveStringToSharedPreferences(
           kSavedCalendarKey, _selectedDropDownValue);
       if (_timeSelected != null) {
-        if (_isTimerPickerSelected) {
+        if (_isTimerPickerSelected && _timeSelectedInSeconds != null) {
           _sharedPreferences.saveIntToSharedPreferences(
-              kTimeSelectedSettingsKey,
-              AppUtils.formatTimeOfDayToTimeInSeconds(_timeSelected));
+              kTimeSelectedSettingsKey, _timeSelectedInSeconds);
         } else {
           _sharedPreferences.saveIntToSharedPreferences(
               kTimeSelectedSettingsKey, 0);
@@ -338,14 +357,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } catch (e) {}
   }
 
-  void calculateSliderHoursAndMinutesFromTimeOfDay(TimeOfDay tod) {
-    DateTime nowDate = DateTime.now();
-    DateTime selectedTimeOfDay = AppUtils.formatTimeOfDayToDateTime(tod);
-    if (selectedTimeOfDay.hour < nowDate.hour) return;
-    List<int> time = AppUtils.minusTime(selectedTimeOfDay.hour, nowDate.hour,
-        selectedTimeOfDay.minute, nowDate.minute);
-    _hoursSliderValue = double.parse(time[0].toString());
-    _minutesSliderValue = double.parse(time[1].toString());
+  void calculateSliderHoursAndMinutesFromDateTime(DateTime datePicked) {
+    List<double> time =
+        AppUtils.calculateTheDifferenceBetweenDatesInHoursAndMinutes(
+            datePicked);
+    _hoursSliderValue = time[0];
+    _minutesSliderValue = time[1];
     _isTimerPickerSelected = true;
   }
 }

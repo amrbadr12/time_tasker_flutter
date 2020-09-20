@@ -22,6 +22,11 @@ class AppUtils {
     return hhMMFormatReg.hasMatch(inputDuration);
   }
 
+  static bool validateMinutes(String minutes) {
+    final hhMMFormatReg = RegExp(r'^(?:([0-5]?[0-9]))$');
+    return hhMMFormatReg.hasMatch(minutes);
+  }
+
   static int currentTimeInSeconds() {
     var ms = (new DateTime.now()).millisecondsSinceEpoch;
     return (ms / 1000).round();
@@ -29,6 +34,16 @@ class AppUtils {
 
   static String formatTaskLengthToHHMM(int hour, int minutes, int tasksLength) {
     return '$tasksLength X ${formatTimeToHHMM(hour, minutes)}';
+  }
+
+  static String formatMinutesToHHMMTime(String minutes) {
+    if (minutes == null) return '';
+    if (minutes.length > 2) return '';
+    String minsResult;
+    minutes.trim().length == 1
+        ? minsResult = '0' + minutes.trim()
+        : minsResult = minutes.trim();
+    return '00:' + minsResult;
   }
 
   static TimeOfDay formatHHMMTimeToTimeOfDay(String time) {
@@ -117,6 +132,20 @@ class AppUtils {
       resultMinute = (endMinute - startMinute) + 60;
     }
     return [resultHour, resultMinute];
+  }
+
+  static List<double> calculateTheDifferenceBetweenDatesInHoursAndMinutes(
+      DateTime dateTime) {
+    DateTime nowDate = DateTime.now();
+    Duration difference;
+    if (dateTime.isAfter(nowDate))
+      difference = dateTime.difference(nowDate);
+    else
+      difference = nowDate.difference(dateTime);
+    int hoursToMilliseconds = difference.inHours * 3600000;
+    double totalMinutes =
+        (difference.inMilliseconds - hoursToMilliseconds).abs() / 60000;
+    return [difference.inHours.floorToDouble(), totalMinutes.floorToDouble()];
   }
 
   static List<int> calculateDuration(

@@ -3,7 +3,7 @@ import 'package:device_calendar/device_calendar.dart';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:time_tasker/constants.dart';
 import 'package:time_tasker/db_helper.dart';
 import 'package:time_tasker/models/expandedStateModel.dart';
@@ -22,6 +22,7 @@ class AddNewTaskProvider with ChangeNotifier {
   DBHelper _db;
   TextEditingController _nameController;
   TextEditingController _durationController;
+  String _multipleTimes;
   List<String> _previousTasks;
   List _previousStartEndTasks;
   List _prefillCalendarEvents;
@@ -78,31 +79,27 @@ class AddNewTaskProvider with ChangeNotifier {
     return List();
   }
 
+  setMultipleTimes(String value) {
+    if (value != null && value.isNotEmpty) {
+      _expandedTasks.clear();
+      int times = int.parse(value);
+      print('times is $times');
+      for (int i = 0; i < times; i++) {
+        print('adding task');
+        addNewExpandedTask();
+      }
+      notifyListeners();
+    }
+  }
+
   void addNewExpandedTask() {
-    int currentIndex = _expandedTasks.length - 1;
-    _expandedTasks[currentIndex].icon = FontAwesomeIcons.minusCircle;
-    _expandedTasks[currentIndex].addOrRemoveTask = () {
-      removeTask(currentIndex);
-    };
     TextEditingController controller = TextEditingController(text: taskName);
-    _expandedTasks.add(ExpandedStateModel(
-        addNewExpandedTask, FontAwesomeIcons.plusCircle, controller));
+    _expandedTasks.add(ExpandedStateModel(addNewExpandedTask, controller));
     notifyListeners();
   }
 
   void onTaskNameSubmitted(String task) {
     nameController.text = task;
-  }
-
-  void removeTask(int currentIndex) {
-    if (_expandedTasks.length == 1) {
-      _expandedTasks[currentIndex].icon = FontAwesomeIcons.plusCircle;
-      _expandedTasks[currentIndex].addOrRemoveTask = () {
-        addNewExpandedTask();
-      };
-    } else
-      _expandedTasks.removeAt(currentIndex);
-    notifyListeners();
   }
 
   void setPickedStartTime(
@@ -188,11 +185,18 @@ class AddNewTaskProvider with ChangeNotifier {
 
   void setPickedDuration(String duration) {
     _errorText = null;
+    notifyListeners();
     if (AppUtils.validateDuration(duration))
       this._pickedDurationTime = AppUtils.formatHHMMTimeToTimeOfDay(duration);
-    else
-      _errorText = 'Please enter a valid duration.';
-    notifyListeners();
+    else {
+      if (AppUtils.validateMinutes(duration))
+        this._pickedDurationTime = AppUtils.formatHHMMTimeToTimeOfDay(
+            AppUtils.formatMinutesToHHMMTime(duration));
+      else {
+        _errorText = 'Please enter a valid duration.';
+        notifyListeners();
+      }
+    }
   }
 
   Future<int> addNewTaskToDB(
@@ -205,6 +209,7 @@ class AddNewTaskProvider with ChangeNotifier {
     int taskID = -1;
     if (_db != null) {
       if (validateTaskInputs()) {
+        await _updateTimeBalance();
         int userTotalHourBalance = sharedPreferencesUtils
             .getIntFromSharedPreferences(kTotalBalanceHoursKey);
         int userTotalMinutesBalance = sharedPreferencesUtils
@@ -279,6 +284,7 @@ class AddNewTaskProvider with ChangeNotifier {
                   add_2_calendar.Add2Calendar.addEvent2Cal(event);
                 }
               }
+
               StartEndTask task = StartEndTask(
                   null,
                   _nameController.text.trim(),
@@ -298,6 +304,33 @@ class AddNewTaskProvider with ChangeNotifier {
       }
     }
     return taskID;
+  }
+
+  _updateTimeBalance() async {
+    SharedPerferencesUtils sharedPrefsUtils =
+        SharedPerferencesUtils(await SharedPreferences.getInstance());
+    int timeSaved =
+        sharedPrefsUtils.getIntFromSharedPreferences(kTimeSelectedSettingsKey);
+    if (timeSaved != 0) {
+      DateTime timeSavedDateTime =
+          DateTime.fromMillisecondsSinceEpoch(timeSaved);
+      List<double> result =
+          AppUtils.calculateTheDifferenceBetweenDatesInHoursAndMinutes(
+              timeSavedDateTime);
+      if (timeSavedDateTime.isAfter(DateTime.now())) {
+        sharedPrefsUtils.saveIntToSharedPreferences(
+            kTimeSelectedSettingsKey, 0);
+        sharedPrefsUtils.saveIntToSharedPreferences(
+            kTotalBalanceHoursKey, result[0].toInt());
+        sharedPrefsUtils.saveIntToSharedPreferences(
+            kTotalBalanceMinutesKey, result[1].toInt());
+      } else {
+        sharedPrefsUtils.saveIntToSharedPreferences(
+            kTimeSelectedSettingsKey, 0);
+        sharedPrefsUtils.saveIntToSharedPreferences(kTotalBalanceHoursKey, 0);
+        sharedPrefsUtils.saveIntToSharedPreferences(kTotalBalanceMinutesKey, 0);
+      }
+    }
   }
 
   _prefillCalendarEventToUI() {
@@ -348,26 +381,30 @@ class AddNewTaskProvider with ChangeNotifier {
 
   bool _checkIfTimeIsMoreThanTimeBalance(Function onExceedTimeFrame,
       int userTotalHourBalance, int userTotalMinutesBalance, List addedTime) {
-    switch (userTotalHourBalance) {
-      case 24:
-        if (addedTime[0] >= userTotalHourBalance) {
-          if (addedTime[0] == userTotalHourBalance) {
-            if (addedTime[1] <= userTotalMinutesBalance) break;
-          }
-          onExceedTimeFrame(timeMoreThan24Hours);
-          return true;
+    print(
+        'total hour balance is $userTotalHourBalance total min is $userTotalMinutesBalance');
+    if (userTotalHourBalance == 0 && userTotalMinutesBalance == 0) {
+      onExceedTimeFrame(
+          'Please update your time balance from the settings screen to begin adding tasks again.');
+      return true;
+    } else {
+      if (addedTime[0] >= userTotalHourBalance) {
+        if (addedTime[0] == userTotalHourBalance) {
+          if (addedTime[1] <= userTotalMinutesBalance) return false;
         }
-        break;
-      default:
-        if (addedTime[0] >= userTotalHourBalance) {
-          if (addedTime[0] == userTotalHourBalance) {
-            if (addedTime[1] <= userTotalMinutesBalance) break;
-          }
-          onExceedTimeFrame(timeLessThan24Hours);
-          return true;
-        }
+        List duration;
+        if (addedTime[1] >= userTotalMinutesBalance)
+          duration = AppUtils.minusTime(addedTime[0], userTotalHourBalance,
+              addedTime[1], userTotalMinutesBalance);
+        else
+          duration = AppUtils.minusTime(addedTime[0], userTotalHourBalance,
+              userTotalMinutesBalance, addedTime[1]);
+        onExceedTimeFrame(
+            'You exceeded your time frame by ${AppUtils.formatTimeToHHMM(duration[0], duration[1])}');
+        return true;
+      }
+      return false;
     }
-    return false;
   }
 
   bool validateTaskInputs() {

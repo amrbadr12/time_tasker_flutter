@@ -1,4 +1,4 @@
-package com.app.time_tasker
+package com.fiona.timetasker
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity

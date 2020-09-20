@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:time_tasker/constants.dart';
@@ -11,10 +10,10 @@ import 'add_task_screens/add_task_screen.dart';
 
 void main() {
   runApp(
-    DevicePreview(
-      builder: (context) => MyApp(),
-    ),
-    //MyApp(),
+    // DevicePreview(
+    //   builder: (context) => MyApp(),
+    // ),
+    MyApp(),
   );
 }
 

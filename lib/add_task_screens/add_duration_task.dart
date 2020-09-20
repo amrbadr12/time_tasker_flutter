@@ -1,4 +1,5 @@
 import 'package:expandable/expandable.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
@@ -22,6 +23,7 @@ class AddDurationTask extends StatefulWidget {
 
 class _AddDurationTaskState extends State<AddDurationTask> {
   MaskTextInputFormatter mask;
+  TextEditingController _multiplesController = TextEditingController();
   @override
   void initState() {
     mask = MaskTextInputFormatter(mask: '##:##');
@@ -124,6 +126,35 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                           Padding(
                               padding: EdgeInsets.symmetric(
                                   horizontal: kMainDefaultPadding),
+                              child: TextField(
+                                style: kInputAddTaskLabelTextStyle,
+                                controller: _multiplesController,
+                                textInputAction: TextInputAction.done,
+                                keyboardType: TextInputType.number,
+                                maxLength: 2,
+                                decoration: InputDecoration(
+                                  suffix: IconButton(
+                                    padding: EdgeInsets.all(0),
+                                    icon: Icon(
+                                      FontAwesomeIcons.check,
+                                      color: Colors.blue,
+                                      size: 15,
+                                    ),
+                                    onPressed: () {
+                                      snapshot.setMultipleTimes(
+                                          _multiplesController.text.trim());
+                                    },
+                                  ),
+                                  hintText: 'Multiples times of the same task',
+                                  hintStyle: kInputAddTaskLabelTextStyle,
+                                ),
+                              )),
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.02,
+                          ),
+                          Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: kMainDefaultPadding),
                               child: ExpandablePanel(
                                   theme: ExpandableThemeData(
                                       expandIcon: FontAwesomeIcons.plus,
@@ -132,7 +163,7 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                                       iconPadding: EdgeInsets.all(0.0),
                                       iconSize: 14.0),
                                   header: Text(
-                                    'Add more than one task of this type',
+                                    'Multiple Tasks',
                                     style: kInputAddTaskLabelTextStyle.copyWith(
                                         color: Colors.black),
                                   ),
@@ -149,19 +180,19 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                                             controller: snapshot
                                                 .expandedTasks[index].task,
                                           ),
-                                          trailing: IconButton(
-                                            icon: Icon(
-                                              snapshot
-                                                  .expandedTasks[index].icon,
-                                              color: Colors.lightBlue,
-                                              size: 15.0,
-                                            ),
-                                            onPressed: () {
-                                              //snapshot.addNewExpandedTask();
-                                              snapshot.expandedTasks[index]
-                                                  .addOrRemoveTask();
-                                            },
-                                          ),
+                                          // trailing: IconButton(
+                                          //   icon: Icon(
+                                          //     snapshot
+                                          //         .expandedTasks[index].icon,
+                                          //     color: Colors.lightBlue,
+                                          //     size: 15.0,
+                                          //   ),
+                                          //   onPressed: () {
+                                          //     //snapshot.addNewExpandedTask();
+                                          //     snapshot.expandedTasks[index]
+                                          //         .addOrRemoveTask();
+                                          //   },
+                                          // ),
                                         );
                                       }))),
                           SizedBox(
