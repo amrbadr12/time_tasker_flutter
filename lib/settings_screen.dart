@@ -8,6 +8,7 @@ import 'package:time_tasker/utils/app_utils.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
 import 'constants.dart';
+import 'home_screens/main_home_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   @override
@@ -42,21 +43,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 0.0,
+          title: Text(kAppName,
+              textAlign: TextAlign.center, style: kAppBarTextStyle),
+          centerTitle: true,
         ),
         body: SingleChildScrollView(
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
                     Widget>[
-          Padding(
-              padding: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
-              child: Text(
-                'TimeTasker Settings',
-                softWrap: true,
-                style: kTitleTextStyle.copyWith(
-                    fontSize: 30.0, fontWeight: FontWeight.bold),
-              )),
+          // Padding(
+          //     padding: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
+          //     child: Text(
+          //       'TimeTasker Settings',
+          //       softWrap: true,
+          //       style: kTitleTextStyle.copyWith(
+          //           fontSize: 30.0, fontWeight: FontWeight.bold),
+          //     )),
           SizedBox(
             height: 50.0,
+          ),
+          Padding(
+              padding: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
+              child: Text('Set your time period using:',
+                  style: TextStyle(
+                      fontSize: 16.0,
+                      color: Colors.grey[700],
+                      fontWeight: FontWeight.bold))),
+          SizedBox(
+            height: 8.0,
           ),
           Slider(
               value: _hoursSliderValue ?? 1.0,
@@ -108,6 +122,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             height: kMainDefaultPadding,
           ),
           Padding(
+              padding: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
+              child: Text('OR',
+                  style: TextStyle(
+                      fontSize: 16.0,
+                      color: Colors.grey[700],
+                      fontWeight: FontWeight.bold))),
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
             child: Row(
               children: [
@@ -121,7 +142,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     containerColor: kTasksDateContainerColor,
                     text: _timeSelected != null
                         ? AppUtils.formatTimeOfDay(_timeSelected) + ' selected'
-                        : 'Or set the  time',
+                        : 'Set the  time manually',
                     onDateChanged: () async {
                       DatePicker.showDateTimePicker(context,
                           showTitleActions: true,
@@ -226,13 +247,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   gradient: LinearGradient(colors: blueGradient)),
               width: double.infinity,
               child: FlatButton(
-                child: Text('Save Changes',
+                child: Text('Start TimeTasking!',
                     style: kAppBarTextStyle.copyWith(color: Colors.white)),
                 onPressed: () {
                   saveSliderItemToLocal(() {
                     AppUtils.showFlushBar(
-                        'Successful', 'Changes successfully changed', context);
+                        'Successful', 'Saved Successfully!', context);
                   });
+                  Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            HomeScreen(TaskTypes.DurationTasks),
+                      ),
+                      (route) => false);
                 },
               ),
             ),

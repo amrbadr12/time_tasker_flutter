@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:time_tasker/constants.dart';
+import 'package:time_tasker/models/task.dart';
 import 'package:time_tasker/reusable_widgets/add_task_reusable_cards.dart';
 
 class AddNewTaskInputWidget extends StatelessWidget {
@@ -16,8 +17,9 @@ class AddNewTaskInputWidget extends StatelessWidget {
   final String errorText;
   final Function onDurationDateChanged;
   final String durationText;
-  final List<String> previousTasks;
+  final List previousTasks;
   final Function onTaskNameSubmitted;
+  final Function onTaskDurationSubmitted;
   final Function onFilterItems;
   final Function resetTime;
   final MaskTextInputFormatter maskTextInputFormatter;
@@ -27,6 +29,7 @@ class AddNewTaskInputWidget extends StatelessWidget {
       this.durationController,
       this.onTaskNameSubmitted,
       this.includeStartEndDate,
+      this.onTaskDurationSubmitted,
       this.errorText,
       this.previousTasks,
       this.onFilterItems,
@@ -48,11 +51,13 @@ class AddNewTaskInputWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          AutoCompleteTextField<String>(
+          AutoCompleteTextField<Task>(
             suggestions: previousTasks,
             style: kInputAddTaskLabelTextStyle,
-            itemFilter: (item, query) {
-              return item.toLowerCase().startsWith(query.toLowerCase());
+            itemFilter: (Task item, query) {
+              return item.taskName
+                  .toLowerCase()
+                  .startsWith(query.toLowerCase());
             },
             controller: nameController,
             decoration: InputDecoration(
@@ -60,26 +65,30 @@ class AddNewTaskInputWidget extends StatelessWidget {
               hintText: 'Task Name',
             ),
             clearOnSubmit: false,
-            itemBuilder: (BuildContext context, String suggestion) {
+            itemBuilder: (BuildContext context, Task suggestion) {
               return Padding(
                   padding: EdgeInsets.all(kMainDefaultPadding),
                   child: Text(
-                    suggestion,
+                    suggestion.taskName,
                     style: kInputAddTaskLabelTextStyle.copyWith(
                         fontSize: 12.0, color: Colors.black),
                   ));
             },
-            itemSorter: (String a, String b) {
-              return a.compareTo(b);
+            itemSorter: (Task a, Task b) {
+              return a.taskName.compareTo(b.taskName);
             },
-            itemSubmitted: (String data) {
-              onTaskNameSubmitted(data);
+            itemSubmitted: (Task data) {
+              onTaskNameSubmitted(data.taskName);
+              if (data is DurationTask) {
+                DurationTask temp = data;
+                onTaskDurationSubmitted(temp);
+              }
               FocusScopeNode currentFocus = FocusScope.of(context);
               if (!currentFocus.hasPrimaryFocus) {
                 currentFocus.unfocus();
               }
             },
-            key: GlobalKey<AutoCompleteTextFieldState<String>>(),
+            key: GlobalKey<AutoCompleteTextFieldState<Task>>(),
           ),
           SizedBox(
             height: kMainDefaultHeightPadding,
@@ -131,7 +140,7 @@ class AddNewTaskInputWidget extends StatelessWidget {
             visible: !includeStartEndDate ?? false,
             child: TextField(
               onChanged: onDurationDateChanged,
-              //controller:durationController,
+              controller: durationController,
               style: kInputAddTaskLabelTextStyle,
               maxLength: 5,
               inputFormatters: [maskTextInputFormatter],

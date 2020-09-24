@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:time_tasker/db_helper.dart';
 import 'package:time_tasker/providers/add_new_task_provider.dart';
 import 'package:time_tasker/reusable_widgets/add_new_task._input.dart';
 import 'package:time_tasker/utils/app_utils.dart';
@@ -9,6 +8,7 @@ import 'package:time_tasker/utils/dialog_utils.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
 import '../constants.dart';
+import '../db_helper.dart';
 import '../utils/dialog_utils.dart';
 
 class AddStartEndTaskScreen extends StatefulWidget {
@@ -35,6 +35,7 @@ class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
                         DBHelper(),
                         TaskTypes.StartEndTasks,
                         TextEditingController(),
+                        null,
                         widget.prefillCalendarEvent,
                         null,
                         widget.totalDurationTime),
@@ -99,10 +100,10 @@ class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
                                       onSuccess: () {
                                         Navigator.of(context)
                                             .popUntil((route) => route.isFirst);
-                                        AppUtils.showFlushBar(
-                                            'Success',
-                                            'Your Task was added successfully!',
-                                            context);
+                                        // AppUtils.showFlushBar(
+                                        //     'Success',
+                                        //     'Your Task was added successfully!',
+                                        //     context);
                                       },
                                       sharedPreferencesUtils:
                                           SharedPerferencesUtils(

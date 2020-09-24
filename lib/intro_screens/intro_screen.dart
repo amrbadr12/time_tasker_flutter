@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:time_tasker/add_task_screens/add_task_screen.dart';
 import 'package:time_tasker/constants.dart';
+import 'package:time_tasker/settings_screen.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
 class IntroScreen extends StatefulWidget {
@@ -54,11 +54,7 @@ class _IntroScreenState extends State<IntroScreen> {
         utils.saveIntToSharedPreferences(kTotalBalanceHoursKey, 24);
         utils.saveIntToSharedPreferences(kTotalBalanceMinutesKey, 0);
         Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => AddTaskScreen(
-                      navigateToHome: true,
-                    )));
+            context, MaterialPageRoute(builder: (context) => SettingsScreen()));
       },
       showSkipButton: true,
       skip: const Text("Skip"),

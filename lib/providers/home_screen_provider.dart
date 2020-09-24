@@ -215,7 +215,7 @@ class HomeScreenProvider with ChangeNotifier {
           List<DurationTask> durationTasks = tasks.cast();
           for (DurationTask task in durationTasks) {
             _recentTasks
-                .add(AppUtils.formatDurationTaskToUIListComponenet(task));
+                .add(AppUtils.formatDurationTaskToUIListComponent(task));
           }
           break;
         case TaskTypes.StartEndTasks:

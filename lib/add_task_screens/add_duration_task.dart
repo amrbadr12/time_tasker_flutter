@@ -6,9 +6,9 @@ import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:time_tasker/db_helper.dart';
+import 'package:time_tasker/models/task.dart';
 import 'package:time_tasker/providers/add_new_task_provider.dart';
 import 'package:time_tasker/reusable_widgets/add_new_task._input.dart';
-import 'package:time_tasker/utils/app_utils.dart';
 import 'package:time_tasker/utils/dialog_utils.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
@@ -45,6 +45,7 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                         DBHelper(),
                         TaskTypes.DurationTasks,
                         TextEditingController(),
+                        TextEditingController(),
                         null,
                         ExpandableController(),
                         widget.totalDurationTime),
@@ -67,12 +68,16 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                             includeStartEndDate: false,
                             maskTextInputFormatter: mask,
                             nameController: snapshot.nameController,
+                            durationController: snapshot.durationController,
                             previousTasks: snapshot.previousTasks,
                             onTaskNameSubmitted: (String data) {
                               snapshot.onTaskNameSubmitted(data);
                             },
-                            onDurationDateChanged: (value) {
-                              snapshot.setPickedDuration(value);
+                            onTaskDurationSubmitted: (DurationTask date) {
+                              snapshot.onDurationSubmitted(date);
+                            },
+                            onDurationDateChanged: (String date) {
+                              snapshot.setPickedDuration(date);
                             },
                             errorText: snapshot.errorText,
                             durationText: snapshot.getDuration(),
@@ -100,10 +105,6 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                                       onSuccess: () {
                                         Navigator.of(context)
                                             .popUntil((route) => route.isFirst);
-                                        AppUtils.showFlushBar(
-                                            'Success',
-                                            'Your Task was added successfully!',
-                                            context);
                                       },
                                       onExceedTimeFrameDialog: (errorText) {
                                         DialogUtils.showDurationExceedDialog(
@@ -157,11 +158,11 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                                   horizontal: kMainDefaultPadding),
                               child: ExpandablePanel(
                                   theme: ExpandableThemeData(
-                                      expandIcon: FontAwesomeIcons.plus,
-                                      collapseIcon: FontAwesomeIcons.minus,
-                                      iconColor: Colors.lightBlue,
+                                      expandIcon: Icons.visibility,
+                                      collapseIcon: Icons.visibility_off,
+                                      iconColor: Colors.red,
                                       iconPadding: EdgeInsets.all(0.0),
-                                      iconSize: 14.0),
+                                      iconSize: 16.0),
                                   header: Text(
                                     'Multiple Tasks',
                                     style: kInputAddTaskLabelTextStyle.copyWith(

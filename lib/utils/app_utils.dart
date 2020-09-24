@@ -330,7 +330,7 @@ class AppUtils {
     return colors[randomNumber];
   }
 
-  static UITask formatDurationTaskToUIListComponenet(DurationTask task) {
+  static UITask formatDurationTaskToUIListComponent(DurationTask task) {
     DateTime duration =
         convertMillisecondsSinceEpochToDateTime(task.durationTime);
     DateTime date = convertMillisecondsSinceEpochToDateTime(task.date);

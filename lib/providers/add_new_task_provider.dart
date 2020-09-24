@@ -23,7 +23,7 @@ class AddNewTaskProvider with ChangeNotifier {
   TextEditingController _nameController;
   TextEditingController _durationController;
   String _multipleTimes;
-  List<String> _previousTasks;
+  List _previousTasks;
   List _previousStartEndTasks;
   List _prefillCalendarEvents;
   List<int> _calculatedDuration;
@@ -37,6 +37,7 @@ class AddNewTaskProvider with ChangeNotifier {
       this._db,
       this._currentTaskType,
       this._nameController,
+      this._durationController,
       this._prefillCalendarEvents,
       this._expandableController,
       this._totalUserDurationTime) {
@@ -56,7 +57,7 @@ class AddNewTaskProvider with ChangeNotifier {
 
   String get errorText => _errorText;
 
-  List<String> get previousTasks => _previousTasks;
+  List get previousTasks => _previousTasks;
 
   TextEditingController get nameController => _nameController;
 
@@ -85,7 +86,6 @@ class AddNewTaskProvider with ChangeNotifier {
       int times = int.parse(value);
       print('times is $times');
       for (int i = 0; i < times; i++) {
-        print('adding task');
         addNewExpandedTask();
       }
       notifyListeners();
@@ -100,6 +100,18 @@ class AddNewTaskProvider with ChangeNotifier {
 
   void onTaskNameSubmitted(String task) {
     nameController.text = task;
+  }
+
+  void onDurationSubmitted(DurationTask durationTask) {
+    UITask uiTask = AppUtils.formatDurationTaskToUIListComponent(durationTask);
+    if (uiTask != null) {
+      if (uiTask.duration != null) {
+        _durationController.text =
+            uiTask.duration.substring(0, uiTask.duration.length - 2);
+        setPickedDuration(
+            uiTask.duration.substring(0, uiTask.duration.length - 2));
+      }
+    }
   }
 
   void setPickedStartTime(
@@ -365,7 +377,8 @@ class AddNewTaskProvider with ChangeNotifier {
     }
     _previousTasks = List();
     _previousStartEndTasks = tasks;
-    _previousTasks = filterDataDuplicates(tasks);
+    //_previousTasks = filterDataDuplicates(tasks);
+    _previousTasks = tasks;
     notifyListeners();
     return _previousTasks;
   }
@@ -378,6 +391,8 @@ class AddNewTaskProvider with ChangeNotifier {
     textTasks = textTasks.toSet().toList();
     return textTasks;
   }
+
+  autoFillDuration() {}
 
   bool _checkIfTimeIsMoreThanTimeBalance(Function onExceedTimeFrame,
       int userTotalHourBalance, int userTotalMinutesBalance, List addedTime) {

@@ -4,9 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:time_tasker/constants.dart';
 import 'package:time_tasker/intro_screens/intro_screen.dart';
+import 'package:time_tasker/settings_screen.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
-
-import 'add_task_screens/add_task_screen.dart';
 
 void main() {
   runApp(
@@ -60,10 +59,6 @@ class MyApp extends StatelessWidget {
     SharedPerferencesUtils utils =
         SharedPerferencesUtils(await SharedPreferences.getInstance());
     bool showHome = utils.getBoolFromSharedPreferences(kShowIntroScreenKey);
-    return showHome
-        ? AddTaskScreen(
-            navigateToHome: true,
-          )
-        : IntroScreen();
+    return showHome ? SettingsScreen() : IntroScreen();
   }
 }

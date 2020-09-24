@@ -8,7 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:social_share/social_share.dart';
 import 'package:time_tasker/add_task_screens/add_duration_task.dart';
 import 'package:time_tasker/add_task_screens/add_start_end_task.dart';
-import 'package:time_tasker/add_task_screens/add_task_screen.dart';
 import 'package:time_tasker/constants.dart';
 import 'package:time_tasker/providers/home_screen_provider.dart';
 import 'package:time_tasker/reusable_widgets/main_screen_reusable_tab.dart';
@@ -62,18 +61,18 @@ class _HomeScreenState extends State<HomeScreen> {
         return Scaffold(
             appBar: AppBar(
               actions: <Widget>[
-                IconButton(
-                  icon: Icon(
-                    FontAwesomeIcons.solidClock,
-                    color: Colors.blueGrey[700],
-                    size: 15.0,
-                  ),
-                  onPressed: () async {
-                    await Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => SettingsScreen()));
-                    getSharedPrefs();
-                  },
-                ),
+                // IconButton(
+                //   icon: Icon(
+                //     FontAwesomeIcons.solidClock,
+                //     color: Colors.blueGrey[700],
+                //     size: 15.0,
+                //   ),
+                //   onPressed: () async {
+                //     await Navigator.of(context).push(MaterialPageRoute(
+                //         builder: (context) => SettingsScreen()));
+                //     getSharedPrefs();
+                //   },
+                // ),
 //                snapshot.selectedTask == TaskTypes.StartEndTasks
 //                    ? IconButton(
 //                        icon: Icon(
@@ -113,17 +112,20 @@ class _HomeScreenState extends State<HomeScreen> {
               centerTitle: true,
               title: FlatButton(
                 onPressed: () async {
-                  await Navigator.of(context)
-                      .push(MaterialPageRoute(
-                          builder: (context) => AddTaskScreen(
-                                navigateToHome: false,
-                                durationTotalTime: snapshot.durationTotalTime,
-                              )))
-                      .then((onValue) {
-                    try {
-                      if (snapshot != null) snapshot.refreshMainScreen();
-                    } catch (e) {}
-                  });
+                  await Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => SettingsScreen()));
+                  getSharedPrefs();
+                  // await Navigator.of(context)
+                  //     .push(MaterialPageRoute(
+                  //         builder: (context) => AddTaskScreen(
+                  //               navigateToHome: false,
+                  //               durationTotalTime: snapshot.durationTotalTime,
+                  //             )))
+                  //     .then((onValue) {
+                  //   try {
+                  //     if (snapshot != null) snapshot.refreshMainScreen();
+                  //   } catch (e) {}
+                  // });
                 },
                 child: Text(kAppName,
                     textAlign: TextAlign.center, style: kAppBarTextStyle),
