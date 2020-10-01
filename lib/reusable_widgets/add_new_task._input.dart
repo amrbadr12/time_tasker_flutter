@@ -83,10 +83,10 @@ class AddNewTaskInputWidget extends StatelessWidget {
                 DurationTask temp = data;
                 onTaskDurationSubmitted(temp);
               }
-              FocusScopeNode currentFocus = FocusScope.of(context);
-              if (!currentFocus.hasPrimaryFocus) {
-                currentFocus.unfocus();
-              }
+              // FocusScopeNode currentFocus = FocusScope.of(context);
+              // if (!currentFocus.hasPrimaryFocus) {
+              //   currentFocus.unfocus();
+              // }
             },
             key: GlobalKey<AutoCompleteTextFieldState<Task>>(),
           ),

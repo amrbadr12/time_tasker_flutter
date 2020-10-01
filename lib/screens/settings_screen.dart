@@ -7,7 +7,7 @@ import 'package:time_tasker/reusable_widgets/add_task_reusable_cards.dart';
 import 'package:time_tasker/utils/app_utils.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
-import 'constants.dart';
+import '../constants.dart';
 import 'home_screens/main_home_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -44,7 +44,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           backgroundColor: Colors.white,
           elevation: 0.0,
           title: Text(kAppName,
-              textAlign: TextAlign.center, style: kAppBarTextStyle),
+              textAlign: TextAlign.center,
+              style: kAppBarTextStyle.copyWith(fontSize: 18)),
           centerTitle: true,
         ),
         body: SingleChildScrollView(
@@ -60,13 +61,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           //           fontSize: 30.0, fontWeight: FontWeight.bold),
           //     )),
           SizedBox(
-            height: 50.0,
+            height: 20.0,
           ),
-          Padding(
-              padding: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
-              child: Text('Set your time period using:',
-                  style: TextStyle(
-                      fontSize: 16.0,
+          Center(
+              child: Text('Set your time period',
+                  style: kTitleTextStyle.copyWith(
+                      fontSize: 20.0,
                       color: Colors.grey[700],
                       fontWeight: FontWeight.bold))),
           SizedBox(

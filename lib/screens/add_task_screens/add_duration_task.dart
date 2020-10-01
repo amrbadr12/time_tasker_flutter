@@ -1,7 +1,7 @@
 import 'package:expandable/expandable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter/services.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,7 +12,7 @@ import 'package:time_tasker/reusable_widgets/add_new_task._input.dart';
 import 'package:time_tasker/utils/dialog_utils.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
-import '../constants.dart';
+import '../../constants.dart';
 
 class AddDurationTask extends StatefulWidget {
   final List totalDurationTime;
@@ -127,35 +127,6 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                           Padding(
                               padding: EdgeInsets.symmetric(
                                   horizontal: kMainDefaultPadding),
-                              child: TextField(
-                                style: kInputAddTaskLabelTextStyle,
-                                controller: _multiplesController,
-                                textInputAction: TextInputAction.done,
-                                keyboardType: TextInputType.number,
-                                maxLength: 2,
-                                decoration: InputDecoration(
-                                  suffix: IconButton(
-                                    padding: EdgeInsets.all(0),
-                                    icon: Icon(
-                                      FontAwesomeIcons.check,
-                                      color: Colors.blue,
-                                      size: 15,
-                                    ),
-                                    onPressed: () {
-                                      snapshot.setMultipleTimes(
-                                          _multiplesController.text.trim());
-                                    },
-                                  ),
-                                  hintText: 'Multiples times of the same task',
-                                  hintStyle: kInputAddTaskLabelTextStyle,
-                                ),
-                              )),
-                          SizedBox(
-                            height: MediaQuery.of(context).size.height * 0.02,
-                          ),
-                          Padding(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: kMainDefaultPadding),
                               child: ExpandablePanel(
                                   theme: ExpandableThemeData(
                                       expandIcon: Icons.visibility,
@@ -163,10 +134,55 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                                       iconColor: Colors.red,
                                       iconPadding: EdgeInsets.all(0.0),
                                       iconSize: 16.0),
-                                  header: Text(
-                                    'Multiple Tasks',
-                                    style: kInputAddTaskLabelTextStyle.copyWith(
-                                        color: Colors.black),
+                                  header: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.baseline,
+                                    textBaseline: TextBaseline.ideographic,
+                                    children: <Widget>[
+                                      Flexible(
+                                        child: Text(
+                                          'Multiple Tasks',
+                                          style: kInputAddTaskLabelTextStyle
+                                              .copyWith(color: Colors.black),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.02,
+                                      ),
+                                      Container(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.25,
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                                0.08,
+                                        child: TextField(
+                                          maxLengthEnforced: true,
+                                          style: kInputAddTaskLabelTextStyle,
+                                          controller: _multiplesController,
+                                          textInputAction: TextInputAction.done,
+                                          keyboardType: TextInputType.number,
+                                          maxLength: 2,
+                                          onChanged: (value) {
+                                            snapshot.setMultipleTimes(
+                                                _multiplesController.text
+                                                    .trim());
+                                          },
+                                          maxLines: 1,
+                                          decoration: InputDecoration(
+                                            hintText: 'Number',
+                                            border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(5.0)),
+                                            hintStyle:
+                                                kInputAddTaskLabelTextStyle
+                                                    .copyWith(fontSize: 14),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                   controller: snapshot.expandableController,
                                   expanded: ListView.builder(
@@ -181,19 +197,6 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                                             controller: snapshot
                                                 .expandedTasks[index].task,
                                           ),
-                                          // trailing: IconButton(
-                                          //   icon: Icon(
-                                          //     snapshot
-                                          //         .expandedTasks[index].icon,
-                                          //     color: Colors.lightBlue,
-                                          //     size: 15.0,
-                                          //   ),
-                                          //   onPressed: () {
-                                          //     //snapshot.addNewExpandedTask();
-                                          //     snapshot.expandedTasks[index]
-                                          //         .addOrRemoveTask();
-                                          //   },
-                                          // ),
                                         );
                                       }))),
                           SizedBox(

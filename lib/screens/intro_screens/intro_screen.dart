@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:time_tasker/constants.dart';
-import 'package:time_tasker/settings_screen.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
+
+import '../settings_screen.dart';
 
 class IntroScreen extends StatefulWidget {
   @override

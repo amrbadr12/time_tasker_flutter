@@ -3,11 +3,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:time_tasker/constants.dart';
-import 'package:time_tasker/intro_screens/intro_screen.dart';
-import 'package:time_tasker/settings_screen.dart';
+import 'package:time_tasker/screens/intro_screens/intro_screen.dart';
+import 'package:time_tasker/screens/settings_screen.dart';
+import 'package:time_tasker/services/init_services.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
 void main() {
+  configureDependencies();
   runApp(
     // DevicePreview(
     //   builder: (context) => MyApp(),

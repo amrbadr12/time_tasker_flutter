@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:time_tasker/add_task_screens/add_duration_task.dart';
-import 'package:time_tasker/add_task_screens/add_start_end_task.dart';
 import 'package:time_tasker/constants.dart';
-import 'package:time_tasker/home_screens/main_home_screen.dart';
 import 'package:time_tasker/reusable_widgets/add_task_reusable_cards.dart';
+import 'package:time_tasker/screens/home_screens/main_home_screen.dart';
 
 import '../settings_screen.dart';
+import 'add_duration_task.dart';
+import 'add_start_end_task.dart';
 
 class AddTaskScreen extends StatefulWidget {
   final bool navigateToHome;

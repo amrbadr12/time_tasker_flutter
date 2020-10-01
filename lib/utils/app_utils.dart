@@ -8,6 +8,7 @@ import 'package:jiffy/jiffy.dart';
 import 'package:time_tasker/constants.dart';
 import 'package:time_tasker/models/expandedStateModel.dart';
 import 'package:time_tasker/models/task.dart';
+import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
 class AppUtils {
   static Future<TimeOfDay> showTimePickerDialog(BuildContext context) async {
@@ -29,6 +30,11 @@ class AppUtils {
 
   static int currentTimeInSeconds() {
     var ms = (new DateTime.now()).millisecondsSinceEpoch;
+    return (ms / 1000).round();
+  }
+
+  static int dateTimeMillisecondsSinceEpochToSeconds(DateTime dt) {
+    var ms = dt.millisecondsSinceEpoch;
     return (ms / 1000).round();
   }
 
@@ -148,6 +154,16 @@ class AppUtils {
     return [difference.inHours.floorToDouble(), totalMinutes.floorToDouble()];
   }
 
+  static List<double> calculateDifferenceBetweenTwoDates(
+      DateTime dateTime1, DateTime dateTime2) {
+    Duration difference;
+    difference = dateTime2.difference(dateTime1);
+    int hoursToMilliseconds = difference.inHours * 3600000;
+    double totalMinutes =
+        (difference.inMilliseconds - hoursToMilliseconds).abs() / 60000;
+    return [difference.inHours.floorToDouble(), totalMinutes.floorToDouble()];
+  }
+
   static List<int> calculateDuration(
       int startHour, int endHour, int startMinute, int endMinute) {
     int resultMinute = endMinute - startMinute;
@@ -169,6 +185,44 @@ class AppUtils {
     final today = DateTime(now.year, now.month, now.day);
     final aDate = DateTime(time.year, time.month, time.day);
     return aDate == today;
+  }
+
+  static updateTimeBalance(
+      SharedPerferencesUtils sharedPerferencesUtils) async {
+    int timeSaved = sharedPerferencesUtils
+        .getIntFromSharedPreferences(kTimeSelectedSettingsKey);
+    if (timeSaved != 0) {
+      DateTime timeSavedDateTime =
+          DateTime.fromMillisecondsSinceEpoch(timeSaved);
+      List<double> result =
+          AppUtils.calculateTheDifferenceBetweenDatesInHoursAndMinutes(
+              timeSavedDateTime);
+      if (timeSavedDateTime.isAfter(DateTime.now())) {
+        //4:00 and now is 4:01
+        // sharedPerferencesUtils.saveIntToSharedPreferences(
+        //     kTimeSelectedSettingsKey, 0);
+        sharedPerferencesUtils.saveIntToSharedPreferences(
+            kTotalBalanceHoursKey, result[0].toInt());
+        sharedPerferencesUtils.saveIntToSharedPreferences(
+            kTotalBalanceMinutesKey, result[1].toInt());
+      } else {
+        sharedPerferencesUtils.saveIntToSharedPreferences(
+            kTimeSelectedSettingsKey, 0);
+        sharedPerferencesUtils.saveIntToSharedPreferences(
+            kTotalBalanceHoursKey, 0);
+        sharedPerferencesUtils.saveIntToSharedPreferences(
+            kTotalBalanceMinutesKey, 0);
+      }
+    }
+  }
+
+  static bool checkTheTasksDates(
+      DateTime startDate, DateTime endDate, DateTime creationDate) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    return startDate.day == today.day ||
+        endDate.day == today.day ||
+        creationDate.day == today.day;
   }
 
   static bool checkIfTimePickerDateIsToday(TimeOfDay date) {
@@ -293,6 +347,7 @@ class AppUtils {
 
   static double calculateTimePercentFromTotalBalance(
       int hour, int defaultFormat) {
+    if (hour == 0) return 0;
     if (hour / defaultFormat < 0.0) {
       return 1.0;
     }
@@ -359,8 +414,9 @@ class AppUtils {
         AppUtils.convertMillisecondsSinceEpochToDateTime(task.startTime);
     DateTime endTime =
         AppUtils.convertMillisecondsSinceEpochToDateTime(task.endTime);
-    List<int> duration = calculateDuration(
-        startTime.hour, endTime.hour, startTime.minute, endTime.minute);
+    List<double> difference =
+        calculateDifferenceBetweenTwoDates(startTime, endTime);
+    List<int> duration = [difference[0].toInt(), difference[1].toInt()];
     DateTime date = convertMillisecondsSinceEpochToDateTime(task.date);
     UITask uiTask = UITask(
         task.id,
