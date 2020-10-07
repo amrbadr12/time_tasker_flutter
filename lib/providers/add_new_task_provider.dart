@@ -205,10 +205,6 @@ class AddNewTaskProvider with ChangeNotifier {
         SharedPerferencesUtils sharedPerferencesUtils =
             SharedPerferencesUtils(await SharedPreferences.getInstance());
         await AppUtils.updateTimeBalance(sharedPerferencesUtils);
-        int userTotalHourBalance = sharedPreferencesUtils
-            .getIntFromSharedPreferences(kTotalBalanceHoursKey);
-        int userTotalMinutesBalance = sharedPreferencesUtils
-            .getIntFromSharedPreferences(kTotalBalanceMinutesKey);
         switch (_currentTaskType) {
           case TaskTypes.DurationTasks:
             TimeOfDay totalDuration;
@@ -234,8 +230,6 @@ class AddNewTaskProvider with ChangeNotifier {
                 expandedTime[0], totalDuration.minute, expandedTime[1]);
             if (await _checkIfTimeIsMoreThanTimeBalance(
               onExceedTimeFrameDialog,
-              userTotalHourBalance,
-              userTotalMinutesBalance,
               addedTime,
             )) return -1;
             String commaSeparatedTasks =
@@ -262,10 +256,7 @@ class AddNewTaskProvider with ChangeNotifier {
                     _totalUserDurationTime[1],
                     _calculatedDuration[1]);
                 if (await _checkIfTimeIsMoreThanTimeBalance(
-                    onExceedTimeFrameDialog,
-                    userTotalHourBalance,
-                    userTotalMinutesBalance,
-                    addedTime)) return -1;
+                    onExceedTimeFrameDialog, addedTime)) return -1;
               }
               if (!_calendarTask) {
                 if (await onAddingTaskToCalendar()) {
@@ -359,19 +350,20 @@ class AddNewTaskProvider with ChangeNotifier {
   }
 
   Future<bool> _checkIfTimeIsMoreThanTimeBalance(
-      Function onExceedTimeFrame,
-      int userTotalHourBalance,
-      int userTotalMinutesBalance,
-      List addedTime) async {
+      Function onExceedTimeFrame, List addedTime) async {
+    SharedPerferencesUtils sharedPerferencesUtils =
+        SharedPerferencesUtils(await SharedPreferences.getInstance());
+    int userTotalHourBalance = sharedPerferencesUtils
+        .getIntFromSharedPreferences(kTotalBalanceHoursKey);
+    int userTotalMinutesBalance = sharedPerferencesUtils
+        .getIntFromSharedPreferences(kTotalBalanceMinutesKey);
+    print(
+        'user total hour is $userTotalHourBalance and minutes is $userTotalMinutesBalance and added time is ${addedTime[0]} and 1 is ${addedTime[1]}');
     if (userTotalHourBalance == 0 && userTotalMinutesBalance == 0) {
       onExceedTimeFrame(
           'Please update your time balance from the settings screen to begin adding tasks again.');
       return true;
-    }
-    //TODO:look into this
-    else {
-      SharedPerferencesUtils sharedPerferencesUtils =
-          SharedPerferencesUtils(await SharedPreferences.getInstance());
+    } else {
       int timeSaved = sharedPerferencesUtils
           .getIntFromSharedPreferences(kTimeSelectedSettingsKey);
       print('time saved is ${timeSaved}');
@@ -386,8 +378,6 @@ class AddNewTaskProvider with ChangeNotifier {
             return true;
           }
         }
-
-        print('task is duration');
         List<double> difference =
             AppUtils.calculateTheDifferenceBetweenDatesInHoursAndMinutes(
                 timeSavedDateTime);
@@ -404,7 +394,6 @@ class AddNewTaskProvider with ChangeNotifier {
             userTotalMinutesBalance,
             addedTime);
     }
-    return false;
   }
 
   bool _checkIfTheUserExceededTheirTimeFrameWithSlider(

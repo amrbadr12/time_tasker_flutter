@@ -45,7 +45,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           elevation: 0.0,
           title: Text(kAppName,
               textAlign: TextAlign.center,
-              style: kAppBarTextStyle.copyWith(fontSize: 18)),
+              style: kAppBarTextStyle.copyWith(fontSize: 20.0)),
           centerTitle: true,
         ),
         body: SingleChildScrollView(

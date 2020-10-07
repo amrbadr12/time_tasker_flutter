@@ -155,23 +155,23 @@ class HomeScreenProvider with ChangeNotifier {
           List<int> totalBalance;
           int userTotalHourBalance;
           int userTotalMinutesBalance;
-          if (timeSaved != 0) {
+          if (timeSaved != 0)
             AppUtils.updateTimeBalance(sharedPerferencesUtils);
-            print(
-                'total minutes is ${sharedPerferencesUtils.getIntFromSharedPreferences(kTotalBalanceMinutesKey)}');
-            userTotalHourBalance = sharedPerferencesUtils
-                .getIntFromSharedPreferences(kTotalBalanceHoursKey);
-            userTotalMinutesBalance = sharedPerferencesUtils
-                .getIntFromSharedPreferences(kTotalBalanceMinutesKey);
-            totalBalance = [userTotalHourBalance, userTotalMinutesBalance];
-          } else {
-            userTotalHourBalance = sharedPerferencesUtils
-                .getIntFromSharedPreferences(kTotalBalanceHoursKey);
-            userTotalMinutesBalance = sharedPerferencesUtils
-                .getIntFromSharedPreferences(kTotalBalanceMinutesKey);
-            totalBalance = AppUtils.calculateTimeBalanceFromFormattedTime(
-                _totalTime, userTotalHourBalance, userTotalMinutesBalance);
-          }
+          // print(
+          //     'total minutes is ${sharedPerferencesUtils.getIntFromSharedPreferences(kTotalBalanceMinutesKey)}');
+          // userTotalHourBalance = sharedPerferencesUtils
+          //     .getIntFromSharedPreferences(kTotalBalanceHoursKey);
+          // userTotalMinutesBalance = sharedPerferencesUtils
+          //     .getIntFromSharedPreferences(kTotalBalanceMinutesKey);
+          // totalBalance = [userTotalHourBalance, userTotalMinutesBalance];
+          //  } else {
+          userTotalHourBalance = sharedPerferencesUtils
+              .getIntFromSharedPreferences(kTotalBalanceHoursKey);
+          userTotalMinutesBalance = sharedPerferencesUtils
+              .getIntFromSharedPreferences(kTotalBalanceMinutesKey);
+          totalBalance = AppUtils.calculateTimeBalanceFromFormattedTime(
+              _totalTime, userTotalHourBalance, userTotalMinutesBalance);
+          //   }
           _setTotalBalanceForTaskType(
               AppUtils.formatTimeToHHMM(totalBalance[0], totalBalance[1]),
               AppUtils.calculateTimePercentFromTotalBalance(

@@ -50,7 +50,7 @@ class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
                               padding: EdgeInsets.symmetric(
                                   horizontal: kMainDefaultPadding),
                               child: Text(
-                                'Add task\nstart and end time',
+                                'Add your task',
                                 softWrap: true,
                                 style: kTitleTextStyle.copyWith(
                                     fontSize: 30.0,
