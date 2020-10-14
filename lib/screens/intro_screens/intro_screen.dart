@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:time_tasker/add_task_screens/add_task_screen.dart';
 import 'package:time_tasker/constants.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
+
+import '../settings_screen.dart';
 
 class IntroScreen extends StatefulWidget {
   @override
@@ -17,26 +18,21 @@ class _IntroScreenState extends State<IntroScreen> {
       body: firstBodyText,
       decoration: introPageDecoration,
       image: Center(
-        child: Image.asset("images/first_intro.png",
-            height: introScreenImagesSize, width: introScreenImagesSize),
+        child: Image.asset("images/timmi_4.png"),
       ),
     ),
     PageViewModel(
       title: secondTitleText,
       body: secondBodyText,
       decoration: introPageDecoration,
-      image: Center(
-        child: Image.asset("images/second_intro.png",
-            height: introScreenImagesSize, width: introScreenImagesSize),
-      ),
+      image: Center(child: Image.asset("images/timmi_5.png")),
     ),
     PageViewModel(
-      title: secondTitleText,
+      title: thirdTitleText,
       body: thirdBodyText,
       decoration: introPageDecoration,
       image: Center(
-        child: Image.asset("images/third_intro.png",
-            height: introScreenImagesSize, width: introScreenImagesSize),
+        child: Image.asset("images/timmi_5.png"),
       ),
     ),
     PageViewModel(
@@ -44,8 +40,7 @@ class _IntroScreenState extends State<IntroScreen> {
       body: fourthBodyText,
       decoration: introPageDecoration,
       image: Center(
-        child: Image.asset("images/fourth_intro.png",
-            height: introScreenImagesSize, width: introScreenImagesSize),
+        child: Image.asset("images/timmi_2.png"),
       ),
     ),
   ];
@@ -60,11 +55,7 @@ class _IntroScreenState extends State<IntroScreen> {
         utils.saveIntToSharedPreferences(kTotalBalanceHoursKey, 24);
         utils.saveIntToSharedPreferences(kTotalBalanceMinutesKey, 0);
         Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => AddTaskScreen(
-                      navigateToHome: true,
-                    )));
+            context, MaterialPageRoute(builder: (context) => SettingsScreen()));
       },
       showSkipButton: true,
       skip: const Text("Skip"),

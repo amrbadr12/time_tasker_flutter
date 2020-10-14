@@ -1,17 +1,18 @@
 import 'package:expandable/expandable.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter/services.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:time_tasker/db_helper.dart';
+import 'package:time_tasker/models/task.dart';
 import 'package:time_tasker/providers/add_new_task_provider.dart';
 import 'package:time_tasker/reusable_widgets/add_new_task._input.dart';
-import 'package:time_tasker/utils/app_utils.dart';
 import 'package:time_tasker/utils/dialog_utils.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
-import '../constants.dart';
+import '../../constants.dart';
 
 class AddDurationTask extends StatefulWidget {
   final List totalDurationTime;
@@ -22,6 +23,7 @@ class AddDurationTask extends StatefulWidget {
 
 class _AddDurationTaskState extends State<AddDurationTask> {
   MaskTextInputFormatter mask;
+  TextEditingController _multiplesController = TextEditingController();
   @override
   void initState() {
     mask = MaskTextInputFormatter(mask: '##:##');
@@ -43,6 +45,7 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                         DBHelper(),
                         TaskTypes.DurationTasks,
                         TextEditingController(),
+                        TextEditingController(),
                         null,
                         ExpandableController(),
                         widget.totalDurationTime),
@@ -55,7 +58,7 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                               padding: EdgeInsets.symmetric(
                                   horizontal: kMainDefaultPadding),
                               child: Text(
-                                'Add the duration\nof your task',
+                                'Add your task',
                                 softWrap: true,
                                 style: kTitleTextStyle.copyWith(
                                     fontSize: 30.0,
@@ -65,12 +68,16 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                             includeStartEndDate: false,
                             maskTextInputFormatter: mask,
                             nameController: snapshot.nameController,
+                            durationController: snapshot.durationController,
                             previousTasks: snapshot.previousTasks,
                             onTaskNameSubmitted: (String data) {
                               snapshot.onTaskNameSubmitted(data);
                             },
-                            onDurationDateChanged: (value) {
-                              snapshot.setPickedDuration(value);
+                            onTaskDurationSubmitted: (DurationTask date) {
+                              snapshot.onDurationSubmitted(date);
+                            },
+                            onDurationDateChanged: (String date) {
+                              snapshot.setPickedDuration(date);
                             },
                             errorText: snapshot.errorText,
                             durationText: snapshot.getDuration(),
@@ -98,10 +105,6 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                                       onSuccess: () {
                                         Navigator.of(context)
                                             .popUntil((route) => route.isFirst);
-                                        AppUtils.showFlushBar(
-                                            'Success',
-                                            'Your Task was added successfully!',
-                                            context);
                                       },
                                       onExceedTimeFrameDialog: (errorText) {
                                         DialogUtils.showDurationExceedDialog(
@@ -126,15 +129,60 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                                   horizontal: kMainDefaultPadding),
                               child: ExpandablePanel(
                                   theme: ExpandableThemeData(
-                                      expandIcon: FontAwesomeIcons.plus,
-                                      collapseIcon: FontAwesomeIcons.minus,
-                                      iconColor: Colors.lightBlue,
+                                      expandIcon: Icons.visibility,
+                                      collapseIcon: Icons.visibility_off,
+                                      iconColor: Colors.red,
                                       iconPadding: EdgeInsets.all(0.0),
-                                      iconSize: 14.0),
-                                  header: Text(
-                                    'Add more than one task of this type',
-                                    style: kInputAddTaskLabelTextStyle.copyWith(
-                                        color: Colors.black),
+                                      iconSize: 16.0),
+                                  header: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.baseline,
+                                    textBaseline: TextBaseline.ideographic,
+                                    children: <Widget>[
+                                      Flexible(
+                                        child: Text(
+                                          'Multiple Tasks',
+                                          style: kInputAddTaskLabelTextStyle
+                                              .copyWith(color: Colors.black),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.02,
+                                      ),
+                                      Container(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.25,
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                                0.08,
+                                        child: TextField(
+                                          maxLengthEnforced: true,
+                                          style: kInputAddTaskLabelTextStyle,
+                                          controller: _multiplesController,
+                                          textInputAction: TextInputAction.done,
+                                          keyboardType: TextInputType.number,
+                                          maxLength: 2,
+                                          onChanged: (value) {
+                                            snapshot.setMultipleTimes(
+                                                _multiplesController.text
+                                                    .trim());
+                                          },
+                                          maxLines: 1,
+                                          decoration: InputDecoration(
+                                            hintText: 'Number',
+                                            border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(5.0)),
+                                            hintStyle:
+                                                kInputAddTaskLabelTextStyle
+                                                    .copyWith(fontSize: 14),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                   controller: snapshot.expandableController,
                                   expanded: ListView.builder(
@@ -148,19 +196,6 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                                             decoration: InputDecoration(),
                                             controller: snapshot
                                                 .expandedTasks[index].task,
-                                          ),
-                                          trailing: IconButton(
-                                            icon: Icon(
-                                              snapshot
-                                                  .expandedTasks[index].icon,
-                                              color: Colors.lightBlue,
-                                              size: 15.0,
-                                            ),
-                                            onPressed: () {
-                                              //snapshot.addNewExpandedTask();
-                                              snapshot.expandedTasks[index]
-                                                  .addOrRemoveTask();
-                                            },
                                           ),
                                         );
                                       }))),

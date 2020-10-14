@@ -1,10 +1,12 @@
 import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/foundation.dart';
+import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:time_tasker/constants.dart';
 import 'package:time_tasker/db_helper.dart';
 import 'package:time_tasker/models/tab_model.dart';
 import 'package:time_tasker/models/task.dart';
+import 'package:time_tasker/services/local_notifications_helper.dart';
 import 'package:time_tasker/utils/app_utils.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
@@ -15,7 +17,6 @@ class HomeScreenProvider with ChangeNotifier {
   String _totalTime;
   List _durationTotalTime;
   List _startEndDurationTotalTime;
-  String _totalBalance;
   List<UITask> _recentTasks;
   UITask _upcomingTask;
   TaskTypes _selectedTask;
@@ -42,8 +43,8 @@ class HomeScreenProvider with ChangeNotifier {
     _onTasksNotFound = onTasksNotFound;
     _setTasksData(TaskAction.TotalTime);
     _recentTasks = [];
-    if (_selectedTask == TaskTypes.StartEndTasks)
-      getDefaultCalendar(repeat: true);
+//    if (_selectedTask == TaskTypes.StartEndTasks)
+//      getDefaultCalendar(repeat: true);
   }
 
   TabModel get currentTabModel => _currentTabModel;
@@ -61,8 +62,6 @@ class HomeScreenProvider with ChangeNotifier {
   List get startEndTotalTime => _startEndDurationTotalTime;
 
   bool get noTodayTasks => _noTodayTasks;
-
-  String get totalBalance => _totalBalance;
 
   UITask get upcomingTask => _upcomingTask;
 
@@ -151,13 +150,28 @@ class HomeScreenProvider with ChangeNotifier {
         case TaskAction.TotalBalance:
           SharedPerferencesUtils sharedPerferencesUtils =
               SharedPerferencesUtils(await SharedPreferences.getInstance());
-          int userTotalHourBalance = sharedPerferencesUtils
+          int timeSaved = sharedPerferencesUtils
+              .getIntFromSharedPreferences(kTimeSelectedSettingsKey);
+          List<int> totalBalance;
+          int userTotalHourBalance;
+          int userTotalMinutesBalance;
+          if (timeSaved != 0)
+            AppUtils.updateTimeBalance(sharedPerferencesUtils);
+          // print(
+          //     'total minutes is ${sharedPerferencesUtils.getIntFromSharedPreferences(kTotalBalanceMinutesKey)}');
+          // userTotalHourBalance = sharedPerferencesUtils
+          //     .getIntFromSharedPreferences(kTotalBalanceHoursKey);
+          // userTotalMinutesBalance = sharedPerferencesUtils
+          //     .getIntFromSharedPreferences(kTotalBalanceMinutesKey);
+          // totalBalance = [userTotalHourBalance, userTotalMinutesBalance];
+          //  } else {
+          userTotalHourBalance = sharedPerferencesUtils
               .getIntFromSharedPreferences(kTotalBalanceHoursKey);
-          int userTotalMinutesBalance = sharedPerferencesUtils
+          userTotalMinutesBalance = sharedPerferencesUtils
               .getIntFromSharedPreferences(kTotalBalanceMinutesKey);
-          List<int> totalBalance =
-              AppUtils.calculateTimeBalanceFromFormattedTime(
-                  _totalTime, userTotalHourBalance, userTotalMinutesBalance);
+          totalBalance = AppUtils.calculateTimeBalanceFromFormattedTime(
+              _totalTime, userTotalHourBalance, userTotalMinutesBalance);
+          //   }
           _setTotalBalanceForTaskType(
               AppUtils.formatTimeToHHMM(totalBalance[0], totalBalance[1]),
               AppUtils.calculateTimePercentFromTotalBalance(
@@ -197,6 +211,7 @@ class HomeScreenProvider with ChangeNotifier {
               : await _db.deleteStartEndTask(task.id);
         }
       }
+      GetIt.instance<LocalNotificationsHelper>().cancelAllNotifications();
       refreshMainScreen();
     }
   }
@@ -215,7 +230,7 @@ class HomeScreenProvider with ChangeNotifier {
           List<DurationTask> durationTasks = tasks.cast();
           for (DurationTask task in durationTasks) {
             _recentTasks
-                .add(AppUtils.formatDurationTaskToUIListComponenet(task));
+                .add(AppUtils.formatDurationTaskToUIListComponent(task));
           }
           break;
         case TaskTypes.StartEndTasks:
@@ -233,8 +248,15 @@ class HomeScreenProvider with ChangeNotifier {
     List<Task> result = [];
     if (tasksList.length > 0) {
       for (Task task in tasksList) {
-        bool isToday = AppUtils.checkIfDateIsToday(
-            AppUtils.convertMillisecondsSinceEpochToDateTime(task.date));
+        bool isToday;
+        if (task is StartEndTask) {
+          isToday = AppUtils.checkTheTasksDates(
+              AppUtils.convertMillisecondsSinceEpochToDateTime(task.startTime),
+              AppUtils.convertMillisecondsSinceEpochToDateTime(task.endTime),
+              AppUtils.convertMillisecondsSinceEpochToDateTime(task.date));
+        } else
+          isToday = AppUtils.checkIfDateIsToday(
+              AppUtils.convertMillisecondsSinceEpochToDateTime(task.date));
         if (isToday) {
           result.add(task);
         }
@@ -290,8 +312,13 @@ class HomeScreenProvider with ChangeNotifier {
               DateTime taskEndTime =
                   AppUtils.convertMillisecondsSinceEpochToDateTime(
                       task.endTime);
-              duration = AppUtils.calculateDuration(taskStartTime.hour,
-                  taskEndTime.hour, taskStartTime.minute, taskEndTime.minute);
+              List<double> durationBetweenDates =
+                  AppUtils.calculateDifferenceBetweenTwoDates(
+                      taskStartTime, taskEndTime);
+              duration = [
+                durationBetweenDates[0].toInt(),
+                durationBetweenDates[1].toInt()
+              ];
             }
             time = AppUtils.addTime(duration[0], hour, duration[1], minute);
             hour = time[0];
@@ -448,7 +475,7 @@ class HomeScreenProvider with ChangeNotifier {
         for (UITask task in _recentTasks) {
           result = result +
               '\n' +
-              'Task:${task.taskName}, From:${AppUtils.formatTimeToHHMM2(task.startTime.hour, task.startTime.minute)} To:${AppUtils.formatTimeToHHMM2(task.endTime.hour, task.endTime.minute)}';
+              'Task: ${task.taskName}, From: ${AppUtils.formatTimeToHHMM2(task.startTime.hour, task.startTime.minute)} To: ${AppUtils.formatTimeToHHMM2(task.endTime.hour, task.endTime.minute)}';
         }
         break;
 
@@ -456,10 +483,13 @@ class HomeScreenProvider with ChangeNotifier {
         for (UITask task in _recentTasks) {
           result = result +
               '\n' +
-              'Task:${task.taskName}, Duration:${task.duration}';
+              'Task: ${task.taskName}, Duration: ${task.duration}';
         }
         break;
     }
-    return result;
+    return result +
+        '\n' +
+        '=============================' +
+        '\nTotal Time: $totalTime';
   }
 }

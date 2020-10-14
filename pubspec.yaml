@@ -11,7 +11,7 @@ description: Calculates and Analyzes the total time and balance spent on user ta
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
@@ -27,6 +27,9 @@ dependencies:
   percent_indicator: ^2.1.1+1
   font_awesome_flutter: ^8.5.0
   sqflite: ^1.2.0
+  flutter_datetime_picker: ^1.4.0
+  flutter_local_notifications: ^1.4.4+4
+  get_it: ^5.0.1
   path_provider: ^1.6.0
   path: ^1.6.4
   provider: ^4.0.3
@@ -40,6 +43,8 @@ dependencies:
   device_calendar: ^3.0.0+3
   expandable: ^4.1.2
   url_launcher: ^5.4.10
+  social_share: ^2.0.5
+  device_preview: ^0.4.3
 
 
 

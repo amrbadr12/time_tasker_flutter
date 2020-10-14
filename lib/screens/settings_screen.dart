@@ -1,12 +1,14 @@
 import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:time_tasker/reusable_widgets/add_task_reusable_cards.dart';
 import 'package:time_tasker/utils/app_utils.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
-import 'constants.dart';
+import '../constants.dart';
+import 'home_screens/main_home_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   @override
@@ -21,6 +23,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   double _minutesSliderValue;
   bool _currentResetSetting = false;
   TimeOfDay _timeSelected;
+  int _timeSelectedInSeconds;
   String _selectedDropDownValue;
   bool _isCalendarPermissionsGranted = true;
   bool _isTimerPickerSelected = false;
@@ -40,21 +43,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 0.0,
+          title: Text(kAppName,
+              textAlign: TextAlign.center,
+              style: kAppBarTextStyle.copyWith(fontSize: 20.0)),
+          centerTitle: true,
         ),
         body: SingleChildScrollView(
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
                     Widget>[
-          Padding(
-              padding: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
-              child: Text(
-                'TimeTasker Settings',
-                softWrap: true,
-                style: kTitleTextStyle.copyWith(
-                    fontSize: 30.0, fontWeight: FontWeight.bold),
-              )),
+          // Padding(
+          //     padding: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
+          //     child: Text(
+          //       'TimeTasker Settings',
+          //       softWrap: true,
+          //       style: kTitleTextStyle.copyWith(
+          //           fontSize: 30.0, fontWeight: FontWeight.bold),
+          //     )),
           SizedBox(
-            height: 50.0,
+            height: 20.0,
+          ),
+          Center(
+              child: Text('Set your time period',
+                  style: kTitleTextStyle.copyWith(
+                      fontSize: 20.0,
+                      color: Colors.grey[700],
+                      fontWeight: FontWeight.bold))),
+          SizedBox(
+            height: 8.0,
           ),
           Slider(
               value: _hoursSliderValue ?? 1.0,
@@ -106,30 +122,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
             height: kMainDefaultPadding,
           ),
           Padding(
+              padding: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
+              child: Text('OR',
+                  style: TextStyle(
+                      fontSize: 16.0,
+                      color: Colors.grey[700],
+                      fontWeight: FontWeight.bold))),
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
-            child: DateInputField(
-              icon: Icon(
-                FontAwesomeIcons.clock,
-                size: 20.0,
-                color: kTasksDateIconColor1,
-              ),
-              containerColor: kTasksDateContainerColor,
-              text: _timeSelected != null
-                  ? AppUtils.formatTimeOfDay(_timeSelected) + ' selected'
-                  : 'Or set the  time',
-              onDateChanged: () async {
-                TimeOfDay temp = await AppUtils.showTimePickerDialog(context);
-                if (AppUtils.checkIfTimePickerDateIsToday(temp)) {
-                  _timeSelected = temp;
-                  setState(() {
-                    calculateSliderHoursAndMinutesFromTimeOfDay(
-                      _timeSelected,
-                    );
-                  });
-                }
-              },
+            child: Row(
+              children: [
+                Expanded(
+                  child: DateInputField(
+                    icon: Icon(
+                      FontAwesomeIcons.clock,
+                      size: 20.0,
+                      color: kTasksDateIconColor1,
+                    ),
+                    containerColor: kTasksDateContainerColor,
+                    text: _timeSelected != null
+                        ? AppUtils.formatTimeOfDay(_timeSelected) + ' selected'
+                        : 'Set the  time manually',
+                    onDateChanged: () async {
+                      DatePicker.showDateTimePicker(context,
+                          showTitleActions: true,
+                          minTime: DateTime.now(),
+                          maxTime: DateTime.now().add(Duration(days: 1)),
+                          onConfirm: (date) {
+                        try {
+                          TimeOfDay temp =
+                              TimeOfDay(hour: date.hour, minute: date.minute);
+                          _timeSelected = temp;
+                          _timeSelectedInSeconds = date.millisecondsSinceEpoch;
+                          setState(() {
+                            calculateSliderHoursAndMinutesFromDateTime(date);
+                          });
+                        } catch (e) {
+                          print(
+                              'Exception failed while setting the time with $e');
+                        }
+                      }, currentTime: DateTime.now());
+                    },
+                  ),
+                ),
+                Image.asset(
+                  'images/timmi_1.png',
+                  width: MediaQuery.of(context).size.width * 0.25,
+                  height: MediaQuery.of(context).size.height * 0.25,
+                ),
+              ],
             ),
           ),
+
 //          SwitchListTile(
 //            contentPadding: EdgeInsets.all(0),
 //            title: Padding(
@@ -146,51 +190,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
 //              });
 //            },
 //          ),
-          SizedBox(
-            height: 10.0,
-          ),
-          _isCalendarPermissionsGranted
-              ? Row(
-                  children: [
-                    Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
-                      child: Text(
-                        'Default Calendar:',
-                        style: kInputAddTaskLabelTextStyle,
-                      ),
-                    ),
-                    Expanded(
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: _selectedDropDownValue,
-                        onChanged: (String newValue) {
-                          setState(() {
-                            _selectedDropDownValue = newValue;
-                          });
-                        },
-                        items: _calendars
-                            .map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(
-                              value,
-                              style: kInputAddTaskLabelTextStyle.copyWith(
-                                  fontSize: 15),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ],
-                )
-              : Padding(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
-                  child: Text(
-                      'Please enable the calendar permission from your phone settings.',
-                      style:
-                          TextStyle(fontSize: 13.0, color: Colors.red[700]))),
+//          SizedBox(
+//            height: 10.0,
+//          ),
+//          _isCalendarPermissionsGranted
+//              ? Row(
+//                  children: [
+//                    Padding(
+//                      padding:
+//                          EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
+//                      child: Text(
+//                        'Default Calendar:',
+//                        style: kInputAddTaskLabelTextStyle,
+//                      ),
+//                    ),
+//                    Expanded(
+//                      child: DropdownButton<String>(
+//                        isExpanded: true,
+//                        value: _selectedDropDownValue,
+//                        onChanged: (String newValue) {
+//                          setState(() {
+//                            _selectedDropDownValue = newValue;
+//                          });
+//                        },
+//                        items: _calendars
+//                            .map<DropdownMenuItem<String>>((String value) {
+//                          return DropdownMenuItem<String>(
+//                            value: value,
+//                            child: Text(
+//                              value,
+//                              style: kInputAddTaskLabelTextStyle.copyWith(
+//                                  fontSize: 15),
+//                            ),
+//                          );
+//                        }).toList(),
+//                      ),
+//                    ),
+//                  ],
+//                )
+//              : Padding(
+//                  padding:
+//                      EdgeInsets.symmetric(horizontal: kMainDefaultPadding),
+//                  child: Text(
+//                      'Please enable the calendar permission from your phone settings.',
+//                      style:
+//                          TextStyle(fontSize: 13.0, color: Colors.red[700]))),
           SizedBox(
             height: kTitleDefaultPaddingVertical,
           ),
@@ -203,13 +247,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   gradient: LinearGradient(colors: blueGradient)),
               width: double.infinity,
               child: FlatButton(
-                child: Text('Save Changes',
+                child: Text('Start TimeTasking!',
                     style: kAppBarTextStyle.copyWith(color: Colors.white)),
                 onPressed: () {
                   saveSliderItemToLocal(() {
                     AppUtils.showFlushBar(
-                        'Successful', 'Changes successfully changed', context);
+                        'Successful', 'Saved Successfully!', context);
                   });
+                  Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            HomeScreen(TaskTypes.DurationTasks),
+                      ),
+                      (route) => false);
                 },
               ),
             ),
@@ -232,8 +283,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (timeSaved != 0) {
         _isTimerPickerSelected = true;
         DateTime timeSavedDateTime =
-            AppUtils.convertMillisecondsSinceEpochToDateTime(timeSaved);
-        _timeSelected = AppUtils.formatDateTimeToTimeOfDay(timeSavedDateTime);
+            DateTime.fromMillisecondsSinceEpoch(timeSaved);
+        calculateSliderHoursAndMinutesFromDateTime(timeSavedDateTime);
+        if (_hoursSliderValue < 0 ||
+            timeSavedDateTime.isBefore(DateTime.now())) {
+          _hoursSliderValue = 0;
+          _minutesSliderValue = 0;
+          _timeSelected = null;
+          saveSliderItemToLocal(() {});
+          _sharedPreferences.saveIntToSharedPreferences(
+              kTimeSelectedSettingsKey, 0);
+        } else
+          _timeSelected = AppUtils.formatDateTimeToTimeOfDay(timeSavedDateTime);
       }
     });
   }
@@ -249,10 +310,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _sharedPreferences.saveStringToSharedPreferences(
           kSavedCalendarKey, _selectedDropDownValue);
       if (_timeSelected != null) {
-        if (_isTimerPickerSelected) {
+        if (_isTimerPickerSelected && _timeSelectedInSeconds != null) {
           _sharedPreferences.saveIntToSharedPreferences(
-              kTimeSelectedSettingsKey,
-              AppUtils.formatTimeOfDayToTimeInSeconds(_timeSelected));
+              kTimeSelectedSettingsKey, _timeSelectedInSeconds);
         } else {
           _sharedPreferences.saveIntToSharedPreferences(
               kTimeSelectedSettingsKey, 0);
@@ -325,14 +385,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } catch (e) {}
   }
 
-  void calculateSliderHoursAndMinutesFromTimeOfDay(TimeOfDay tod) {
-    DateTime nowDate = DateTime.now();
-    DateTime selectedTimeOfDay = AppUtils.formatTimeOfDayToDateTime(tod);
-    if (selectedTimeOfDay.hour < nowDate.hour) return;
-    List<int> time = AppUtils.minusTime(selectedTimeOfDay.hour, nowDate.hour,
-        selectedTimeOfDay.minute, nowDate.minute);
-    _hoursSliderValue = double.parse(time[0].toString());
-    _minutesSliderValue = double.parse(time[1].toString());
+  void calculateSliderHoursAndMinutesFromDateTime(DateTime datePicked) {
+    List<double> time =
+        AppUtils.calculateTheDifferenceBetweenDatesInHoursAndMinutes(
+            datePicked);
+    _hoursSliderValue = time[0];
+    _minutesSliderValue = time[1];
     _isTimerPickerSelected = true;
   }
 }

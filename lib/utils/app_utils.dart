@@ -8,6 +8,7 @@ import 'package:jiffy/jiffy.dart';
 import 'package:time_tasker/constants.dart';
 import 'package:time_tasker/models/expandedStateModel.dart';
 import 'package:time_tasker/models/task.dart';
+import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
 class AppUtils {
   static Future<TimeOfDay> showTimePickerDialog(BuildContext context) async {
@@ -22,13 +23,33 @@ class AppUtils {
     return hhMMFormatReg.hasMatch(inputDuration);
   }
 
+  static bool validateMinutes(String minutes) {
+    final hhMMFormatReg = RegExp(r'^(?:([0-5]?[0-9]))$');
+    return hhMMFormatReg.hasMatch(minutes);
+  }
+
   static int currentTimeInSeconds() {
     var ms = (new DateTime.now()).millisecondsSinceEpoch;
     return (ms / 1000).round();
   }
 
+  static int dateTimeMillisecondsSinceEpochToSeconds(DateTime dt) {
+    var ms = dt.millisecondsSinceEpoch;
+    return (ms / 1000).round();
+  }
+
   static String formatTaskLengthToHHMM(int hour, int minutes, int tasksLength) {
     return '$tasksLength X ${formatTimeToHHMM(hour, minutes)}';
+  }
+
+  static String formatMinutesToHHMMTime(String minutes) {
+    if (minutes == null) return '';
+    if (minutes.length > 2) return '';
+    String minsResult;
+    minutes.trim().length == 1
+        ? minsResult = '0' + minutes.trim()
+        : minsResult = minutes.trim();
+    return '00:' + minsResult;
   }
 
   static TimeOfDay formatHHMMTimeToTimeOfDay(String time) {
@@ -119,6 +140,30 @@ class AppUtils {
     return [resultHour, resultMinute];
   }
 
+  static List<double> calculateTheDifferenceBetweenDatesInHoursAndMinutes(
+      DateTime dateTime) {
+    DateTime nowDate = DateTime.now();
+    Duration difference;
+    if (dateTime.isAfter(nowDate))
+      difference = dateTime.difference(nowDate);
+    else
+      difference = nowDate.difference(dateTime);
+    int hoursToMilliseconds = difference.inHours * 3600000;
+    double totalMinutes =
+        (difference.inMilliseconds - hoursToMilliseconds).abs() / 60000;
+    return [difference.inHours.floorToDouble(), totalMinutes.floorToDouble()];
+  }
+
+  static List<double> calculateDifferenceBetweenTwoDates(
+      DateTime dateTime1, DateTime dateTime2) {
+    Duration difference;
+    difference = dateTime2.difference(dateTime1);
+    int hoursToMilliseconds = difference.inHours * 3600000;
+    double totalMinutes =
+        (difference.inMilliseconds - hoursToMilliseconds).abs() / 60000;
+    return [difference.inHours.floorToDouble(), totalMinutes.floorToDouble()];
+  }
+
   static List<int> calculateDuration(
       int startHour, int endHour, int startMinute, int endMinute) {
     int resultMinute = endMinute - startMinute;
@@ -140,6 +185,44 @@ class AppUtils {
     final today = DateTime(now.year, now.month, now.day);
     final aDate = DateTime(time.year, time.month, time.day);
     return aDate == today;
+  }
+
+  static updateTimeBalance(
+      SharedPerferencesUtils sharedPerferencesUtils) async {
+    int timeSaved = sharedPerferencesUtils
+        .getIntFromSharedPreferences(kTimeSelectedSettingsKey);
+    if (timeSaved != 0) {
+      DateTime timeSavedDateTime =
+          DateTime.fromMillisecondsSinceEpoch(timeSaved);
+      List<double> result =
+          AppUtils.calculateTheDifferenceBetweenDatesInHoursAndMinutes(
+              timeSavedDateTime);
+      if (timeSavedDateTime.isAfter(DateTime.now())) {
+        //4:00 and now is 4:01
+        // sharedPerferencesUtils.saveIntToSharedPreferences(
+        //     kTimeSelectedSettingsKey, 0);
+        sharedPerferencesUtils.saveIntToSharedPreferences(
+            kTotalBalanceHoursKey, result[0].toInt());
+        sharedPerferencesUtils.saveIntToSharedPreferences(
+            kTotalBalanceMinutesKey, result[1].toInt());
+      } else {
+        sharedPerferencesUtils.saveIntToSharedPreferences(
+            kTimeSelectedSettingsKey, 0);
+        sharedPerferencesUtils.saveIntToSharedPreferences(
+            kTotalBalanceHoursKey, 0);
+        sharedPerferencesUtils.saveIntToSharedPreferences(
+            kTotalBalanceMinutesKey, 0);
+      }
+    }
+  }
+
+  static bool checkTheTasksDates(
+      DateTime startDate, DateTime endDate, DateTime creationDate) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    return startDate.day == today.day ||
+        endDate.day == today.day ||
+        creationDate.day == today.day;
   }
 
   static bool checkIfTimePickerDateIsToday(TimeOfDay date) {
@@ -264,6 +347,7 @@ class AppUtils {
 
   static double calculateTimePercentFromTotalBalance(
       int hour, int defaultFormat) {
+    if (hour == 0) return 0;
     if (hour / defaultFormat < 0.0) {
       return 1.0;
     }
@@ -274,7 +358,9 @@ class AppUtils {
       String formattedTime, int defaultHourFormat, int defaultMinuteFormat) {
     int hourFormat = 24;
     int minuteFormat = 0;
-    if (defaultHourFormat != null && defaultHourFormat != 0) {
+    if (defaultHourFormat != null
+        //&& defaultHourFormat != 0
+        ) {
       hourFormat = defaultHourFormat;
       minuteFormat = defaultMinuteFormat;
     }
@@ -299,7 +385,7 @@ class AppUtils {
     return colors[randomNumber];
   }
 
-  static UITask formatDurationTaskToUIListComponenet(DurationTask task) {
+  static UITask formatDurationTaskToUIListComponent(DurationTask task) {
     DateTime duration =
         convertMillisecondsSinceEpochToDateTime(task.durationTime);
     DateTime date = convertMillisecondsSinceEpochToDateTime(task.date);
@@ -328,8 +414,9 @@ class AppUtils {
         AppUtils.convertMillisecondsSinceEpochToDateTime(task.startTime);
     DateTime endTime =
         AppUtils.convertMillisecondsSinceEpochToDateTime(task.endTime);
-    List<int> duration = calculateDuration(
-        startTime.hour, endTime.hour, startTime.minute, endTime.minute);
+    List<double> difference =
+        calculateDifferenceBetweenTwoDates(startTime, endTime);
+    List<int> duration = [difference[0].toInt(), difference[1].toInt()];
     DateTime date = convertMillisecondsSinceEpochToDateTime(task.date);
     UITask uiTask = UITask(
         task.id,

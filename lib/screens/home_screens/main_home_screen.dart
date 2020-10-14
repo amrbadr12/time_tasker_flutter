@@ -5,19 +5,19 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:time_tasker/add_task_screens/add_duration_task.dart';
-import 'package:time_tasker/add_task_screens/add_start_end_task.dart';
-import 'package:time_tasker/add_task_screens/add_task_screen.dart';
+import 'package:social_share/social_share.dart';
 import 'package:time_tasker/constants.dart';
 import 'package:time_tasker/providers/home_screen_provider.dart';
 import 'package:time_tasker/reusable_widgets/main_screen_reusable_tab.dart';
 import 'package:time_tasker/reusable_widgets/no_tasks_today.dart';
-import 'package:time_tasker/settings_screen.dart';
+import 'package:time_tasker/screens/add_task_screens/add_duration_task.dart';
+import 'package:time_tasker/screens/add_task_screens/add_start_end_task.dart';
 import 'package:time_tasker/utils/dialog_utils.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../db_helper.dart';
+import '../../db_helper.dart';
+import '../settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final TaskTypes defaultTaskType;
@@ -31,6 +31,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   SharedPerferencesUtils _sharedPreferences;
   bool _showResetDialog = false;
+
   @override
   void initState() {
     getSharedPrefs();
@@ -43,50 +44,50 @@ class _HomeScreenState extends State<HomeScreen> {
       create: (context) => HomeScreenProvider(
           DBHelper(), widget.defaultTaskType, DeviceCalendarPlugin(),
           (events) async {
-        final result =
-            await DialogUtils.showTasksFromCalendarDialog(context, events);
-        if (result) {
-          await Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => AddStartEndTaskScreen(
-                    prefillCalendarEvent: events,
-                  )));
-        }
-        return result;
+//        final result =
+//            await DialogUtils.showTasksFromCalendarDialog(context, events);
+//        if (result) {
+//          await Navigator.of(context).push(MaterialPageRoute(
+//              builder: (context) => AddStartEndTaskScreen(
+//                    prefillCalendarEvent: events,
+//                  )));
+//        }
+//        return result;
       }, (data) async {
-        return await DialogUtils.showAvailableCalendarsDialog(context, data);
+//        return await DialogUtils.showAvailableCalendarsDialog(context, data);
       }, () {
-        DialogUtils.showCalendarTasksNotFoundDialog(context);
+//        DialogUtils.showCalendarTasksNotFoundDialog(context);
       }),
       child: Consumer<HomeScreenProvider>(builder: (context, snapshot, _) {
         return Scaffold(
             appBar: AppBar(
-              leading: IconButton(
-                icon: Icon(
-                  FontAwesomeIcons.solidClock,
-                  color: Colors.blueGrey[700],
-                  size: 15.0,
-                ),
-                onPressed: () async {
-                  await Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => SettingsScreen()));
-                  getSharedPrefs();
-                },
-              ),
               actions: <Widget>[
-                snapshot.selectedTask == TaskTypes.StartEndTasks
-                    ? IconButton(
-                        icon: Icon(
-                          FontAwesomeIcons.calendar,
-                          color: Colors.blueGrey[700],
-                          size: 15.0,
-                        ),
-                        padding: EdgeInsets.all(0.0),
-                        onPressed: () async {
-                          await snapshot.getDefaultCalendar(repeat: false);
-                        })
-                    : SizedBox(
-                        width: 0.0,
-                      ),
+                // IconButton(
+                //   icon: Icon(
+                //     FontAwesomeIcons.solidClock,
+                //     color: Colors.blueGrey[700],
+                //     size: 15.0,
+                //   ),
+                //   onPressed: () async {
+                //     await Navigator.of(context).push(MaterialPageRoute(
+                //         builder: (context) => SettingsScreen()));
+                //     getSharedPrefs();
+                //   },
+                // ),
+//                snapshot.selectedTask == TaskTypes.StartEndTasks
+//                    ? IconButton(
+//                        icon: Icon(
+//                          FontAwesomeIcons.calendar,
+//                          color: Colors.blueGrey[700],
+//                          size: 15.0,
+//                        ),
+//                        padding: EdgeInsets.all(0.0),
+//                        onPressed: () async {
+//                          await snapshot.getDefaultCalendar(repeat: false);
+//                        })
+//                    : SizedBox(
+//                        width: 0.0,
+//                      ),
 //                FlatButton(
 //                  child: Text(
 //                    'TT',
@@ -112,17 +113,9 @@ class _HomeScreenState extends State<HomeScreen> {
               centerTitle: true,
               title: FlatButton(
                 onPressed: () async {
-                  await Navigator.of(context)
-                      .push(MaterialPageRoute(
-                          builder: (context) => AddTaskScreen(
-                                navigateToHome: false,
-                                durationTotalTime: snapshot.durationTotalTime,
-                              )))
-                      .then((onValue) {
-                    try {
-                      if (snapshot != null) snapshot.refreshMainScreen();
-                    } catch (e) {}
-                  });
+                  await Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => SettingsScreen()));
+                  getSharedPrefs();
                 },
                 child: Text(kAppName,
                     textAlign: TextAlign.center, style: kAppBarTextStyle),
@@ -199,8 +192,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                 });
                               });
                             },
-                            onShareToWhatsApp: () {
-                              _launchURL(snapshot.getShareableWhatsAppList());
+                            onShareToWhatsApp: () async {
+                              print(
+                                  'whatsapp list is ${snapshot.getShareableWhatsAppList()}');
+                              print(await SocialShare
+                                  .checkInstalledAppsForShare());
+                              SocialShare.shareWhatsapp(
+                                  snapshot.getShareableWhatsAppList());
+                              //_launchURL(snapshot.getShareableWhatsAppList());
                             },
                             circularCenterText:
                                 snapshot.currentTabModel.circularCenterText,

@@ -3,26 +3,29 @@ import 'package:device_calendar/device_calendar.dart';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get_it/get_it.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:time_tasker/constants.dart';
 import 'package:time_tasker/db_helper.dart';
 import 'package:time_tasker/models/expandedStateModel.dart';
 import 'package:time_tasker/models/task.dart';
+import 'package:time_tasker/services/local_notifications_helper.dart';
 import 'package:time_tasker/utils/app_utils.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
 import '../utils/app_utils.dart';
 
 class AddNewTaskProvider with ChangeNotifier {
-  TimeOfDay _pickedStartTime;
-  TimeOfDay _pickedEndTime;
+  DateTime _pickedStartDate;
+  DateTime _pickedEndDate;
+  DateTime duration;
   TimeOfDay _pickedDurationTime;
   final TaskTypes _currentTaskType;
   String _errorText;
   DBHelper _db;
   TextEditingController _nameController;
   TextEditingController _durationController;
-  List<String> _previousTasks;
+  List _previousTasks;
   List _previousStartEndTasks;
   List _prefillCalendarEvents;
   List<int> _calculatedDuration;
@@ -36,6 +39,7 @@ class AddNewTaskProvider with ChangeNotifier {
       this._db,
       this._currentTaskType,
       this._nameController,
+      this._durationController,
       this._prefillCalendarEvents,
       this._expandableController,
       this._totalUserDurationTime) {
@@ -55,13 +59,17 @@ class AddNewTaskProvider with ChangeNotifier {
 
   String get errorText => _errorText;
 
-  List<String> get previousTasks => _previousTasks;
+  List get previousTasks => _previousTasks;
 
   TextEditingController get nameController => _nameController;
 
   TextEditingController get durationController => _durationController;
 
   List get previousStartEndTasks => _previousStartEndTasks;
+
+  DateTime get pickedStartDate => _pickedStartDate;
+
+  DateTime get pickedEndDate => _pickedEndDate;
 
   get userTotalDurationTime => _totalUserDurationTime;
 
@@ -78,15 +86,20 @@ class AddNewTaskProvider with ChangeNotifier {
     return List();
   }
 
+  setMultipleTimes(String value) {
+    if (value != null && value.isNotEmpty && nameController.text.trim() != '') {
+      _expandedTasks.clear();
+      int times = int.parse(value);
+      for (int i = 0; i < times; i++) {
+        addNewExpandedTask();
+      }
+      notifyListeners();
+    }
+  }
+
   void addNewExpandedTask() {
-    int currentIndex = _expandedTasks.length - 1;
-    _expandedTasks[currentIndex].icon = FontAwesomeIcons.minusCircle;
-    _expandedTasks[currentIndex].addOrRemoveTask = () {
-      removeTask(currentIndex);
-    };
     TextEditingController controller = TextEditingController(text: taskName);
-    _expandedTasks.add(ExpandedStateModel(
-        addNewExpandedTask, FontAwesomeIcons.plusCircle, controller));
+    _expandedTasks.add(ExpandedStateModel(addNewExpandedTask, controller));
     notifyListeners();
   }
 
@@ -94,75 +107,51 @@ class AddNewTaskProvider with ChangeNotifier {
     nameController.text = task;
   }
 
-  void removeTask(int currentIndex) {
-    if (_expandedTasks.length == 1) {
-      _expandedTasks[currentIndex].icon = FontAwesomeIcons.plusCircle;
-      _expandedTasks[currentIndex].addOrRemoveTask = () {
-        addNewExpandedTask();
-      };
-    } else
-      _expandedTasks.removeAt(currentIndex);
-    notifyListeners();
+  void onDurationSubmitted(DurationTask durationTask) {
+    UITask uiTask = AppUtils.formatDurationTaskToUIListComponent(durationTask);
+    if (uiTask != null) {
+      if (uiTask.duration != null) {
+        _durationController.text =
+            uiTask.duration.substring(0, uiTask.duration.length - 2);
+        setPickedDuration(
+            uiTask.duration.substring(0, uiTask.duration.length - 2));
+      }
+    }
   }
 
   void setPickedStartTime(
-      TimeOfDay startTime, Function onShowRecordTillEndOfDayDialog) async {
-    if (_pickedEndTime != null) {
-      if (_pickedEndTime.hour >= startTime.hour &&
-          _pickedEndTime.minute >= startTime.minute) {
-        this._pickedStartTime = startTime;
+      DateTime startDate, Function onShowRecordTillEndOfDayDialog) async {
+    if (_pickedEndDate != null) {
+      if (_pickedEndDate.isAfter(startDate)) {
+        this._pickedStartDate = startDate;
         notifyListeners();
         return;
       } else
         return;
     }
-    this._pickedStartTime = startTime;
-    if (_checkIfTaskIsBedOrSleep(startTime)) onShowRecordTillEndOfDayDialog();
+    this._pickedStartDate = startDate;
+    // if (_checkIfTaskIsBedOrSleep(startTime)) onShowRecordTillEndOfDayDialog();
     this._pickedDurationTime = null;
     notifyListeners();
   }
 
-  void setSleepTask(bool recordTillEOD) {
-    if (recordTillEOD) {
-      DateTime now = DateTime.now();
-      DateTime newEndTime = DateTime(now.year, now.month, now.day, 23, 59);
-      this._pickedEndTime = TimeOfDay.fromDateTime(newEndTime);
-      notifyListeners();
-    }
-  }
-
-  void setPickedEndTime(TimeOfDay endTime) {
-    if (endTime != null) {
-      if (_pickedStartTime != null) {
-        if (endTime.hour >= _pickedStartTime.hour) {
-          if (endTime.hour == _pickedStartTime.hour) {
-            if (endTime.minute <= _pickedStartTime.minute) return;
-          }
-          this._pickedEndTime = endTime;
-          notifyListeners();
-        }
-      } else {
-        this._pickedEndTime = endTime;
+  void setPickedEndDate(DateTime end) {
+    if (end != null && _pickedStartDate != null) {
+      if (end.isAfter(_pickedStartDate)) {
+        this._pickedEndDate = end;
         notifyListeners();
       }
     }
   }
 
-  bool _checkIfTaskIsBedOrSleep(TimeOfDay startTime) {
-    if (_nameController.text.toLowerCase() == 'bed' ||
-        _nameController.text.toLowerCase() == 'sleep') {
-      return startTime.hour >= 20 && startTime.hour < 24;
-    }
-    return false;
-  }
-
+  //TODO check the overlap period
   bool checkIfOverlappingTask() {
     if (_previousStartEndTasks != null) {
       if (_previousStartEndTasks.isNotEmpty) {
         int userStartTimeTask =
-            AppUtils.formatTimeOfDayToTimeInSeconds(_pickedStartTime);
+            AppUtils.dateTimeMillisecondsSinceEpochToSeconds(_pickedStartDate);
         int userEndTimeTask =
-            AppUtils.formatTimeOfDayToTimeInSeconds(_pickedEndTime);
+            AppUtils.dateTimeMillisecondsSinceEpochToSeconds(_pickedEndDate);
         for (StartEndTask task in _previousStartEndTasks) {
           if (userStartTimeTask >= task.startTime &&
               userStartTimeTask <= task.endTime) {
@@ -171,9 +160,9 @@ class AddNewTaskProvider with ChangeNotifier {
                   AppUtils.convertMillisecondsSinceEpochToDateTime(
                       task.endTime));
               List overLap = AppUtils.minusTime(
-                  _pickedEndTime.hour,
+                  _pickedEndDate.hour,
                   overLappingTask.hour,
-                  _pickedEndTime.minute,
+                  _pickedEndDate.minute,
                   overLappingTask.minute);
               _overLapPeriod = '${overLap[0]},${overLap[1]}';
               return false;
@@ -188,11 +177,19 @@ class AddNewTaskProvider with ChangeNotifier {
 
   void setPickedDuration(String duration) {
     _errorText = null;
+
+    notifyListeners();
     if (AppUtils.validateDuration(duration))
       this._pickedDurationTime = AppUtils.formatHHMMTimeToTimeOfDay(duration);
-    else
-      _errorText = 'Please enter a valid duration.';
-    notifyListeners();
+    else {
+      if (AppUtils.validateMinutes(duration))
+        this._pickedDurationTime = AppUtils.formatHHMMTimeToTimeOfDay(
+            AppUtils.formatMinutesToHHMMTime(duration));
+      else {
+        _errorText = 'Please enter a valid duration.';
+        notifyListeners();
+      }
+    }
   }
 
   Future<int> addNewTaskToDB(
@@ -205,10 +202,9 @@ class AddNewTaskProvider with ChangeNotifier {
     int taskID = -1;
     if (_db != null) {
       if (validateTaskInputs()) {
-        int userTotalHourBalance = sharedPreferencesUtils
-            .getIntFromSharedPreferences(kTotalBalanceHoursKey);
-        int userTotalMinutesBalance = sharedPreferencesUtils
-            .getIntFromSharedPreferences(kTotalBalanceMinutesKey);
+        SharedPerferencesUtils sharedPerferencesUtils =
+            SharedPerferencesUtils(await SharedPreferences.getInstance());
+        await AppUtils.updateTimeBalance(sharedPerferencesUtils);
         switch (_currentTaskType) {
           case TaskTypes.DurationTasks:
             TimeOfDay totalDuration;
@@ -232,11 +228,10 @@ class AddNewTaskProvider with ChangeNotifier {
             }
             List addedTime = AppUtils.addTime(totalDuration.hour,
                 expandedTime[0], totalDuration.minute, expandedTime[1]);
-            if (_checkIfTimeIsMoreThanTimeBalance(
-                onExceedTimeFrameDialog,
-                userTotalHourBalance,
-                userTotalMinutesBalance,
-                addedTime)) return -1;
+            if (await _checkIfTimeIsMoreThanTimeBalance(
+              onExceedTimeFrameDialog,
+              addedTime,
+            )) return -1;
             String commaSeparatedTasks =
                 AppUtils.parseExpandedTasksToCommaSeparatedTasks(
                     _expandedTasks);
@@ -260,11 +255,8 @@ class AddNewTaskProvider with ChangeNotifier {
                     _calculatedDuration[0],
                     _totalUserDurationTime[1],
                     _calculatedDuration[1]);
-                if (_checkIfTimeIsMoreThanTimeBalance(
-                    onExceedTimeFrameDialog,
-                    userTotalHourBalance,
-                    userTotalMinutesBalance,
-                    addedTime)) return -1;
+                if (await _checkIfTimeIsMoreThanTimeBalance(
+                    onExceedTimeFrameDialog, addedTime)) return -1;
               }
               if (!_calendarTask) {
                 if (await onAddingTaskToCalendar()) {
@@ -272,23 +264,30 @@ class AddNewTaskProvider with ChangeNotifier {
                     title: _nameController.text.trim(),
                     description: 'TT Task',
                     location: '',
-                    startDate:
-                        AppUtils.formatTimeOfDayToDateTime(_pickedStartTime),
-                    endDate: AppUtils.formatTimeOfDayToDateTime(_pickedEndTime),
+                    startDate: _pickedStartDate,
+                    endDate: _pickedEndDate,
                   );
                   add_2_calendar.Add2Calendar.addEvent2Cal(event);
                 }
               }
+
               StartEndTask task = StartEndTask(
                   null,
                   _nameController.text.trim(),
-                  AppUtils.formatTimeOfDayToTimeInSeconds(_pickedStartTime),
-                  AppUtils.formatTimeOfDayToTimeInSeconds(_pickedEndTime),
+                  AppUtils.dateTimeMillisecondsSinceEpochToSeconds(
+                      _pickedStartDate),
+                  AppUtils.dateTimeMillisecondsSinceEpochToSeconds(
+                      _pickedEndDate),
                   AppUtils.currentTimeInSeconds(),
                   _calendarTask ? 1 : 0,
                   _overLapPeriod ?? '');
               //Adding the task to the local db
               StartEndTask insertedTask = await _db.insertNewStartEndTask(task);
+              GetIt.instance<LocalNotificationsHelper>().scheduleNotification(
+                  dateTime: _pickedStartDate,
+                  scheduledTitle: 'TimeTasker Reminder',
+                  scheduledBody:
+                      'Your task ${_nameController.text.trim()} is starting now!');
               taskID = insertedTask.id;
               onSuccess();
             } else
@@ -306,10 +305,11 @@ class AddNewTaskProvider with ChangeNotifier {
         if (_prefillCalendarEvents.isNotEmpty) {
           Event calendarEvent = _prefillCalendarEvents[0];
           _nameController.text = calendarEvent.title;
-          _pickedStartTime =
-              AppUtils.formatDateTimeToTimeOfDay(calendarEvent.start);
-          _pickedEndTime =
-              AppUtils.formatDateTimeToTimeOfDay(calendarEvent.end);
+
+          // _pickedStartTime =
+          //     AppUtils.formatDateTimeToTimeOfDay(calendarEvent.start);
+          // _pickedEndTime =
+          //     AppUtils.formatDateTimeToTimeOfDay(calendarEvent.end);
 
           _calendarTask = true;
           notifyListeners();
@@ -337,35 +337,85 @@ class AddNewTaskProvider with ChangeNotifier {
     return _previousTasks;
   }
 
-  List<String> filterDataDuplicates(List<Task> tasks) {
-    List<String> textTasks = List();
-    for (Task task in tasks) {
-      textTasks.add(task.taskName);
+  List<Task> filterDataDuplicates(List<Task> tasks) {
+    List<Task> uniqueTasks = List();
+    List<String> namedTasks = List();
+    for (int i = 0; i < tasks.length; i++) {
+      if (!namedTasks.contains(tasks[i].taskName)) {
+        uniqueTasks.add(tasks[i]);
+        namedTasks.add(tasks[i].taskName);
+      }
     }
-    textTasks = textTasks.toSet().toList();
-    return textTasks;
+    return uniqueTasks;
   }
 
-  bool _checkIfTimeIsMoreThanTimeBalance(Function onExceedTimeFrame,
-      int userTotalHourBalance, int userTotalMinutesBalance, List addedTime) {
-    switch (userTotalHourBalance) {
-      case 24:
-        if (addedTime[0] >= userTotalHourBalance) {
-          if (addedTime[0] == userTotalHourBalance) {
-            if (addedTime[1] <= userTotalMinutesBalance) break;
+  Future<bool> _checkIfTimeIsMoreThanTimeBalance(
+      Function onExceedTimeFrame, List addedTime) async {
+    SharedPerferencesUtils sharedPerferencesUtils =
+        SharedPerferencesUtils(await SharedPreferences.getInstance());
+    int userTotalHourBalance = sharedPerferencesUtils
+        .getIntFromSharedPreferences(kTotalBalanceHoursKey);
+    int userTotalMinutesBalance = sharedPerferencesUtils
+        .getIntFromSharedPreferences(kTotalBalanceMinutesKey);
+    print(
+        'user total hour is $userTotalHourBalance and minutes is $userTotalMinutesBalance and added time is ${addedTime[0]} and 1 is ${addedTime[1]}');
+    if (userTotalHourBalance == 0 && userTotalMinutesBalance == 0) {
+      onExceedTimeFrame(
+          'Please update your time balance from the settings screen to begin adding tasks again.');
+      return true;
+    } else {
+      int timeSaved = sharedPerferencesUtils
+          .getIntFromSharedPreferences(kTimeSelectedSettingsKey);
+      print('time saved is ${timeSaved}');
+      if (timeSaved != 0) {
+        //If the user has set the clock from the settings
+        DateTime timeSavedDateTime =
+            DateTime.fromMillisecondsSinceEpoch(timeSaved);
+        if (_currentTaskType == TaskTypes.StartEndTasks) {
+          if (_pickedStartDate.isAfter(timeSavedDateTime) ||
+              _pickedEndDate.isAfter(timeSavedDateTime)) {
+            onExceedTimeFrame('Please reset your clock from the settings.');
+            return true;
           }
-          onExceedTimeFrame(timeMoreThan24Hours);
-          return true;
         }
-        break;
-      default:
-        if (addedTime[0] >= userTotalHourBalance) {
-          if (addedTime[0] == userTotalHourBalance) {
-            if (addedTime[1] <= userTotalMinutesBalance) break;
-          }
-          onExceedTimeFrame(timeLessThan24Hours);
-          return true;
-        }
+        List<double> difference =
+            AppUtils.calculateTheDifferenceBetweenDatesInHoursAndMinutes(
+                timeSavedDateTime);
+        return _checkIfTheUserExceededTheirTimeFrameWithSlider(
+            onExceedTimeFrame,
+            difference[0].toInt(),
+            difference[1].toInt(),
+            addedTime);
+      } //If they set the slider
+      else
+        return _checkIfTheUserExceededTheirTimeFrameWithSlider(
+            onExceedTimeFrame,
+            userTotalHourBalance,
+            userTotalMinutesBalance,
+            addedTime);
+    }
+  }
+
+  bool _checkIfTheUserExceededTheirTimeFrameWithSlider(
+    Function onExceedTimeFrame,
+    int userTotalHourBalance,
+    int userTotalMinutesBalance,
+    List addedTime,
+  ) {
+    if (addedTime[0] >= userTotalHourBalance) {
+      if (addedTime[0] == userTotalHourBalance) {
+        if (addedTime[1] <= userTotalMinutesBalance) return false;
+      }
+      List duration;
+      if (addedTime[1] >= userTotalMinutesBalance)
+        duration = AppUtils.minusTime(addedTime[0], userTotalHourBalance,
+            addedTime[1], userTotalMinutesBalance);
+      else
+        duration = AppUtils.minusTime(addedTime[0], userTotalHourBalance,
+            userTotalMinutesBalance, addedTime[1]);
+      onExceedTimeFrame(
+          'You exceeded your time frame by ${AppUtils.formatTimeToHHMM(duration[0], duration[1])}');
+      return true;
     }
     return false;
   }
@@ -380,26 +430,26 @@ class AddNewTaskProvider with ChangeNotifier {
       case TaskTypes.StartEndTasks:
         if (nameController.text != null &&
             nameController.text.isNotEmpty &&
-            _pickedStartTime != null &&
-            _pickedEndTime != null) return true;
+            _pickedStartDate != null &&
+            _pickedEndDate != null) return true;
         return false;
     }
     return false;
   }
 
   String getStartTime() {
-    if (_pickedStartTime != null) {
-      String hour = AppUtils.formatTimeToTwoDecimals(_pickedStartTime.hour);
-      String minute = AppUtils.formatTimeToTwoDecimals(_pickedStartTime.minute);
+    if (_pickedStartDate != null) {
+      String hour = AppUtils.formatTimeToTwoDecimals(_pickedStartDate.hour);
+      String minute = AppUtils.formatTimeToTwoDecimals(_pickedStartDate.minute);
       return 'Start Time: $hour:$minute';
     }
     return 'Enter Start Time';
   }
 
   String getEndTime() {
-    if (_pickedEndTime != null) {
-      String hour = AppUtils.formatTimeToTwoDecimals(_pickedEndTime.hour);
-      String minute = AppUtils.formatTimeToTwoDecimals(_pickedEndTime.minute);
+    if (_pickedEndDate != null) {
+      String hour = AppUtils.formatTimeToTwoDecimals(_pickedEndDate.hour);
+      String minute = AppUtils.formatTimeToTwoDecimals(_pickedEndDate.minute);
       return 'End Time: $hour:$minute';
     }
     return 'Enter End Time';
@@ -416,28 +466,20 @@ class AddNewTaskProvider with ChangeNotifier {
   }
 
   String getCalculatedDuration() {
-    if (_pickedStartTime != null && _pickedEndTime != null) {
-      if (_pickedStartTime.hour.toString().isNotEmpty &&
-          _pickedEndTime.hour.toString().isNotEmpty) {
-        _calculatedDuration = AppUtils.calculateDuration(
-            _pickedStartTime.hour,
-            _pickedEndTime.hour,
-            _pickedStartTime.minute,
-            _pickedEndTime.minute);
-        String durationHours =
-            AppUtils.formatTimeToTwoDecimals(_calculatedDuration[0]);
-        String durationMinutes =
-            AppUtils.formatTimeToTwoDecimals(_calculatedDuration[1]);
-        return 'Total Duration: $durationHours h: $durationMinutes m';
-      }
+    if (_pickedStartDate != null && _pickedEndDate != null) {
+      List<double> result = AppUtils.calculateDifferenceBetweenTwoDates(
+          _pickedStartDate, _pickedEndDate);
+      _calculatedDuration = [result[0].toInt(), result[1].toInt()];
+      return 'Total Duration:${AppUtils.formatTimeToHHMM(_calculatedDuration[0], _calculatedDuration[1])}';
     }
     return 'Total Duration';
   }
 
   void resetTime() {
     _calendarTask = false;
-    _pickedStartTime = null;
-    _pickedEndTime = null;
+    _pickedStartDate = null;
+    _pickedEndDate = null;
+    duration = null;
     _pickedDurationTime = null;
     notifyListeners();
   }

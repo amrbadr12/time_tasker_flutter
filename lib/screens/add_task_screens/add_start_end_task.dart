@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:time_tasker/db_helper.dart';
 import 'package:time_tasker/providers/add_new_task_provider.dart';
 import 'package:time_tasker/reusable_widgets/add_new_task._input.dart';
 import 'package:time_tasker/utils/app_utils.dart';
 import 'package:time_tasker/utils/dialog_utils.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
-import '../constants.dart';
-import '../utils/dialog_utils.dart';
+import '../../constants.dart';
+import '../../db_helper.dart';
 
 class AddStartEndTaskScreen extends StatefulWidget {
   final List prefillCalendarEvent;
   final List totalDurationTime;
+
   AddStartEndTaskScreen({this.prefillCalendarEvent, this.totalDurationTime});
+
   @override
   _AddStartEndTaskScreenState createState() => _AddStartEndTaskScreenState();
 }
@@ -35,6 +37,7 @@ class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
                         DBHelper(),
                         TaskTypes.StartEndTasks,
                         TextEditingController(),
+                        null,
                         widget.prefillCalendarEvent,
                         null,
                         widget.totalDurationTime),
@@ -47,7 +50,7 @@ class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
                               padding: EdgeInsets.symmetric(
                                   horizontal: kMainDefaultPadding),
                               child: Text(
-                                'Add task\nstart and end time',
+                                'Add your task',
                                 softWrap: true,
                                 style: kTitleTextStyle.copyWith(
                                     fontSize: 30.0,
@@ -61,18 +64,44 @@ class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
                               snapshot.onTaskNameSubmitted(data);
                             },
                             onStartDateChanged: () async {
-                              snapshot.setPickedStartTime(
-                                  await AppUtils.showTimePickerDialog(context),
-                                  () async {
-                                snapshot.setSleepTask(
-                                    await DialogUtils.showBedSleepTasksDialog(
-                                        context));
-                              });
+                              DatePicker.showDateTimePicker(context,
+                                  showTitleActions: true,
+                                  minTime: DateTime.now(),
+                                  maxTime:
+                                      DateTime.now().add(Duration(days: 1)),
+                                  onConfirm: (date) {
+                                try {
+                                  snapshot.setPickedStartTime(date, () {});
+                                } catch (e) {
+                                  print(
+                                      'Exception failed while setting the time with $e');
+                                }
+                              }, currentTime: DateTime.now());
+                              // snapshot.setPickedStartTime(
+                              //     await AppUtils.showTimePickerDialog(context),
+                              //     () async {
+                              //   // snapshot.setSleepTask(
+                              //   //     await DialogUtils.showBedSleepTasksDialog(
+                              //   //         context));
+                              // });
                             },
                             startDateText: snapshot.getStartTime(),
                             onEndDateChanged: () async {
-                              snapshot.setPickedEndTime(
-                                  await AppUtils.showTimePickerDialog(context));
+                              if (snapshot.pickedStartDate != null) {
+                                DatePicker.showDateTimePicker(context,
+                                    showTitleActions: true,
+                                    minTime: snapshot.pickedStartDate,
+                                    maxTime: snapshot.pickedStartDate
+                                        .add(Duration(days: 1)),
+                                    onConfirm: (date) {
+                                  try {
+                                    snapshot.setPickedEndDate(date);
+                                  } catch (e) {
+                                    print(
+                                        'Exception failed while setting the time with $e');
+                                  }
+                                }, currentTime: snapshot.pickedStartDate);
+                              }
                             },
                             endDateText: snapshot.getEndTime(),
                             durationText: snapshot.getCalculatedDuration(),
@@ -99,10 +128,6 @@ class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
                                       onSuccess: () {
                                         Navigator.of(context)
                                             .popUntil((route) => route.isFirst);
-                                        AppUtils.showFlushBar(
-                                            'Success',
-                                            'Your Task was added successfully!',
-                                            context);
                                       },
                                       sharedPreferencesUtils:
                                           SharedPerferencesUtils(
