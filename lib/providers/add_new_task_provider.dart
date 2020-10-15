@@ -1,5 +1,5 @@
 import 'package:add_2_calendar/add_2_calendar.dart' as add_2_calendar;
-import 'package:device_calendar/device_calendar.dart';
+import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -87,7 +87,7 @@ class AddNewTaskProvider with ChangeNotifier {
   }
 
   setMultipleTimes(String value) {
-    if (value != null && value.isNotEmpty && nameController.text.trim() != '') {
+    if (value != null && value.isNotEmpty) {
       _expandedTasks.clear();
       int times = int.parse(value);
       for (int i = 0; i < times; i++) {
@@ -144,7 +144,6 @@ class AddNewTaskProvider with ChangeNotifier {
     }
   }
 
-  //TODO check the overlap period
   bool checkIfOverlappingTask() {
     if (_previousStartEndTasks != null) {
       if (_previousStartEndTasks.isNotEmpty) {
@@ -218,7 +217,8 @@ class AddNewTaskProvider with ChangeNotifier {
               _pickedDurationTime.minute
             ];
             if (_expandedTasks.length > 0) {
-              for (int i = 0; i < _expandedTasks.length; i++) {
+              for (int i = 0; i < _expandedTasks.length - 1; i++) {
+                print('i is $i');
                 expandedTime = AppUtils.addTime(
                     expandedTime[0],
                     _pickedDurationTime.hour,
@@ -226,11 +226,11 @@ class AddNewTaskProvider with ChangeNotifier {
                     _pickedDurationTime.minute);
               }
             }
-            List addedTime = AppUtils.addTime(totalDuration.hour,
-                expandedTime[0], totalDuration.minute, expandedTime[1]);
+            // List addedTime = AppUtils.addTime(totalDuration.hour,
+            //     expandedTime[0], totalDuration.minute, expandedTime[1]);
             if (await _checkIfTimeIsMoreThanTimeBalance(
               onExceedTimeFrameDialog,
-              addedTime,
+              expandedTime,
             )) return -1;
             String commaSeparatedTasks =
                 AppUtils.parseExpandedTasksToCommaSeparatedTasks(

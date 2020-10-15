@@ -151,7 +151,7 @@ class AppUtils {
     int hoursToMilliseconds = difference.inHours * 3600000;
     double totalMinutes =
         (difference.inMilliseconds - hoursToMilliseconds).abs() / 60000;
-    return [difference.inHours.floorToDouble(), totalMinutes.floorToDouble()];
+    return [difference.inHours.ceilToDouble(), totalMinutes.ceilToDouble()];
   }
 
   static List<double> calculateDifferenceBetweenTwoDates(
@@ -161,7 +161,7 @@ class AppUtils {
     int hoursToMilliseconds = difference.inHours * 3600000;
     double totalMinutes =
         (difference.inMilliseconds - hoursToMilliseconds).abs() / 60000;
-    return [difference.inHours.floorToDouble(), totalMinutes.floorToDouble()];
+    return [difference.inHours.ceilToDouble(), totalMinutes.ceilToDouble()];
   }
 
   static List<int> calculateDuration(
@@ -250,11 +250,12 @@ class AppUtils {
     return time.toString();
   }
 
-  static String formatTimeToHHMM(int hour, int minute) {
-    String hourMinute = hour >= 1 ? 'h' : 'm';
+  static String formatTimeToHHMM(int hour, int minute,
+      {bool isNegative = false}) {
+    String hourMinute = hour >= 1 || hour < 0 ? 'h' : 'm';
     String formattedHour = formatTimeToTwoDecimals(hour);
     String formattedMinute = formatTimeToTwoDecimals(minute);
-    return '$formattedHour:$formattedMinute $hourMinute';
+    return '${isNegative ? '-' : ''}$formattedHour:$formattedMinute $hourMinute';
   }
 
   static String formatTimeToHHMM2(int hour, int minute) {
@@ -368,8 +369,12 @@ class AppUtils {
     if (time.length >= 1) {
       int hour = int.parse(time[0]);
       int minute = int.parse(time[1].substring(0, 2));
-      if (hourFormat - hour <= 0 && minuteFormat - minute <= 0) return [0, 0];
-      return minusTime(hourFormat, hour, minuteFormat, minute);
+      DateTime now = DateTime.now();
+      DateTime start = DateTime(now.year, now.month, now.day, hour, minute);
+      DateTime end =
+          DateTime(now.year, now.month, now.day, hourFormat, minuteFormat);
+      List<double> diff = calculateDifferenceBetweenTwoDates(start, end);
+      return [diff[0].toInt(), diff[1].toInt(), 0];
     }
     return [];
   }
@@ -394,7 +399,7 @@ class AppUtils {
         parseCommaSeparatedExpandedTasksToString(task.expandedTasks);
     if (expandedTasks.isNotEmpty) {
       durationInHHMM = formatTaskLengthToHHMM(
-          duration.hour, duration.minute, expandedTasks.length + 1);
+          duration.hour, duration.minute, expandedTasks.length);
     }
     UITask uiTask = UITask(
         task.id,

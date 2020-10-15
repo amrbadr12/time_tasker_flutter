@@ -40,11 +40,12 @@ dependencies:
   autocomplete_textfield: ^1.7.3
   mask_text_input_formatter: ^1.0.6
   add_2_calendar: ^1.4.0
-  device_calendar: ^3.0.0+3
+  device_calendar: 3.2.0-dev.11640
   expandable: ^4.1.2
   url_launcher: ^5.4.10
   social_share: ^2.0.5
   device_preview: ^0.4.3
+  rate_my_app: ^0.7.2
 
 
 

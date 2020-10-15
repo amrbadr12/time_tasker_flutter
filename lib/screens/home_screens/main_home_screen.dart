@@ -13,6 +13,7 @@ import 'package:time_tasker/reusable_widgets/no_tasks_today.dart';
 import 'package:time_tasker/screens/add_task_screens/add_duration_task.dart';
 import 'package:time_tasker/screens/add_task_screens/add_start_end_task.dart';
 import 'package:time_tasker/utils/dialog_utils.dart';
+import 'package:time_tasker/utils/rate_my_app.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -36,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     getSharedPrefs();
     super.initState();
+    inAppRatingBuilder(context);
   }
 
   @override

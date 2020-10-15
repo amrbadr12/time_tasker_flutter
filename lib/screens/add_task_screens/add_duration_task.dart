@@ -1,5 +1,4 @@
 import 'package:expandable/expandable.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
@@ -190,7 +189,7 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                                       physics: NeverScrollableScrollPhysics(),
                                       itemCount: snapshot.expandedTasks.length,
                                       itemBuilder:
-                                          (BuildContext context, int index) {
+                                          (context, int index) {
                                         return ListTile(
                                           title: TextFormField(
                                             decoration: InputDecoration(),

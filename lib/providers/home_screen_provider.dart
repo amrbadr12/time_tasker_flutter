@@ -28,6 +28,7 @@ class HomeScreenProvider with ChangeNotifier {
   Function _onCalendarTasksFound;
   Function _onSelectDeviceCalendar;
   Function _onTasksNotFound;
+  String _currentTotalBalance;
 
   HomeScreenProvider(
       this._db,
@@ -157,23 +158,16 @@ class HomeScreenProvider with ChangeNotifier {
           int userTotalMinutesBalance;
           if (timeSaved != 0)
             AppUtils.updateTimeBalance(sharedPerferencesUtils);
-          // print(
-          //     'total minutes is ${sharedPerferencesUtils.getIntFromSharedPreferences(kTotalBalanceMinutesKey)}');
-          // userTotalHourBalance = sharedPerferencesUtils
-          //     .getIntFromSharedPreferences(kTotalBalanceHoursKey);
-          // userTotalMinutesBalance = sharedPerferencesUtils
-          //     .getIntFromSharedPreferences(kTotalBalanceMinutesKey);
-          // totalBalance = [userTotalHourBalance, userTotalMinutesBalance];
-          //  } else {
           userTotalHourBalance = sharedPerferencesUtils
               .getIntFromSharedPreferences(kTotalBalanceHoursKey);
           userTotalMinutesBalance = sharedPerferencesUtils
               .getIntFromSharedPreferences(kTotalBalanceMinutesKey);
           totalBalance = AppUtils.calculateTimeBalanceFromFormattedTime(
               _totalTime, userTotalHourBalance, userTotalMinutesBalance);
-          //   }
+          _currentTotalBalance =
+              AppUtils.formatTimeToHHMM(totalBalance[0], totalBalance[1]);
           _setTotalBalanceForTaskType(
-              AppUtils.formatTimeToHHMM(totalBalance[0], totalBalance[1]),
+              _currentTotalBalance,
               AppUtils.calculateTimePercentFromTotalBalance(
                   totalBalance[0], userTotalHourBalance));
           break;
@@ -281,7 +275,7 @@ class HomeScreenProvider with ChangeNotifier {
               taskDuration = AppUtils.convertMillisecondsSinceEpochToDateTime(
                   task.durationTime);
               fixedDuration = taskDuration;
-              for (int i = 0; i < expandedList.length; i++) {
+              for (int i = 0; i < expandedList.length - 1; i++) {
                 taskDuration = taskDuration.add(Duration(
                     hours: fixedDuration.hour, minutes: fixedDuration.minute));
               }
@@ -490,6 +484,7 @@ class HomeScreenProvider with ChangeNotifier {
     return result +
         '\n' +
         '=============================' +
-        '\nTotal Time: $totalTime';
+        '\nTotal Time: $totalTime' +
+        '\nTime Remaining: $_currentTotalBalance';
   }
 }
