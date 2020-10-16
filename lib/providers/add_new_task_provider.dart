@@ -402,6 +402,8 @@ class AddNewTaskProvider with ChangeNotifier {
     int userTotalMinutesBalance,
     List addedTime,
   ) {
+    print(
+        'userTotalHourBalance is ${userTotalHourBalance} and userTotalMinutesBalance is ${userTotalMinutesBalance} and addedTime is ${addedTime[0]} and 1 is ${addedTime[1]}');
     if (addedTime[0] >= userTotalHourBalance) {
       if (addedTime[0] == userTotalHourBalance) {
         if (addedTime[1] <= userTotalMinutesBalance) return false;

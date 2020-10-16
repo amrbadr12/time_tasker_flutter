@@ -162,10 +162,13 @@ class HomeScreenProvider with ChangeNotifier {
               .getIntFromSharedPreferences(kTotalBalanceHoursKey);
           userTotalMinutesBalance = sharedPerferencesUtils
               .getIntFromSharedPreferences(kTotalBalanceMinutesKey);
-          totalBalance = AppUtils.calculateTimeBalanceFromFormattedTime(
-              _totalTime, userTotalHourBalance, userTotalMinutesBalance);
-          _currentTotalBalance =
-              AppUtils.formatTimeToHHMM(totalBalance[0], totalBalance[1]);
+          userTotalHourBalance == 0 && userTotalMinutesBalance == 0
+              ? totalBalance = [0, 0, 0]
+              : totalBalance = AppUtils.calculateTimeBalanceFromFormattedTime(
+                  _totalTime, userTotalHourBalance, userTotalMinutesBalance);
+          _currentTotalBalance = AppUtils.formatTimeToHHMM(
+              totalBalance[0], totalBalance[1],
+              isNegative: totalBalance[2] == 1 ? true : false);
           _setTotalBalanceForTaskType(
               _currentTotalBalance,
               AppUtils.calculateTimePercentFromTotalBalance(

@@ -158,10 +158,14 @@ class AppUtils {
       DateTime dateTime1, DateTime dateTime2) {
     Duration difference;
     difference = dateTime2.difference(dateTime1);
-    int hoursToMilliseconds = difference.inHours * 3600000;
+    int hoursToMilliseconds = (difference.inHours * 3600000);
     double totalMinutes =
         (difference.inMilliseconds - hoursToMilliseconds).abs() / 60000;
-    return [difference.inHours.ceilToDouble(), totalMinutes.ceilToDouble()];
+    return [
+      difference.inHours.ceilToDouble().abs(),
+      totalMinutes.ceilToDouble().abs(),
+      difference.isNegative ? 1 : 0
+    ];
   }
 
   static List<int> calculateDuration(
@@ -199,8 +203,6 @@ class AppUtils {
               timeSavedDateTime);
       if (timeSavedDateTime.isAfter(DateTime.now())) {
         //4:00 and now is 4:01
-        // sharedPerferencesUtils.saveIntToSharedPreferences(
-        //     kTimeSelectedSettingsKey, 0);
         sharedPerferencesUtils.saveIntToSharedPreferences(
             kTotalBalanceHoursKey, result[0].toInt());
         sharedPerferencesUtils.saveIntToSharedPreferences(
@@ -212,6 +214,7 @@ class AppUtils {
             kTotalBalanceHoursKey, 0);
         sharedPerferencesUtils.saveIntToSharedPreferences(
             kTotalBalanceMinutesKey, 0);
+        print("ALL SET TO 0");
       }
     }
   }
@@ -374,7 +377,7 @@ class AppUtils {
       DateTime end =
           DateTime(now.year, now.month, now.day, hourFormat, minuteFormat);
       List<double> diff = calculateDifferenceBetweenTwoDates(start, end);
-      return [diff[0].toInt(), diff[1].toInt(), 0];
+      return [diff[0].toInt(), diff[1].toInt(), diff[2].toInt()];
     }
     return [];
   }
