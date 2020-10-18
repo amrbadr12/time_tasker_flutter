@@ -23,6 +23,12 @@ class AddStartEndTaskScreen extends StatefulWidget {
 
 class _AddStartEndTaskScreenState extends State<AddStartEndTaskScreen> {
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.white,

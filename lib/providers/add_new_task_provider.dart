@@ -250,6 +250,7 @@ class AddNewTaskProvider with ChangeNotifier {
             if (!checkIfOverlappingTask()) {
               //Adding the task to the device's calendar
               if (_totalUserDurationTime != null) {
+                print('totalUserDurationTime is ${_totalUserDurationTime[0]} and calculatedDuration is ${_calculatedDuration[0]} total 1 is ${_totalUserDurationTime[1]} and calculated duration is ${_calculatedDuration[0]}}');
                 List addedTime = AppUtils.addTime(
                     _totalUserDurationTime[0],
                     _calculatedDuration[0],

@@ -45,7 +45,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           elevation: 0.0,
           title: Text(kAppName,
               textAlign: TextAlign.center,
-              style: kAppBarTextStyle.copyWith(fontSize: 20.0)),
+              style: kAppBarTextStyle.copyWith(
+                  fontSize: 22.0, color: Colors.blue)),
           centerTitle: true,
         ),
         body: SingleChildScrollView(
@@ -314,8 +315,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _sharedPreferences.saveIntToSharedPreferences(
               kTimeSelectedSettingsKey, _timeSelectedInSeconds);
         } else {
-          _sharedPreferences.saveIntToSharedPreferences(
-              kTimeSelectedSettingsKey, 0);
+          if (!_isTimerPickerSelected)
+            _sharedPreferences.saveIntToSharedPreferences(
+                kTimeSelectedSettingsKey, 0);
         }
       }
       onSuccess();

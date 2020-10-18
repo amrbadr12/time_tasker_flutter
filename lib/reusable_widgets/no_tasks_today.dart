@@ -15,7 +15,9 @@ class NoTasksTodayWidget extends StatelessWidget {
           flex: 6,
           child: Center(
               child: Image.asset(
-            'images/timmi_2.png',
+            taskType == 'Start/End'
+                ? 'images/timmi_6.png'
+                : 'images/timmi_7.png',
             width: MediaQuery.of(context).size.width * 0.85,
           )),
         ),

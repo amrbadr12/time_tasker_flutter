@@ -132,12 +132,13 @@ class HomeScreenProvider with ChangeNotifier {
     List<Task> todayDurationTasks = _getTodayTasks(tasks);
     if (todayDurationTasks.isEmpty) {
       _noTodayTasks = true;
+      _startEndDurationTotalTime = [0, 0];
+      _durationTotalTime = [0, 0];
     } else {
       _noTodayTasks = false;
       if (_selectedTask == TaskTypes.StartEndTasks) {
         List<StartEndTask> todayStartEndTasks =
             AppUtils.getTheTodayUpcomingTasks(todayDurationTasks.cast());
-        //_upcomingTask =null;
         _upcomingTask = AppUtils.getUpcomingTask(todayStartEndTasks);
         notifyListeners();
       }
@@ -183,12 +184,14 @@ class HomeScreenProvider with ChangeNotifier {
     switch (_selectedTask) {
       case TaskTypes.DurationTasks:
         await _db.deleteDurationTask(id);
+        refreshMainScreen();
         break;
       case TaskTypes.StartEndTasks:
         await _db.deleteStartEndTask(id);
+        refreshMainScreen();
         break;
     }
-    refreshMainScreen();
+    print('start end total duration is ${_startEndDurationTotalTime[0]}');
   }
 
   void deleteAllTodaysTasksForTaskType() async {
@@ -285,6 +288,7 @@ class HomeScreenProvider with ChangeNotifier {
             } else
               taskDuration = AppUtils.convertMillisecondsSinceEpochToDateTime(
                   task.durationTime);
+            print('this was called');
             List<int> time = AppUtils.addTime(
                 taskDuration.hour, hour, taskDuration.minute, minute);
             hour = time[0];
@@ -325,6 +329,7 @@ class HomeScreenProvider with ChangeNotifier {
           return AppUtils.formatTimeToHHMM(hour, minute);
           break;
       }
+      print("DURATION TOTAL TIME IS ${_startEndDurationTotalTime[0]}");
     }
     return '00:00 h';
   }

@@ -8,6 +8,7 @@ import '../settings_screen.dart';
 import 'add_duration_task.dart';
 import 'add_start_end_task.dart';
 
+@deprecated
 class AddTaskScreen extends StatefulWidget {
   final bool navigateToHome;
   final durationTotalTime;
