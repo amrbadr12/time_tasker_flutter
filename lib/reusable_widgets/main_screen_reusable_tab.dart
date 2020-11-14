@@ -236,38 +236,48 @@ class MainScreenReusableTab extends StatelessWidget {
                                 color: kTasksDateIconColor2),
                             trailing: Text(recentTasksList[index].duration),
                           ),
-                          expanded: ListView.builder(
-                              shrinkWrap: true,
-                              physics: NeverScrollableScrollPhysics(),
-                              itemCount:
-                                  recentTasksList[index].expandedTasks != null
-                                      ? (recentTasksList[index]
-                                          .expandedTasks
-                                          .length)
-                                      : 0,
-                              itemBuilder: (BuildContext context, int ind) {
-                                if (ind >=
-                                    recentTasksList[index].expandedTasks.length)
-                                  return SizedBox(
-                                    width: 0.0,
-                                  );
-                                return ListTile(
-                                    leading: Padding(
-                                      padding:
-                                          EdgeInsets.symmetric(horizontal: 8.0),
-                                      child: Icon(FontAwesomeIcons.dotCircle,
-                                          size: 20.0, color: Colors.blue[700]),
-                                    ),
-                                    title: Padding(
-                                      padding:
-                                          EdgeInsets.symmetric(horizontal: 8.0),
-                                      child: Text(
+                          expanded: recentTasksList[index]
+                                      .expandedTasks
+                                      .length <=
+                                  20
+                              ? ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  itemCount:
+                                      recentTasksList[index].expandedTasks !=
+                                              null
+                                          ? (recentTasksList[index]
+                                              .expandedTasks
+                                              .length)
+                                          : 0,
+                                  itemBuilder: (BuildContext context, int ind) {
+                                    if (ind >=
                                         recentTasksList[index]
-                                            .expandedTasks[ind],
-                                        style: TextStyle(fontSize: 15.0),
-                                      ),
-                                    ));
-                              }),
+                                            .expandedTasks
+                                            .length)
+                                      return SizedBox(
+                                        width: 0.0,
+                                      );
+                                    return ListTile(
+                                        leading: Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 8.0),
+                                          child: Icon(
+                                              FontAwesomeIcons.dotCircle,
+                                              size: 20.0,
+                                              color: Colors.blue[700]),
+                                        ),
+                                        title: Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 8.0),
+                                          child: Text(
+                                            recentTasksList[index]
+                                                .expandedTasks[ind],
+                                            style: TextStyle(fontSize: 15.0),
+                                          ),
+                                        ));
+                                  })
+                              : Container(),
                           theme: ExpandableThemeData(
                               iconColor: Colors.blue[700],
                               iconPadding:

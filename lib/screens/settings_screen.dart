@@ -1,5 +1,6 @@
 import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -101,10 +102,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               inactiveColor: kTasksDateContainerColor,
               max: 60.0,
               onChanged: (value) {
-                setState(() {
+                if (value == 60.0 && _hoursSliderValue < 24) {
+                  _hoursSliderValue++;
+                  _minutesSliderValue = 0;
+                } else {
                   _minutesSliderValue = value;
-                  _isTimerPickerSelected = false;
-                });
+                }
+                _isTimerPickerSelected = false;
+                setState(() {});
               }),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: kMainDefaultPadding),

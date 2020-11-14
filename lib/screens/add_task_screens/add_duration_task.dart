@@ -26,7 +26,8 @@ class _AddDurationTaskState extends State<AddDurationTask> {
   @override
   void initState() {
     mask = MaskTextInputFormatter(mask: '##:##');
-    print('duration total time is ${widget.totalDurationTime[0]} and 1 is${widget.totalDurationTime[1]}');
+    print(
+        'duration total time is ${widget.totalDurationTime[0]} and 1 is${widget.totalDurationTime[1]}');
     super.initState();
   }
 
@@ -164,7 +165,7 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                                           controller: _multiplesController,
                                           textInputAction: TextInputAction.done,
                                           keyboardType: TextInputType.number,
-                                          maxLength: 2,
+                                          maxLength: 3,
                                           onChanged: (value) {
                                             snapshot.setMultipleTimes(
                                                 _multiplesController.text
@@ -189,8 +190,7 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                                       shrinkWrap: true,
                                       physics: NeverScrollableScrollPhysics(),
                                       itemCount: snapshot.expandedTasks.length,
-                                      itemBuilder:
-                                          (context, int index) {
+                                      itemBuilder: (context, int index) {
                                         return ListTile(
                                           title: TextFormField(
                                             decoration: InputDecoration(),
