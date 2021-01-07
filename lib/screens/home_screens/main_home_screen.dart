@@ -12,13 +12,13 @@ import 'package:time_tasker/reusable_widgets/main_screen_reusable_tab.dart';
 import 'package:time_tasker/reusable_widgets/no_tasks_today.dart';
 import 'package:time_tasker/screens/add_task_screens/add_duration_task.dart';
 import 'package:time_tasker/screens/add_task_screens/add_start_end_task.dart';
+import 'package:time_tasker/screens/settings_screen.dart';
 import 'package:time_tasker/utils/dialog_utils.dart';
 import 'package:time_tasker/utils/rate_my_app.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../db_helper.dart';
-import '../settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final TaskTypes defaultTaskType;
@@ -115,9 +115,11 @@ class _HomeScreenState extends State<HomeScreen> {
               centerTitle: true,
               title: FlatButton(
                 onPressed: () async {
-                  await Navigator.of(context).push(MaterialPageRoute(
+                  // await Navigator.of(context).push(MaterialPageRoute(
+                  //     builder: (context) => SettingsScreen()));
+                  // getSharedPrefs();
+                  Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) => SettingsScreen()));
-                  getSharedPrefs();
                 },
                 child: Text(kAppName,
                     textAlign: TextAlign.center, style: kAppBarTextStyle),

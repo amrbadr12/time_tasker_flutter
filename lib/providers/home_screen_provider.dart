@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
@@ -29,6 +31,7 @@ class HomeScreenProvider with ChangeNotifier {
   Function _onSelectDeviceCalendar;
   Function _onTasksNotFound;
   String _currentTotalBalance;
+  Timer _refreshTimer;
 
   HomeScreenProvider(
       this._db,
@@ -46,6 +49,9 @@ class HomeScreenProvider with ChangeNotifier {
     _recentTasks = [];
 //    if (_selectedTask == TaskTypes.StartEndTasks)
 //      getDefaultCalendar(repeat: true);
+    _refreshTimer = Timer.periodic(Duration(seconds: 50), (Timer t) {
+      refreshMainScreen();
+    });
   }
 
   TabModel get currentTabModel => _currentTabModel;
@@ -288,7 +294,6 @@ class HomeScreenProvider with ChangeNotifier {
             } else
               taskDuration = AppUtils.convertMillisecondsSinceEpochToDateTime(
                   task.durationTime);
-            print('this was called');
             List<int> time = AppUtils.addTime(
                 taskDuration.hour, hour, taskDuration.minute, minute);
             hour = time[0];
@@ -494,5 +499,15 @@ class HomeScreenProvider with ChangeNotifier {
         '=============================' +
         '\nTotal Time: $totalTime' +
         '\nTime Remaining: $_currentTotalBalance';
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    try {
+      if (_refreshTimer != null) {
+        _refreshTimer.cancel();
+      }
+    } catch (e) {}
   }
 }

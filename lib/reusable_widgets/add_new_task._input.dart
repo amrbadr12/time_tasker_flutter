@@ -12,6 +12,7 @@ class AddNewTaskInputWidget extends StatelessWidget {
   final bool includeStartEndDate;
   final Function onStartDateChanged;
   final String startDateText;
+  final FocusNode focusNode;
   final Function onEndDateChanged;
   final String endDateText;
   final String errorText;
@@ -31,6 +32,7 @@ class AddNewTaskInputWidget extends StatelessWidget {
       this.includeStartEndDate,
       this.onTaskDurationSubmitted,
       this.errorText,
+      this.focusNode,
       this.previousTasks,
       this.onFilterItems,
       this.onStartDateChanged,
@@ -53,6 +55,7 @@ class AddNewTaskInputWidget extends StatelessWidget {
         children: <Widget>[
           AutoCompleteTextField<Task>(
             suggestions: previousTasks,
+            focusNode: focusNode,
             style: kInputAddTaskLabelTextStyle,
             itemFilter: (Task item, query) {
               return item.taskName

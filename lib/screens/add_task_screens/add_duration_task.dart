@@ -23,6 +23,7 @@ class AddDurationTask extends StatefulWidget {
 class _AddDurationTaskState extends State<AddDurationTask> {
   MaskTextInputFormatter mask;
   TextEditingController _multiplesController = TextEditingController();
+  FocusNode _nameFocusNode = FocusNode();
   @override
   void initState() {
     mask = MaskTextInputFormatter(mask: '##:##');
@@ -69,6 +70,7 @@ class _AddDurationTaskState extends State<AddDurationTask> {
                             includeStartEndDate: false,
                             maskTextInputFormatter: mask,
                             nameController: snapshot.nameController,
+                            focusNode: _nameFocusNode,
                             durationController: snapshot.durationController,
                             previousTasks: snapshot.previousTasks,
                             onTaskNameSubmitted: (String data) {

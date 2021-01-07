@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:time_tasker/constants.dart';
-import 'package:time_tasker/screens/intro_screens/intro_screen.dart';
 import 'package:time_tasker/screens/settings_screen.dart';
+import 'package:time_tasker/screens/video_player_screen.dart';
 import 'package:time_tasker/services/init_services.dart';
 import 'package:time_tasker/utils/shared_preferences_utils.dart';
 
@@ -19,10 +19,13 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  final GlobalKey<NavigatorState> navigatorKey =
+      new GlobalKey<NavigatorState>();
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
         title: 'TimeTasker',
+        navigatorKey: navigatorKey,
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
             backgroundColor: appBarColor,
@@ -36,7 +39,7 @@ class MyApp extends StatelessWidget {
             ),
             primarySwatch: Colors.blue),
         home: FutureBuilder<Widget>(
-          future: showIntroOrHomeScreen(),
+          future: showIntroOrHomeScreen(context),
           builder: (BuildContext context, AsyncSnapshot<Widget> snapshot) {
             switch (snapshot.connectionState) {
               case ConnectionState.waiting:
@@ -57,10 +60,33 @@ class MyApp extends StatelessWidget {
         ));
   }
 
-  Future<Widget> showIntroOrHomeScreen() async {
+  Future<Widget> showIntroOrHomeScreen(BuildContext context) async {
     SharedPerferencesUtils utils =
         SharedPerferencesUtils(await SharedPreferences.getInstance());
     bool showHome = utils.getBoolFromSharedPreferences(kShowIntroScreenKey);
-    return showHome ? SettingsScreen() : IntroScreen();
+    return showHome
+        ? SettingsScreen()
+        : VideoApp(
+            videoPath: 'images/intro_1.mp4',
+            buttonTitle: 'Next',
+            onTap: () {
+              navigatorKey.currentState.push(MaterialPageRoute(
+                  builder: (context) => VideoApp(
+                        videoPath: 'images/intro_2.mp4',
+                        buttonTitle: 'Start TimeTasking!',
+                        onTap: () async {
+                          SharedPerferencesUtils utils = SharedPerferencesUtils(
+                              await SharedPreferences.getInstance());
+                          utils.saveBoolToSharedPreferences(
+                              kShowIntroScreenKey, true);
+                          utils.saveIntToSharedPreferences(
+                              kTotalBalanceHoursKey, 24);
+                          utils.saveIntToSharedPreferences(
+                              kTotalBalanceMinutesKey, 0);
+                          navigatorKey.currentState.push(MaterialPageRoute(
+                              builder: (context) => SettingsScreen()));
+                        },
+                      )));
+            });
   }
 }
