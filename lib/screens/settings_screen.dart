@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -28,6 +30,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _selectedDropDownValue;
   bool _isCalendarPermissionsGranted = true;
   bool _isTimerPickerSelected = false;
+  Timer _refreshTimer;
 
   @override
   void initState() {
@@ -35,6 +38,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     getSharedPrefs();
     getDefaultCalendar();
     super.initState();
+    _refreshTimer = Timer.periodic(Duration(seconds: 1), (Timer t) {
+      getSharedPrefs();
+    });
   }
 
   @override
@@ -163,6 +169,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           setState(() {
                             calculateSliderHoursAndMinutesFromDateTime(date);
                           });
+                          saveSliderItemToLocal(() {});
                         } catch (e) {
                           print(
                               'Exception failed while setting the time with $e');
@@ -399,5 +406,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _hoursSliderValue = time[0];
     _minutesSliderValue = time[1];
     _isTimerPickerSelected = true;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    try {
+      if (_refreshTimer != null) {
+        _refreshTimer.cancel();
+      }
+    } catch (e) {}
   }
 }

@@ -188,7 +188,8 @@ class AppUtils {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final aDate = DateTime(time.year, time.month, time.day);
-    return aDate == today;
+    return today.difference(aDate).inDays == 1 ||
+        today.difference(aDate).inDays == 0;
   }
 
   static updateTimeBalance(
