@@ -23,13 +23,12 @@ class AddDurationTask extends StatefulWidget {
 class _AddDurationTaskState extends State<AddDurationTask> {
   MaskTextInputFormatter mask;
   TextEditingController _multiplesController = TextEditingController();
-  FocusNode _nameFocusNode = FocusNode();
+  FocusNode _nameFocusNode;
   @override
   void initState() {
     mask = MaskTextInputFormatter(mask: '##:##');
-    print(
-        'duration total time is ${widget.totalDurationTime[0]} and 1 is${widget.totalDurationTime[1]}');
     super.initState();
+    _nameFocusNode = FocusNode();
   }
 
   @override

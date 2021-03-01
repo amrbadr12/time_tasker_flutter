@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_sms/flutter_sms.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -196,13 +197,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                 });
                               });
                             },
+                            onShareSMS: () async {
+                              await sendSMS(
+                                  message: snapshot.getShareableTasksList(),
+                                  recipients: []).catchError((onError) {
+                                print(onError);
+                              });
+                            },
                             onShareToWhatsApp: () async {
                               print(
-                                  'whatsapp list is ${snapshot.getShareableWhatsAppList()}');
+                                  'whatsapp list is ${snapshot.getShareableTasksList()}');
                               print(await SocialShare
                                   .checkInstalledAppsForShare());
                               SocialShare.shareWhatsapp(
-                                  snapshot.getShareableWhatsAppList());
+                                  snapshot.getShareableTasksList());
                               //_launchURL(snapshot.getShareableWhatsAppList());
                             },
                             circularCenterText:

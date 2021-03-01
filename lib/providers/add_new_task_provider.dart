@@ -176,16 +176,17 @@ class AddNewTaskProvider with ChangeNotifier {
 
   void setPickedDuration(String duration) {
     _errorText = null;
-
+    print('duration is $duration');
     notifyListeners();
-    if (AppUtils.validateDuration(duration))
+    if (AppUtils.validateDuration(duration)) {
+      print('valid');
       this._pickedDurationTime = AppUtils.formatHHMMTimeToTimeOfDay(duration);
-    else {
+    } else {
       if (AppUtils.validateMinutes(duration))
         this._pickedDurationTime = AppUtils.formatHHMMTimeToTimeOfDay(
             AppUtils.formatMinutesToHHMMTime(duration));
       else {
-        _errorText = 'Please enter a valid duration.';
+        _errorText = 'Please enter a valid duration in HH:MM.';
         notifyListeners();
       }
     }
@@ -226,12 +227,11 @@ class AddNewTaskProvider with ChangeNotifier {
                     _pickedDurationTime.minute);
               }
             }
-            // List addedTime = AppUtils.addTime(totalDuration.hour,
-            //     expandedTime[0], totalDuration.minute, expandedTime[1]);
-            if (await _checkIfTimeIsMoreThanTimeBalance(
-              onExceedTimeFrameDialog,
-              expandedTime,
-            )) return -1;
+            //TODO:remove this
+            // if (await _checkIfTimeIsMoreThanTimeBalance(
+            //   onExceedTimeFrameDialog,
+            //   expandedTime,
+            // )) return -1;
             String commaSeparatedTasks =
                 AppUtils.parseExpandedTasksToCommaSeparatedTasks(
                     _expandedTasks);
@@ -250,14 +250,16 @@ class AddNewTaskProvider with ChangeNotifier {
             if (!checkIfOverlappingTask()) {
               //Adding the task to the device's calendar
               if (_totalUserDurationTime != null) {
-                print('totalUserDurationTime is ${_totalUserDurationTime[0]} and calculatedDuration is ${_calculatedDuration[0]} total 1 is ${_totalUserDurationTime[1]} and calculated duration is ${_calculatedDuration[0]}}');
+                print(
+                    'totalUserDurationTime is ${_totalUserDurationTime[0]} and calculatedDuration is ${_calculatedDuration[0]} total 1 is ${_totalUserDurationTime[1]} and calculated duration is ${_calculatedDuration[0]}}');
                 List addedTime = AppUtils.addTime(
                     _totalUserDurationTime[0],
                     _calculatedDuration[0],
                     _totalUserDurationTime[1],
                     _calculatedDuration[1]);
-                if (await _checkIfTimeIsMoreThanTimeBalance(
-                    onExceedTimeFrameDialog, addedTime)) return -1;
+                //TODO:remove this
+                //   if (await _checkIfTimeIsMoreThanTimeBalance(
+                //       onExceedTimeFrameDialog, addedTime)) return -1;
               }
               if (!_calendarTask) {
                 if (await onAddingTaskToCalendar()) {

@@ -24,6 +24,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   List<String> _calendars = List();
   double _hoursSliderValue;
   double _minutesSliderValue;
+  bool _sliderSelected = false;
   bool _currentResetSetting = false;
   TimeOfDay _timeSelected;
   int _timeSelectedInSeconds;
@@ -89,6 +90,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onChanged: (value) {
                 setState(() {
                   _hoursSliderValue = value;
+                  _sliderSelected = true;
                   _isTimerPickerSelected = false;
                 });
               }),
@@ -115,6 +117,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _minutesSliderValue = value;
                 }
                 _isTimerPickerSelected = false;
+                _sliderSelected = true;
                 setState(() {});
               }),
           Padding(
@@ -285,29 +288,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _sharedPreferences =
         SharedPerferencesUtils(await SharedPreferences.getInstance());
     setState(() {
-      _hoursSliderValue =
-          readSliderItemFromLocal(kTotalBalanceHoursKey).toDouble();
-      _minutesSliderValue =
-          readSliderItemFromLocal(kTotalBalanceMinutesKey).toDouble();
-      _currentResetSetting =
-          readResetSettingFromLocal(kResetDialogSettingsOption);
-      int timeSaved = _sharedPreferences
-          .getIntFromSharedPreferences(kTimeSelectedSettingsKey);
-      if (timeSaved != 0) {
-        _isTimerPickerSelected = true;
-        DateTime timeSavedDateTime =
-            DateTime.fromMillisecondsSinceEpoch(timeSaved);
-        calculateSliderHoursAndMinutesFromDateTime(timeSavedDateTime);
-        if (_hoursSliderValue < 0 ||
-            timeSavedDateTime.isBefore(DateTime.now())) {
-          _hoursSliderValue = 0;
-          _minutesSliderValue = 0;
-          _timeSelected = null;
-          saveSliderItemToLocal(() {});
-          _sharedPreferences.saveIntToSharedPreferences(
-              kTimeSelectedSettingsKey, 0);
-        } else
-          _timeSelected = AppUtils.formatDateTimeToTimeOfDay(timeSavedDateTime);
+      if (!_sliderSelected) {
+        print('this was called');
+        _hoursSliderValue =
+            readSliderItemFromLocal(kTotalBalanceHoursKey).toDouble();
+        _minutesSliderValue =
+            readSliderItemFromLocal(kTotalBalanceMinutesKey).toDouble();
+        print('minutes is ${_minutesSliderValue}');
+        _currentResetSetting =
+            readResetSettingFromLocal(kResetDialogSettingsOption);
+        int timeSaved = _sharedPreferences
+            .getIntFromSharedPreferences(kTimeSelectedSettingsKey);
+        if (timeSaved != 0) {
+          _isTimerPickerSelected = true;
+          DateTime timeSavedDateTime =
+              DateTime.fromMillisecondsSinceEpoch(timeSaved);
+          calculateSliderHoursAndMinutesFromDateTime(timeSavedDateTime);
+          if (_hoursSliderValue < 0 ||
+              timeSavedDateTime.isBefore(DateTime.now())) {
+            _hoursSliderValue = 0;
+            _minutesSliderValue = 0;
+            _timeSelected = null;
+            saveSliderItemToLocal(() {});
+            _sharedPreferences.saveIntToSharedPreferences(
+                kTimeSelectedSettingsKey, 0);
+          } else
+            _timeSelected =
+                AppUtils.formatDateTimeToTimeOfDay(timeSavedDateTime);
+        }
       }
     });
   }

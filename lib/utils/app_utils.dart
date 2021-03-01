@@ -19,7 +19,7 @@ class AppUtils {
   }
 
   static bool validateDuration(String inputDuration) {
-    final hhMMFormatReg = RegExp(r'^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$');
+    final hhMMFormatReg = RegExp(r'^(?:\d|[01]\d|2[0-3]):[0-5]\d$');
     return hhMMFormatReg.hasMatch(inputDuration);
   }
 

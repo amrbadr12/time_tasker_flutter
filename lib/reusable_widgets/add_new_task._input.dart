@@ -55,7 +55,8 @@ class AddNewTaskInputWidget extends StatelessWidget {
         children: <Widget>[
           AutoCompleteTextField<Task>(
             suggestions: previousTasks,
-            focusNode: focusNode,
+            // focusNode: focusNode,
+            onFocusChanged: (hasFocus) {},
             style: kInputAddTaskLabelTextStyle,
             itemFilter: (Task item, query) {
               return item.taskName
@@ -142,7 +143,7 @@ class AddNewTaskInputWidget extends StatelessWidget {
               controller: durationController,
               style: kInputAddTaskLabelTextStyle,
               maxLength: 5,
-              inputFormatters: [maskTextInputFormatter],
+              //  inputFormatters: [maskTextInputFormatter],
               keyboardType: TextInputType.datetime,
               decoration: InputDecoration(
                 errorText: errorText,
@@ -150,9 +151,10 @@ class AddNewTaskInputWidget extends StatelessWidget {
                   FontAwesomeIcons.stopwatch,
                   color: kTasksDateIconColor2,
                 ),
-                // suffixText: 'HH:MM',
+                suffixText: 'HH:MM',
+                suffixStyle: TextStyle(fontSize: 14.00),
                 labelStyle: kInputAddTaskLabelTextStyle,
-                hintText: 'Duration in HH:MM or in minutes',
+                hintText: 'HH:MM or in minutes',
               ),
             ),
           ),

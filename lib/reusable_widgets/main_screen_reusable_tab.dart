@@ -21,6 +21,7 @@ class MainScreenReusableTab extends StatelessWidget {
   final Function onAddButtonTap;
   final Function onReset;
   final Function onShareToWhatsApp;
+  final Function onShareSMS;
 
   MainScreenReusableTab(
       {this.date,
@@ -33,7 +34,8 @@ class MainScreenReusableTab extends StatelessWidget {
       this.recentTasksList,
       this.onAddButtonTap,
       this.onReset,
-      this.onShareToWhatsApp});
+      this.onShareToWhatsApp,
+      this.onShareSMS});
 
   @override
   Widget build(BuildContext context) {
@@ -191,15 +193,15 @@ class MainScreenReusableTab extends StatelessWidget {
                             ),
                             onPressed: onShareToWhatsApp,
                           ),
-//                          IconButton(
-//                            padding: EdgeInsets.all(0.0),
-//                            icon: Icon(
-//                              FontAwesomeIcons.plus,
-//                              color: Colors.blue[700],
-//                              size: 15.0,
-//                            ),
-//                            onPressed: onAddButtonTap,
-//                          ),
+                          IconButton(
+                            padding: EdgeInsets.all(0.0),
+                            icon: Icon(
+                              FontAwesomeIcons.sms,
+                              color: Colors.blue[700],
+                              size: 15.0,
+                            ),
+                            onPressed: onShareSMS,
+                          ),
                         ],
                       ),
                     ),

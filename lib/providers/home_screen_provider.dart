@@ -475,7 +475,7 @@ class HomeScreenProvider with ChangeNotifier {
     }
   }
 
-  String getShareableWhatsAppList() {
+  String getShareableTasksList() {
     String result = '';
     switch (_selectedTask) {
       case TaskTypes.StartEndTasks:
