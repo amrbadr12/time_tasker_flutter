@@ -1,9 +1,7 @@
-import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:time_tasker/constants.dart';
-import 'package:time_tasker/models/task.dart';
 import 'package:time_tasker/reusable_widgets/add_task_reusable_cards.dart';
 
 class AddNewTaskInputWidget extends StatelessWidget {
@@ -53,43 +51,52 @@ class AddNewTaskInputWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          AutoCompleteTextField<Task>(
-            suggestions: previousTasks,
-            // focusNode: focusNode,
-            onFocusChanged: (hasFocus) {},
-            style: kInputAddTaskLabelTextStyle,
-            itemFilter: (Task item, query) {
-              return item.taskName
-                  .toLowerCase()
-                  .startsWith(query.toLowerCase());
-            },
+          TextField(
             controller: nameController,
+            style: kInputAddTaskLabelTextStyle,
             decoration: InputDecoration(
               labelStyle: kInputAddTaskLabelTextStyle,
               hintText: 'Task Name',
             ),
-            clearOnSubmit: false,
-            itemBuilder: (BuildContext context, Task suggestion) {
-              return Padding(
-                  padding: EdgeInsets.all(kMainDefaultPadding),
-                  child: Text(
-                    suggestion.taskName,
-                    style: kInputAddTaskLabelTextStyle.copyWith(
-                        fontSize: 12.0, color: Colors.black),
-                  ));
-            },
-            itemSorter: (Task a, Task b) {
-              return a.taskName.compareTo(b.taskName);
-            },
-            itemSubmitted: (Task data) {
-              onTaskNameSubmitted(data.taskName);
-              if (data is DurationTask) {
-                DurationTask temp = data;
-                onTaskDurationSubmitted(temp);
-              }
-            },
-            key: GlobalKey<AutoCompleteTextFieldState<Task>>(),
-          ),
+          )
+          // AutoCompleteTextField<Task>(
+          //   suggestions: previousTasks,
+          //   // focusNode: focusNode,
+          //   onFocusChanged: (hasFocus) {},
+          //   style: kInputAddTaskLabelTextStyle,
+          //   itemFilter: (Task item, query) {
+          //     return item.taskName
+          //         .toLowerCase()
+          //         .startsWith(query.toLowerCase());
+          //   },
+          //   controller: nameController,
+          //   decoration: InputDecoration(
+          //     labelStyle: kInputAddTaskLabelTextStyle,
+          //     hintText: 'Task Name',
+          //   ),
+          //   clearOnSubmit: false,
+          //   itemBuilder: (BuildContext context, Task suggestion) {
+          //     return Padding(
+          //         padding: EdgeInsets.all(kMainDefaultPadding),
+          //         child: Text(
+          //           suggestion.taskName,
+          //           style: kInputAddTaskLabelTextStyle.copyWith(
+          //               fontSize: 12.0, color: Colors.black),
+          //         ));
+          //   },
+          //   itemSorter: (Task a, Task b) {
+          //     return a.taskName.compareTo(b.taskName);
+          //   },
+          //   itemSubmitted: (Task data) {
+          //     onTaskNameSubmitted(data.taskName);
+          //     if (data is DurationTask) {
+          //       DurationTask temp = data;
+          //       onTaskDurationSubmitted(temp);
+          //     }
+          //   },
+          //   key: GlobalKey<AutoCompleteTextFieldState<Task>>(),
+          // ),
+          ,
           SizedBox(
             height: kMainDefaultHeightPadding,
           ),
